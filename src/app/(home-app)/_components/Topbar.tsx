@@ -62,7 +62,9 @@ export default function Topbar() {
                                     onClick={() => keycloak.login()}>
                                 Login
                             </Button>
-                            <Button>Sign Up</Button>
+                            <Button onClick={() => keycloak.register()}>
+                                Sign Up
+                            </Button>
                         </>
                     )}
                 </div>
