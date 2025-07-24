@@ -1,0 +1,63 @@
+'use client'
+
+import Link from 'next/link'
+import { useAuth } from '@/components/AuthProvider'
+import { Ticket } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {ModeToggle} from "@/components/ModeToggle";
+
+export default function Topbar() {
+    const { isAuthenticated, keycloak } = useAuth()
+    const username = keycloak.tokenParsed?.name || 'User'
+
+    return (
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2">
+            <div className="container flex h-14 items-center">
+                <div className="mr-4 flex">
+                    <Link className="mr-6 flex items-center space-x-2" href="/">
+                        <Ticket className="h-6 w-6" />
+                        <span className="font-bold">Ticketly</span>
+                    </Link>
+                </div>
+
+                <div className="flex flex-1 items-center justify-end space-x-2">
+                    <ModeToggle />
+                    {isAuthenticated ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="flex items-center gap-2">
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="hidden lg:inline">{username}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => keycloak.logout()}>
+                                    Logout
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => keycloak.accountManagement()}>
+                                    Manage Account
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : (
+                        <>
+                            <Button variant="outline" className="hidden lg:inline-flex" onClick={() => keycloak.login()}>
+                                Login
+                            </Button>
+                            <Button>Sign Up</Button>
+                        </>
+                    )}
+                </div>
+            </div>
+        </header>
+    )
+}
