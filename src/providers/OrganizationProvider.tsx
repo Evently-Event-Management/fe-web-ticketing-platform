@@ -109,6 +109,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
             const orgDetails = await getOrganizationById(orgId);
             localStorage.setItem('selectedOrgId', orgId);
             setOrganization(orgDetails);
+            router.push(`/manage/organization/${orgId}`);
         } catch (err) {
             console.error('Failed to switch organization:', err);
             setError("Failed to switch organization.");
