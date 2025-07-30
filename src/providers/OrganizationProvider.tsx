@@ -17,7 +17,7 @@ interface OrganizationContextType {
     isLoading: boolean;
     error: string | null;
     switchOrganization: (orgId: string) => Promise<void>;
-    createOrganization: (newOrgRequest: OrganizationRequest) => Promise<void>;
+    createOrganization: (newOrgRequest: OrganizationRequest) => Promise<OrganizationResponse>;
     deleteOrganization: (orgId: string) => Promise<void>;
     refreshOrganizations: () => Promise<void>;
 }
@@ -117,6 +117,7 @@ export const OrganizationProvider = ({ children }: OrganizationProviderProps) =>
         const newOrg = await createNewOrganization(newOrgRequest);
         setOrganizations(prevOrgs => [...prevOrgs, newOrg]);
         await switchOrganization(newOrg.id);
+        return newOrg;
     };
 
     const deleteOrganization = async (orgId: string) => {
