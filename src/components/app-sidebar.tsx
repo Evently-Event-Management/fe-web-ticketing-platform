@@ -7,13 +7,13 @@ import {
     CalendarRange,
     Command,
     GalleryVerticalEnd,
-    RockingChair,
+    RockingChair, Ticket,
 } from "lucide-react"
 
 import {NavMain} from "@/components/nav-main"
 import {NavOrg} from "@/components/nav-org"
 import {NavUser} from "@/components/nav-user"
-import {OrganizationSwitcher} from "@/components/organizationSwitcher-switcher"
+import {OrganizationSwitcher} from "@/components/OrganizationSwitcher"
 import {
     Sidebar,
     SidebarContent,
@@ -22,6 +22,7 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 import {useAuth} from "@/providers/AuthProvider";
+import Link from "next/link";
 
 // This is sample data.
 const data = {
@@ -67,7 +68,7 @@ const data = {
     ],
     navOrg: [
         {
-            name: "Manage Organization",
+            name: "My Organizations",
             url: "#",
             icon: Building2,
         }
@@ -78,17 +79,20 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     const {isAuthenticated, keycloak} = useAuth()
 
     if (!isAuthenticated || !keycloak) {
-        keycloak.login().then(r => {
-                console.log("Redirecting to Keycloak login", r);
-            }
-        ).catch(error => {
-            console.error("Keycloak login error:", error);
-        });
+        return null; // Or a loading spinner
     }
 
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
+                <div className="mr-4 flex">
+                    <Link className="mr-6 flex items-center space-x-2" href="/">
+                        <div className="flex items-center gap-2 p-3 text-primary">
+                            <Ticket className="size-6 text-primary"/>
+                            <span className="text-xl font-bold">Ticketly</span>
+                        </div>
+                    </Link>
+                </div>
                 <OrganizationSwitcher/>
             </SidebarHeader>
             <SidebarContent>
