@@ -1,7 +1,8 @@
 import * as React from "react";
-import {useState} from "react";
-import {useOrganization} from "@/providers/OrganizationProvider";
-import {OrganizationRequest, OrganizationResponse} from "@/types/oraganizations";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useOrganization } from "@/providers/OrganizationProvider";
+import { OrganizationRequest, OrganizationResponse } from "@/types/oraganizations";
 import {
     Dialog,
     DialogContent,
@@ -11,29 +12,44 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
     Alert,
     AlertDescription,
     AlertTitle
 } from "@/components/ui/alert";
-import {AlertTriangle} from "lucide-react";
+import { AlertTriangle, Loader2 as Loader } from "lucide-react"; // Using a standard lucide loader icon
 
-export function CreateOrganizationDialog({children}: { children: React.ReactNode }) {
+
+export function CreateOrganizationDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
-    const {createOrganization, isLoading} = useOrganization();
+    const [website, setWebsite] = useState(''); // ✅ State for the new website field
+    const [isLoading, setIsLoading] = useState(false);
+    const { createOrganization } = useOrganization();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
 
-        const newOrgRequest: OrganizationRequest = {name};
-        await createOrganization(newOrgRequest);
-        setOpen(false); // Close dialog on success
-        setName(''); // Reset form
+        setIsLoading(true);
+        // ✅ Include website in the request
+        const newOrgRequest: OrganizationRequest = { name, website: website.trim() || undefined };
+
+        try {
+            const data = await createOrganization(newOrgRequest);
+            toast.success(`Organization "${data.name}" created successfully!`);
+            setOpen(false);
+            setName('');
+            setWebsite(''); // Reset website field
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -59,12 +75,30 @@ export function CreateOrganizationDialog({children}: { children: React.ReactNode
                                 className="col-span-3"
                                 placeholder="Acme Inc."
                                 required
+                                disabled={isLoading}
+                            />
+                        </div>
+                        {/* ✅ New input field for the website */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="website" className="text-right">
+                                Website
+                            </Label>
+                            <Input
+                                id="website"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                                className="col-span-3"
+                                placeholder="https://acme.com (optional)"
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Saving...' : 'Save Organization'}
+                            {isLoading && <Loader className="animate-spin" />}
+                            <span className={isLoading ? 'ml-2' : ''}>
+                                {isLoading ? 'Saving...' : 'Save Organization'}
+                            </span>
                         </Button>
                     </DialogFooter>
                 </form>
@@ -78,18 +112,30 @@ interface DeleteOrganizationDialogProps {
     children: React.ReactNode;
 }
 
-export function DeleteOrganizationDialog({organization, children}: DeleteOrganizationDialogProps) {
+export function DeleteOrganizationDialog({ organization, children }: DeleteOrganizationDialogProps) {
     const [open, setOpen] = useState(false);
     const [confirmationName, setConfirmationName] = useState('');
-    const {deleteOrganization, isLoading} = useOrganization();
+    const [isLoading, setIsLoading] = useState(false);
+    const { deleteOrganization } = useOrganization();
 
     const isDeleteDisabled = confirmationName !== organization.name || isLoading;
 
     const handleDelete = async () => {
         if (isDeleteDisabled) return;
-        await deleteOrganization(organization.id);
-        setOpen(false);
-        setConfirmationName('');
+
+        setIsLoading(true);
+        try {
+            await deleteOrganization(organization.id);
+            toast.success(`Organization "${organization.name}" has been deleted.`);
+            setOpen(false);
+            setConfirmationName('');
+        } catch (error) {
+            // ✅ Improved error handling consistency
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -103,7 +149,7 @@ export function DeleteOrganizationDialog({organization, children}: DeleteOrganiz
                     </DialogDescription>
                 </DialogHeader>
                 <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4"/>
+                    <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>Warning</AlertTitle>
                     <AlertDescription>
                         <p>
@@ -125,10 +171,11 @@ export function DeleteOrganizationDialog({organization, children}: DeleteOrganiz
                         value={confirmationName}
                         onChange={(e) => setConfirmationName(e.target.value)}
                         placeholder="Organization name"
+                        disabled={isLoading}
                     />
                 </div>
                 <DialogFooter className="sm:justify-between">
-                    <Button variant="outline" onClick={() => setOpen(false)}>
+                    <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
                         Cancel
                     </Button>
                     <Button
@@ -136,7 +183,10 @@ export function DeleteOrganizationDialog({organization, children}: DeleteOrganiz
                         onClick={handleDelete}
                         disabled={isDeleteDisabled}
                     >
-                        {isLoading ? 'Deleting...' : 'I understand, delete this organization'}
+                        {isLoading && <Loader className="animate-spin" />}
+                        <span className={isLoading ? 'ml-2' : ''}>
+                            {isLoading ? 'Deleting...' : 'I understand, delete this organization'}
+                        </span>
                     </Button>
                 </DialogFooter>
             </DialogContent>

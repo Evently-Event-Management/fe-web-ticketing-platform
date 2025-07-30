@@ -18,35 +18,43 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
     }
 
     try {
-        // Silently update the token if it's about to expire (e.g., within 30 seconds)
-        // This is the "built-in" Keycloak JS way to manage tokens for API calls.
         await keycloak.updateToken(30);
     } catch (error) {
         console.error('Token refresh failed:', error);
-        // Force a login if the refresh fails (e.g., session expired)
         await keycloak.login();
-        // This throw will likely not be reached, but it's good practice
         throw new Error('Token refresh failed, redirecting to login.');
     }
 
-    const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${keycloak.token}`,
+    const headers: Record<string, string> = {
         ...options.headers,
     };
 
-    // Configure this in your .env.local file
+    // Only set Content-Type for non-form-data requests
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    headers['Authorization'] = `Bearer ${keycloak.token}`;
+
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
     const response = await fetch(`${baseUrl}${endpoint}`, {...options, headers});
 
     if (!response.ok) {
-        // You can add more specific error handling here based on status codes
-        const errorBody = await response.text();
-        console.error(`API Error ${response.status}: ${errorBody}`);
-        throw new Error(`Request failed with status ${response.status}`);
+        // ✅ Corrected error handling logic
+        let errorMessage = `Request failed with status ${response.status}`;
+        try {
+            // Try to parse the error response as JSON
+            const errorBody = await response.json();
+            // If successful, use the specific message from the backend, otherwise keep the default
+            errorMessage = errorBody.message || errorMessage;
+        } catch (jsonError) {
+            // The error response wasn't valid JSON. The default message is sufficient.
+            console.warn("Could not parse error response as JSON.");
+        }
+        // Throw the final, most specific error message.
+        throw new Error(errorMessage);
     }
 
-    // Handle successful responses with no content (e.g., 204 from a DELETE)
     if (response.status === 204) {
         return null as T;
     }
