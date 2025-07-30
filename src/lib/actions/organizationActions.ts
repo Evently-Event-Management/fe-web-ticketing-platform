@@ -6,6 +6,7 @@ import { OrganizationRequest, OrganizationResponse } from '@/types/oraganization
  * @returns A promise that resolves to an array of OrganizationResponse.
  */
 export const getOrganizations = (): Promise<OrganizationResponse[]> => {
+    console.log('Fetching organizations...');
     return apiFetch<OrganizationResponse[]>('/event-seating/v1/organizations');
 };
 
