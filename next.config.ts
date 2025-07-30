@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
             },
         ],
     },
+    crossOrigin: 'use-credentials'
 };
 
 export default nextConfig;
