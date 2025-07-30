@@ -32,8 +32,9 @@ export default function Topbar() {
                     <ModeToggle/>
                     {isAuthenticated ? (
                         <>
-                            <Link href={`/manage/1`} className="hidden lg:inline-flex">
-                                <Button variant="ghost" className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                            <Link href={`/manage/organization`} className="hidden lg:inline-flex">
+                                <Button variant="ghost"
+                                        className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
                                     Create Events
                                 </Button>
                             </Link>
