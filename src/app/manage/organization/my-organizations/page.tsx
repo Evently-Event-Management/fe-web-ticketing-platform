@@ -17,24 +17,28 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {Skeleton} from '@/components/ui/skeleton';
 import {DeleteOrganizationDialog, CreateOrganizationDialog} from "@/components/OrganizationDialog";
+import {useRouter} from "next/navigation";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 
 
 export default function OrganizationsPage() {
-    const { organizations, isLoading } = useOrganization();
+    const {organizations, isLoading} = useOrganization();
+    const router = useRouter()
 
     // Define columns for the data table
     const columns: ColumnDef<OrganizationResponse>[] = [
         {
             accessorKey: 'name',
             header: 'Organization Name',
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const org = row.original;
                 return (
                     <div className="flex items-center gap-3">
                         {/* Placeholder for a logo */}
-                        <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
-                            {org.name.charAt(0).toUpperCase()}
-                        </div>
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={org.logoUrl || '/default-logo.png'} alt={org.name}/>
+                            <AvatarFallback>{org.name.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
                         <span className="font-medium">{org.name}</span>
                     </div>
                 );
@@ -50,7 +54,7 @@ export default function OrganizationsPage() {
         },
         {
             id: 'actions',
-            cell: ({ row }) => {
+            cell: ({row}) => {
                 const organization = row.original;
                 return (
                     <div className="text-right">
@@ -58,7 +62,7 @@ export default function OrganizationsPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 w-8 p-0">
                                     <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
+                                    <MoreHorizontal className="h-4 w-4"/>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -68,7 +72,11 @@ export default function OrganizationsPage() {
                                 >
                                     Copy organization ID
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>Edit (Not Implemented)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    router.push(`/manage/organization/${organization.id}/edit`);
+                                }}>
+                                    Edit
+                                </DropdownMenuItem>
                                 <DeleteOrganizationDialog organization={organization}>
                                     {/* This is the trigger for the delete dialog */}
                                     <DropdownMenuItem
@@ -90,10 +98,10 @@ export default function OrganizationsPage() {
     if (isLoading && organizations.length === 0) {
         return (
             <div className="p-4 md:p-8 space-y-4">
-                <Skeleton className="h-10 w-1/3" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-10 w-1/3"/>
+                <Skeleton className="h-12 w-full"/>
+                <Skeleton className="h-12 w-full"/>
+                <Skeleton className="h-12 w-full"/>
             </div>
         )
     }
@@ -109,12 +117,12 @@ export default function OrganizationsPage() {
                 </div>
                 <CreateOrganizationDialog>
                     <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <PlusCircle className="mr-2 h-4 w-4"/>
                         Create Organization
                     </Button>
                 </CreateOrganizationDialog>
             </div>
-            <DataTable columns={columns} data={organizations} />
+            <DataTable columns={columns} data={organizations}/>
         </div>
     );
 }

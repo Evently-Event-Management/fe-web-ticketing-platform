@@ -19,6 +19,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import {Skeleton} from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 export function OrganizationSwitcher() {
     const {
@@ -44,8 +45,34 @@ export function OrganizationSwitcher() {
     }
 
     if (!activeOrganization) {
-        return null;
+        return (
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <div className="p-2 flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                                <Building className="size-4"/>
+                            </div>
+                            <div className="grid flex-1 text-left text-sm leading-tight">
+                                <span className="font-medium">No Organization Selected</span>
+                            </div>
+                        </div>
+                        <CreateOrganizationDialog>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full flex items-center gap-1.5"
+                            >
+                                <Plus className="size-3.5" />
+                                Create Organization
+                            </Button>
+                        </CreateOrganizationDialog>
+                    </div>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        );
     }
+    
     return (
         <SidebarMenu>
             <SidebarMenuItem>

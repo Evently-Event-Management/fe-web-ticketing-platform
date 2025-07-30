@@ -10,6 +10,7 @@ import {ModeToggle} from "@/components/ModeToggle";
 import {Button} from "@/components/ui/button";
 import {Bell} from "lucide-react";
 import {OrganizationProvider} from "@/providers/OrganizationProvider";
+import Link from "next/link";
 
 export default function Layout({children}: Readonly<{ children: React.ReactNode }>) {
     return (
@@ -26,6 +27,12 @@ export default function Layout({children}: Readonly<{ children: React.ReactNode 
                                 className="mr-2 data-[orientation=vertical]:h-4"
                             />
                             <div className="flex items-center gap-2 px-4">
+                                <Link href={`/`} className="hidden lg:inline-flex">
+                                    <Button variant="ghost"
+                                            className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                        Browse Events
+                                    </Button>
+                                </Link>
                                 <ModeToggle/>
                                 <Separator
                                     orientation="vertical"
