@@ -46,7 +46,6 @@ export function OrganizationSwitcher() {
     if (!activeOrganization) {
         return null;
     }
-
     return (
         <SidebarMenu>
             <SidebarMenuItem>
