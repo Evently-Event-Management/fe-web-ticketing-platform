@@ -2,47 +2,30 @@
 
 import * as React from "react"
 import {
-    AudioWaveform,
     Building2,
     CalendarRange,
-    Command,
-    GalleryVerticalEnd,
-    RockingChair, Ticket,
+    RockingChair,
+    Ticket,
 } from "lucide-react"
-
-import {NavMain} from "@/components/nav-main"
-import {NavOrg} from "@/components/nav-org"
-import {NavUser} from "@/components/nav-user"
-import {OrganizationSwitcher} from "@/components/OrganizationSwitcher"
+import Link from "next/link";
+import { useSidebar } from "@/components/ui/sidebar" // ✅ Import the hook
+import { NavMain } from "@/components/nav-main"
+import { NavOrg } from "@/components/nav-org"
+import { NavUser } from "@/components/nav-user"
+import { OrganizationSwitcher } from "@/components/OrganizationSwitcher"
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
     SidebarRail,
 } from "@/components/ui/sidebar"
-import {useAuth} from "@/providers/AuthProvider";
-import Link from "next/link";
+import { useAuth } from "@/providers/AuthProvider";
 
-// This is sample data.
 const data = {
-    teams: [
-        {
-            name: "Acme Inc",
-            logo: GalleryVerticalEnd,
-            plan: "Enterprise",
-        },
-        {
-            name: "Acme Corp.",
-            logo: AudioWaveform,
-            plan: "Startup",
-        },
-        {
-            name: "Evil Corp.",
-            logo: Command,
-            plan: "Free",
-        },
-    ],
     navMain: [
         {
             title: "Events",
@@ -50,65 +33,58 @@ const data = {
             icon: CalendarRange,
             isActive: true,
             items: [
-                {
-                    title: "Create an Event",
-                    url: "#",
-                },
-                {
-                    title: "All Events",
-                    url: "#",
-                }
+                { title: "Create an Event", url: "#" },
+                { title: "All Events", url: "#" }
             ],
         },
-        {
-            title: "Seating Layouts",
-            url: "#",
-            icon: RockingChair
-        }
+        { title: "Seating Layouts", url: "#", icon: RockingChair }
     ],
     navOrg: [
-        {
-            name: "My Organizations",
-            url: "/manage/organization/my-organizations",
-            icon: Building2,
-        }
+        { name: "My Organizations", url: "/manage/organization/my-organizations", icon: Building2 }
     ],
 }
 
-export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-    const {isAuthenticated, keycloak} = useAuth()
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const { isAuthenticated, keycloak } = useAuth();
+    const { open } = useSidebar(); // ✅ Get the collapsed state
 
     if (!isAuthenticated || !keycloak) {
-        return null; // Or a loading spinner
+        return null;
     }
 
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <div className="mr-4 flex">
-                    <Link className="mr-6 flex items-center space-x-2" href="/">
-                        <div className="flex items-center gap-2 p-3 text-primary">
-                            <Ticket className="size-6 text-primary"/>
-                            <span className="text-xl font-bold">Ticketly</span>
-                        </div>
-                    </Link>
-                </div>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            asChild
+                            // ✅ Adjust padding for collapsed state
+                            className={`data-[slot=sidebar-menu-button]:!p-1.5 ${!open ? 'justify-center' : ''}`}
+                        >
+                            <Link className="flex items-center space-x-2 " href="/manage/organization">
+                                <Ticket className="!size-6 text-primary" />
+                                {/* ✅ Conditionally render the name */}
+                                {open && <span className="text-xl font-bold text-primary mb-0.5">Ticketly</span>}
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                {/* ✅ Pass the collapsed state to the switcher */}
                 <OrganizationSwitcher/>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain}/>
-                <NavOrg links={data.navOrg}/>
+                <NavMain items={data.navMain} />
+                <NavOrg links={data.navOrg} />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={
-                    {
-                        name: keycloak.tokenParsed?.name || "Guest",
-                        email: keycloak.tokenParsed?.email || "",
-                        avatar: keycloak.tokenParsed?.picture || "",
-                    }
-                }/>
+                <NavUser user={{
+                    name: keycloak.tokenParsed?.name || "Guest",
+                    email: keycloak.tokenParsed?.email || "",
+                    avatar: keycloak.tokenParsed?.picture || "",
+                }} />
             </SidebarFooter>
-            <SidebarRail/>
+            <SidebarRail />
         </Sidebar>
     )
 }
