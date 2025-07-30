@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { OrganizationRequest, OrganizationResponse } from '@/types/oraganizations';
-// ✅ Import the new action functions
 import {
     getOrganizations,
     getOrganizationById,
@@ -34,7 +33,6 @@ interface OrganizationProviderProps {
 
 export const OrganizationProvider = ({ children }: OrganizationProviderProps) => {
     const { isAuthenticated, keycloak } = useAuth();
-    const router = useRouter();
 
     const [organization, setOrganization] = useState<OrganizationResponse | null>(null);
     const [organizations, setOrganizations] = useState<OrganizationResponse[]>([]);
@@ -45,54 +43,49 @@ export const OrganizationProvider = ({ children }: OrganizationProviderProps) =>
         if (!isMounted) return;
         setIsLoading(true);
         setError(null);
-        let orgFound = false;
 
-        const storedOrgId = localStorage.getItem('selectedOrgId');
-        if (storedOrgId) {
-            try {
-                // ✅ Use the action
-                const orgDetails = await getOrganizationById(storedOrgId);
+        try {
+            // --- 1. ALWAYS fetch the full list of organizations first ---
+            const fetchedOrgs = await getOrganizations();
+            if (!isMounted) return;
+
+            setOrganizations(fetchedOrgs);
+            let activeOrg: OrganizationResponse | null = null;
+            const storedOrgId = localStorage.getItem('selectedOrgId');
+
+            if (fetchedOrgs && fetchedOrgs.length > 0) {
+                // --- 2. Determine the active organization ---
+                // Try to find the stored org in the fetched list
+                if (storedOrgId) {
+                    activeOrg = fetchedOrgs.find(org => org.id === storedOrgId) || null;
+                }
+                // If not found or not stored, default to the first one
+                if (!activeOrg) {
+                    activeOrg = fetchedOrgs[0];
+                }
+            } else {
+                // --- 3. If no organizations exist, create one ---
+                console.log('No organizations found. Creating a new one...');
+                const userName = keycloak.tokenParsed?.given_name || 'My';
+                const newOrgRequest: OrganizationRequest = { name: `${userName}'s Organization` };
+                activeOrg = await createNewOrganization(newOrgRequest);
                 if (isMounted) {
-                    setOrganization(orgDetails);
-                    orgFound = true;
+                    setOrganizations([activeOrg]);
                 }
-            } catch (err) {
-                console.warn(`Could not fetch stored organization (ID: ${storedOrgId}). It may be invalid.`);
-                localStorage.removeItem('selectedOrgId');
             }
-        }
 
-        if (!orgFound) {
-            try {
-                // ✅ Use the action
-                const fetchedOrgs = await getOrganizations();
-                if (!isMounted) return;
-
-                setOrganizations(fetchedOrgs);
-
-                if (fetchedOrgs && fetchedOrgs.length > 0) {
-                    const firstOrg = fetchedOrgs[0];
-                    localStorage.setItem('selectedOrgId', firstOrg.id);
-                    setOrganization(firstOrg);
-                } else {
-                    console.log('No organizations found. Creating a new one...');
-                    const userName = keycloak.tokenParsed?.given_name || 'My';
-                    const newOrgRequest: OrganizationRequest = { name: `${userName}'s Organization` };
-                    // ✅ Use the action
-                    const newOrg = await createNewOrganization(newOrgRequest);
-                    if (isMounted) {
-                        localStorage.setItem('selectedOrgId', newOrg.id);
-                        setOrganization(newOrg);
-                        setOrganizations([newOrg]);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to set up organization:', err);
-                if (isMounted) setError('An error occurred during organization setup.');
+            // --- 4. Set the final state ---
+            if (isMounted && activeOrg) {
+                localStorage.setItem('selectedOrgId', activeOrg.id);
+                setOrganization(activeOrg);
             }
-        }
 
-        if (isMounted) setIsLoading(false);
+        } catch (err) {
+            console.error('Failed to set up organization:', err);
+            if (isMounted) setError('An error occurred during organization setup.');
+        } finally {
+            if (isMounted) setIsLoading(false);
+        }
     }, [keycloak]);
 
     useEffect(() => {
@@ -103,7 +96,6 @@ export const OrganizationProvider = ({ children }: OrganizationProviderProps) =>
     }, [isAuthenticated, keycloak, setupOrganization]);
 
     const refreshOrganizations = async () => {
-        // ✅ Use the action
         const fetchedOrgs = await getOrganizations();
         setOrganizations(fetchedOrgs);
     };
@@ -111,11 +103,10 @@ export const OrganizationProvider = ({ children }: OrganizationProviderProps) =>
     const switchOrganization = async (orgId: string) => {
         setIsLoading(true);
         try {
-            // ✅ Use the action
             const orgDetails = await getOrganizationById(orgId);
             localStorage.setItem('selectedOrgId', orgId);
             setOrganization(orgDetails);
-            router.push(`/manage/organization/${orgId}`);
+            // No need to push route here if the component using this is already on the correct page
         } catch (err) {
             setError("Failed to switch organization.");
         } finally {
@@ -124,14 +115,12 @@ export const OrganizationProvider = ({ children }: OrganizationProviderProps) =>
     };
 
     const createOrganization = async (newOrgRequest: OrganizationRequest) => {
-        // ✅ Use the action
         const newOrg = await createNewOrganization(newOrgRequest);
         setOrganizations(prevOrgs => [...prevOrgs, newOrg]);
         await switchOrganization(newOrg.id);
     };
 
     const deleteOrganization = async (orgId: string) => {
-        // ✅ Use the action
         await deleteOrganizationById(orgId);
         const updatedOrgs = organizations.filter(org => org.id !== orgId);
         setOrganizations(updatedOrgs);
