@@ -60,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenuButton
                             asChild
                             // ✅ Adjust padding for collapsed state
-                            className={`data-[slot=sidebar-menu-button]:!p-1.5 ${!open ? 'justify-center' : ''}`}
+                            className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
                         >
                             <Link className="flex items-center space-x-2 " href="/manage/organization">
                                 <Ticket className="!size-6 text-primary" />
