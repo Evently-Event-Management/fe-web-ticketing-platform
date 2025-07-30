@@ -26,7 +26,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar"
-import {useAuth} from "@/components/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 
 export function NavUser({
                             user,
@@ -38,7 +38,7 @@ export function NavUser({
     }
 }) {
     const {isMobile} = useSidebar()
-    const {isAuthenticated, keycloak} = useAuth();
+    const {keycloak} = useAuth();
 
     return (
         <SidebarMenu>

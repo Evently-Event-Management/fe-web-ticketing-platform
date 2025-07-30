@@ -3,21 +3,17 @@
 import * as React from "react"
 import {
     AudioWaveform,
-    BookOpen,
-    Bot,
+    Building2,
+    CalendarRange,
     Command,
-    Frame,
     GalleryVerticalEnd,
-    Map,
-    PieChart,
-    Settings2,
-    SquareTerminal,
+    RockingChair,
 } from "lucide-react"
 
 import {NavMain} from "@/components/nav-main"
-import {NavProjects} from "@/components/nav-projects"
+import {NavOrg} from "@/components/nav-org"
 import {NavUser} from "@/components/nav-user"
-import {TeamSwitcher} from "@/components/team-switcher"
+import {OrganizationSwitcher} from "@/components/organizationSwitcher-switcher"
 import {
     Sidebar,
     SidebarContent,
@@ -25,7 +21,7 @@ import {
     SidebarHeader,
     SidebarRail,
 } from "@/components/ui/sidebar"
-import {useAuth} from "@/components/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 
 // This is sample data.
 const data = {
@@ -48,107 +44,33 @@ const data = {
     ],
     navMain: [
         {
-            title: "Playground",
+            title: "Events",
             url: "#",
-            icon: SquareTerminal,
+            icon: CalendarRange,
             isActive: true,
             items: [
                 {
-                    title: "History",
+                    title: "Create an Event",
                     url: "#",
                 },
                 {
-                    title: "Starred",
+                    title: "All Events",
                     url: "#",
-                },
-                {
-                    title: "Settings",
-                    url: "#",
-                },
+                }
             ],
         },
         {
-            title: "Models",
+            title: "Seating Layouts",
             url: "#",
-            icon: Bot,
-            items: [
-                {
-                    title: "Genesis",
-                    url: "#",
-                },
-                {
-                    title: "Explorer",
-                    url: "#",
-                },
-                {
-                    title: "Quantum",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Documentation",
-            url: "#",
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Introduction",
-                    url: "#",
-                },
-                {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "#",
-                },
-                {
-                    title: "Team",
-                    url: "#",
-                },
-                {
-                    title: "Billing",
-                    url: "#",
-                },
-                {
-                    title: "Limits",
-                    url: "#",
-                },
-            ],
-        },
+            icon: RockingChair
+        }
     ],
-    projects: [
+    navOrg: [
         {
-            name: "Design Engineering",
+            name: "Manage Organization",
             url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
+            icon: Building2,
+        }
     ],
 }
 
@@ -167,11 +89,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={data.teams}/>
+                <OrganizationSwitcher/>
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navMain}/>
-                <NavProjects projects={data.projects}/>
+                <NavOrg links={data.navOrg}/>
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={
