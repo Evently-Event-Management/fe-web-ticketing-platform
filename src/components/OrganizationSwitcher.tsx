@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import {ChevronsUpDown, Building} from 'lucide-react';
+import {ChevronsUpDown, Building, Plus} from 'lucide-react';
 import Image from 'next/image';
 import {useOrganization} from '@/providers/OrganizationProvider';
-import {CreateOrganizationDialog} from './CreateOrganizationDialog'; // ✅ Import the new component
+import {CreateOrganizationDialog} from './OrganizationDialog'; // ✅ Import the new component
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -111,7 +111,18 @@ export function OrganizationSwitcher() {
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator/>
-                        <CreateOrganizationDialog/>
+                        <CreateOrganizationDialog>
+                            <DropdownMenuItem
+                                className="gap-2 p-2"
+                                onSelect={(e) => e.preventDefault()} // Prevent dropdown from closing
+                            >
+                                <div
+                                    className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                                    <Plus className="size-4"/>
+                                </div>
+                                <div className="font-medium">Create Organization</div>
+                            </DropdownMenuItem>
+                        </CreateOrganizationDialog>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>
