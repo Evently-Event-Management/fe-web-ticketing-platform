@@ -69,7 +69,7 @@ const data = {
     navOrg: [
         {
             name: "My Organizations",
-            url: "#",
+            url: "/manage/organization/my-organizations",
             icon: Building2,
         }
     ],
