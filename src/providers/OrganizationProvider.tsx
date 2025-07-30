@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { OrganizationRequest, OrganizationResponse } from '@/types/oraganizations';
 import {
