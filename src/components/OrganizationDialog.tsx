@@ -1,8 +1,8 @@
 import * as React from "react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useOrganization } from "@/providers/OrganizationProvider";
-import { OrganizationRequest, OrganizationResponse } from "@/types/oraganizations";
+import {useState} from "react";
+import {toast} from "sonner";
+import {useOrganization} from "@/providers/OrganizationProvider";
+import {OrganizationRequest, OrganizationResponse} from "@/types/oraganizations";
 import {
     Dialog,
     DialogContent,
@@ -12,23 +12,23 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 import {
     Alert,
     AlertDescription,
     AlertTitle
 } from "@/components/ui/alert";
-import { AlertTriangle, Loader2 as Loader } from "lucide-react"; // Using a standard lucide loader icon
+import {AlertTriangle, Loader2 as Loader} from "lucide-react"; // Using a standard lucide loader icon
 
 
-export function CreateOrganizationDialog({ children }: { children: React.ReactNode }) {
+export function CreateOrganizationDialog({children}: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [website, setWebsite] = useState(''); // ✅ State for the new website field
     const [isLoading, setIsLoading] = useState(false);
-    const { createOrganization } = useOrganization();
+    const {createOrganization} = useOrganization();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,7 +36,7 @@ export function CreateOrganizationDialog({ children }: { children: React.ReactNo
 
         setIsLoading(true);
         // ✅ Include website in the request
-        const newOrgRequest: OrganizationRequest = { name, website: website.trim() || undefined };
+        const newOrgRequest: OrganizationRequest = {name, website: website.trim() || undefined};
 
         try {
             const data = await createOrganization(newOrgRequest);
@@ -95,7 +95,7 @@ export function CreateOrganizationDialog({ children }: { children: React.ReactNo
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading && <Loader className="animate-spin" />}
+                            {isLoading && <Loader className="animate-spin"/>}
                             <span className={isLoading ? 'ml-2' : ''}>
                                 {isLoading ? 'Saving...' : 'Save Organization'}
                             </span>
@@ -110,13 +110,14 @@ export function CreateOrganizationDialog({ children }: { children: React.ReactNo
 interface DeleteOrganizationDialogProps {
     organization: OrganizationResponse;
     children: React.ReactNode;
+    onDelete?: () => void; // Optional callback for additional actions after deletion
 }
 
-export function DeleteOrganizationDialog({ organization, children }: DeleteOrganizationDialogProps) {
+export function DeleteOrganizationDialog({organization, children, onDelete}: DeleteOrganizationDialogProps) {
     const [open, setOpen] = useState(false);
     const [confirmationName, setConfirmationName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { deleteOrganization } = useOrganization();
+    const {deleteOrganization} = useOrganization();
 
     const isDeleteDisabled = confirmationName !== organization.name || isLoading;
 
@@ -129,6 +130,9 @@ export function DeleteOrganizationDialog({ organization, children }: DeleteOrgan
             toast.success(`Organization "${organization.name}" has been deleted.`);
             setOpen(false);
             setConfirmationName('');
+            if (onDelete) {
+                onDelete(); // Call the optional callback if provided
+            }
         } catch (error) {
             // ✅ Improved error handling consistency
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -149,7 +153,7 @@ export function DeleteOrganizationDialog({ organization, children }: DeleteOrgan
                     </DialogDescription>
                 </DialogHeader>
                 <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTriangle className="h-4 w-4"/>
                     <AlertTitle>Warning</AlertTitle>
                     <AlertDescription>
                         <p>
@@ -183,7 +187,7 @@ export function DeleteOrganizationDialog({ organization, children }: DeleteOrgan
                         onClick={handleDelete}
                         disabled={isDeleteDisabled}
                     >
-                        {isLoading && <Loader className="animate-spin" />}
+                        {isLoading && <Loader className="animate-spin"/>}
                         <span className={isLoading ? 'ml-2' : ''}>
                             {isLoading ? 'Deleting...' : 'I understand, delete this organization'}
                         </span>

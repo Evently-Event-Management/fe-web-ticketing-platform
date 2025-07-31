@@ -5,9 +5,10 @@ import {OrganizationResponse} from "@/types/oraganizations";
 
 interface DangerZoneProps {
     organization: OrganizationResponse;
+    onDelete?: () => void; // Optional callback for after deletion
 }
 
-function DangerZoneCard({organization}: DangerZoneProps) {
+function DangerZoneCard({organization, onDelete}: DangerZoneProps) {
     return (
         <Card className="border-destructive">
             <CardHeader>
@@ -20,7 +21,7 @@ function DangerZoneCard({organization}: DangerZoneProps) {
                 <p className="text-sm font-medium">
                     Delete this organization and all its data.
                 </p>
-                <DeleteOrganizationDialog organization={organization}>
+                <DeleteOrganizationDialog organization={organization} onDelete={onDelete}>
                     <Button variant="destructive">Delete Organization</Button>
                 </DeleteOrganizationDialog>
             </CardFooter>
