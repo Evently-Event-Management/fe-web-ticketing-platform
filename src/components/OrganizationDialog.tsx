@@ -23,7 +23,7 @@ import {
 import {AlertTriangle, Loader2 as Loader} from "lucide-react"; // Using a standard lucide loader icon
 
 
-export function CreateOrganizationDialog({children}: { children: React.ReactNode }) {
+export function CreateOrganizationDialog({children, onCreate}: { children: React.ReactNode, onCreate?: () => void }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [website, setWebsite] = useState(''); // ✅ State for the new website field
@@ -44,6 +44,9 @@ export function CreateOrganizationDialog({children}: { children: React.ReactNode
             setOpen(false);
             setName('');
             setWebsite(''); // Reset website field
+            if (onCreate) {
+                onCreate(); // Call the optional callback if provided
+            }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
             toast.error(errorMessage);
