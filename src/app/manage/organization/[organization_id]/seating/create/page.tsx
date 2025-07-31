@@ -20,7 +20,7 @@ export default function SeatingLayoutCreatorPage() {
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
-    const [layoutName, setLayoutName] = useState('Untitled Layout'); // ✅ State for layout name
+    const [layoutName, setLayoutName] = useState('Untitled Layout');
     const { setNodeRef } = useDroppable({ id: 'canvas' });
 
     const minZoom = 0.5;
@@ -80,15 +80,34 @@ export default function SeatingLayoutCreatorPage() {
     const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, maxZoom));
     const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, minZoom));
 
-    // ✅ Function to handle saving the layout
+    // ✅ Updated function to handle saving the layout with normalization
     const handleSaveLayout = () => {
+        if (blocks.length === 0) {
+            console.log("Cannot save an empty layout.");
+            return;
+        }
+
+        // 1. Find the top-leftmost coordinates
+        const minX = Math.min(...blocks.map(b => b.position.x));
+        const minY = Math.min(...blocks.map(b => b.position.y));
+
+        // 2. Create a new array of blocks with normalized positions
+        const normalizedBlocks = blocks.map(block => ({
+            ...block,
+            position: {
+                x: block.position.x - minX,
+                y: block.position.y - minY,
+            },
+        }));
+
         const layoutData = {
             name: layoutName,
             layout: {
-                blocks: blocks,
+                blocks: normalizedBlocks,
             },
         };
-        console.log("Saving Layout:", JSON.stringify(layoutData, null, 2));
+
+        console.log("Saving Normalized Layout:", JSON.stringify(layoutData, null, 2));
         // Here you would typically make an API call to save this data
     };
 
