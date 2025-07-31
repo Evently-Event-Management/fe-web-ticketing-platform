@@ -1,9 +1,8 @@
 "use client"
 
 import {
-    BadgeCheck,
     ChevronsUpDown,
-    LogOut,
+    LogOut, UserRoundPen,
 } from "lucide-react"
 
 import {
@@ -80,7 +79,7 @@ export function NavUser({
                         </DropdownMenuLabel>
                         <DropdownMenuGroup>
                             <DropdownMenuItem onClick={() => keycloak.accountManagement()}>
-                                <BadgeCheck/>
+                                <UserRoundPen/>
                                 Account
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
