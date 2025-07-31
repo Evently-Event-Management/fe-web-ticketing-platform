@@ -135,7 +135,7 @@ function LogoManagementCard({organization, onUpdate}: LogoManagementCardProps) {
                 </div>
 
                 <p className="text-xs text-muted-foreground text-center">
-                    Supports PNG, JPG, JPEG, WebP. Max file size: 5MB
+                    Supports PNG, JPG, JPEG, WebP. Max file size: 1MB
                 </p>
             </CardContent>
         </Card>

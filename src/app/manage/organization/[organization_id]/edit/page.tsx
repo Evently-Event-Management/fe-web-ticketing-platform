@@ -63,7 +63,9 @@ export default function OrganizationSettingsPage() {
                 </div>
             </div>
 
-            <DangerZoneCard organization={organization}/>
+            <DangerZoneCard organization={organization} onDelete={() => {
+                router.push("/manage/organizations/my-organizations");
+            }}/>
         </div>
     );
 }
