@@ -98,7 +98,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
             } else {
                 setOrganization(null);
                 localStorage.removeItem('selectedOrgId');
-                router.push('/manage/organizations/my-organizations');
+                router.push('/manage/organization/my-organizations');
             }
         }
     };
