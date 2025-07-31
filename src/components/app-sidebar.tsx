@@ -8,7 +8,7 @@ import {
     Ticket,
 } from "lucide-react"
 import Link from "next/link";
-import { useSidebar } from "@/components/ui/sidebar" // ✅ Import the hook
+import { useSidebar } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/nav-main"
 import { NavOrg } from "@/components/nav-org"
 import { NavUser } from "@/components/nav-user"
@@ -24,32 +24,40 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/providers/AuthProvider";
-
-const data = {
-    navMain: [
-        {
-            title: "Events",
-            url: "#",
-            icon: CalendarRange,
-            isActive: true,
-            items: [
-                { title: "Create an Event", url: "#" },
-                { title: "All Events", url: "#" }
-            ],
-        },
-        { title: "Seating Layouts", url: "#", icon: RockingChair }
-    ],
-    navOrg: [
-        { name: "My Organizations", url: "/manage/organization/my-organizations", icon: Building2 }
-    ],
-}
+import { useOrganization } from "@/providers/OrganizationProvider"; // ✅ Import the hook
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { isAuthenticated, keycloak } = useAuth();
-    const { open } = useSidebar(); // ✅ Get the collapsed state
+    const { organization } = useOrganization();
+    const { open } = useSidebar();
 
     if (!isAuthenticated || !keycloak) {
         return null;
+    }
+
+    // ✅ Dynamically create the navigation data
+    const navData = {
+        navMain: [
+            {
+                title: "Events",
+                url: "#",
+                icon: CalendarRange,
+                isActive: true,
+                items: [
+                    { title: "Create an Event", url: "#" },
+                    { title: "All Events", url: "#" }
+                ],
+            },
+            {
+                title: "Seating Layouts",
+                // ✅ Use the active organization ID to build the URL
+                url: organization ? `/manage/organization/${organization.id}/seating/create` : "#",
+                icon: RockingChair
+            }
+        ],
+        navOrg: [
+            { name: "My Organizations", url: "/manage/organization/my-organizations", icon: Building2 }
+        ],
     }
 
     return (
@@ -59,23 +67,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            // ✅ Adjust padding for collapsed state
                             className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
                         >
                             <Link className="flex items-center space-x-2 " href="/manage/organization">
                                 <Ticket className="!size-6 text-primary" />
-                                {/* ✅ Conditionally render the name */}
                                 {open && <span className="text-xl font-bold text-primary mb-0.5">Ticketly</span>}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                {/* ✅ Pass the collapsed state to the switcher */}
-                <OrganizationSwitcher/>
+                <OrganizationSwitcher />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
-                <NavOrg links={data.navOrg} />
+                {/* ✅ Pass the dynamic data to the components */}
+                <NavMain items={navData.navMain} />
+                <NavOrg links={navData.navOrg} />
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={{

@@ -25,7 +25,7 @@ export default function OrganizationSettingsPage() {
         } catch (error) {
             toast.error("Failed to fetch organization details.");
             console.error("Error fetching organization:", error);
-            router.push("/manage/organizations");
+            router.push("/manage/organization/my-organizations");
         }
     }, [organization_id, router]);
 
@@ -64,7 +64,7 @@ export default function OrganizationSettingsPage() {
             </div>
 
             <DangerZoneCard organization={organization} onDelete={() => {
-                router.push("/manage/organizations/my-organizations");
+                router.push("/manage/organization/my-organizations");
             }}/>
         </div>
     );
