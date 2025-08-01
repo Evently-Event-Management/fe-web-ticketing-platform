@@ -23,7 +23,7 @@ export function ResizableDraggableBlock({ block, onSelect, onResize }: { block: 
                 height={block.height || 100}
                 width={block.width || 200}
                 minConstraints={[120,70]}
-                maxConstraints={[800, 500]}
+                maxConstraints={[1000, 1000]}
                 onResizeStop={(_, data) => onResize(block.id, data.size)}
                 className="p-2 bg-card border rounded-lg shadow-md box-border flex flex-col relative"
             >

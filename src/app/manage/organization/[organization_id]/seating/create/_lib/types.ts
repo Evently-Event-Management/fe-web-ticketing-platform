@@ -8,6 +8,8 @@ export interface Block {
     rows?: number;
     columns?: number;
     capacity?: number;
-    width?: number;  // For resizable blocks
-    height?: number; // For resizable blocks
+    width?: number;
+    height?: number;
+    startRowLabel?: string;
+    startColumnLabel?: number;
 }
