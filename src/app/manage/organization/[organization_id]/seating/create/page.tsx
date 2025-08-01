@@ -34,6 +34,8 @@ export default function SeatingLayoutCreatorPage() {
             position: { x: 50, y: 50 },
             rows: type === 'seated_grid' ? 5 : undefined,
             columns: type === 'seated_grid' ? 10 : undefined,
+            startRowLabel: type === 'seated_grid' ? 'A' : undefined,
+            startColumnLabel: type === 'seated_grid' ? 1 : undefined,
             capacity: type === 'standing_capacity' ? 100 : undefined,
             width: type === 'standing_capacity' || type === 'non_sellable' ? 200 : undefined,
             height: type === 'standing_capacity' || type === 'non_sellable' ? 100 : undefined,
@@ -80,18 +82,15 @@ export default function SeatingLayoutCreatorPage() {
     const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, maxZoom));
     const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, minZoom));
 
-    // ✅ Updated function to handle saving the layout with normalization
     const handleSaveLayout = () => {
         if (blocks.length === 0) {
             console.log("Cannot save an empty layout.");
             return;
         }
 
-        // 1. Find the top-leftmost coordinates
         const minX = Math.min(...blocks.map(b => b.position.x));
         const minY = Math.min(...blocks.map(b => b.position.y));
 
-        // 2. Create a new array of blocks with normalized positions
         const normalizedBlocks = blocks.map(block => ({
             ...block,
             position: {
@@ -108,7 +107,6 @@ export default function SeatingLayoutCreatorPage() {
         };
 
         console.log("Saving Normalized Layout:", JSON.stringify(layoutData, null, 2));
-        // Here you would typically make an API call to save this data
     };
 
     return (
@@ -162,9 +160,7 @@ export default function SeatingLayoutCreatorPage() {
                     {/* Canvas Wrapper */}
                     <div className="flex-1 relative flex items-center justify-center p-8">
                         <div className="w-full h-full max-w-5xl max-h-[80vh] relative">
-                            {/* The static container with the border and background */}
                             <div className="w-full h-full bg-background border rounded-lg shadow-lg overflow-auto relative">
-                                {/* The zoomable "stage" inside the container */}
                                 <main
                                     ref={setNodeRef}
                                     className="relative"
@@ -184,7 +180,6 @@ export default function SeatingLayoutCreatorPage() {
                                 </main>
                             </div>
 
-                            {/* Zoom Controls are positioned relative to the outer wrapper, so they are not scaled */}
                             <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-background p-2 rounded-lg border shadow-md">
                                 <Button variant="ghost" size="icon" onClick={handleZoomOut}>
                                     <ZoomOut className="h-4 w-4" />
@@ -199,7 +194,6 @@ export default function SeatingLayoutCreatorPage() {
                         </div>
                     </div>
 
-                    {/* Settings Panel */}
                     <SettingsPanel
                         selectedBlock={selectedBlock}
                         onUpdate={handleUpdateBlock}
