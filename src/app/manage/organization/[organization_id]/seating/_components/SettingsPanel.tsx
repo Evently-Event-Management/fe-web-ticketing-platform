@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Block } from "../_lib/types";
 import {
     Sheet,
     SheetContent,
@@ -11,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {Button} from "@/components/ui/button";
 import {Trash2} from "lucide-react";
+import {LayoutBlock} from "@/types/seating-layouts";
 
 
 export function SettingsPanel({
@@ -19,12 +19,12 @@ export function SettingsPanel({
                            onDelete,
                            onClose,
                        }: {
-    selectedBlock: Block | null;
-    onUpdate: (updatedBlock: Block) => void;
+    selectedBlock: LayoutBlock | null;
+    onUpdate: (updatedBlock: LayoutBlock) => void;
     onDelete: (blockId: string) => void;
     onClose: () => void;
 }) {
-    const [formData, setFormData] = useState<Partial<Block>>({});
+    const [formData, setFormData] = useState<Partial<LayoutBlock>>({});
 
     React.useEffect(() => {
         setFormData(selectedBlock || {});
@@ -32,12 +32,12 @@ export function SettingsPanel({
 
     if (!selectedBlock) return null;
 
-    const handleChange = (field: keyof Block, value: string | number) => {
+    const handleChange = (field: keyof LayoutBlock, value: string | number) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     const handleSave = () => {
-        onUpdate(formData as Block);
+        onUpdate(formData as LayoutBlock);
         onClose();
     };
 

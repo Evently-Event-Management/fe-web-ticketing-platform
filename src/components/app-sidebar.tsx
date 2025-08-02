@@ -51,7 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {
                 title: "Seating Layouts",
                 // ✅ Use the active organization ID to build the URL
-                url: organization ? `/manage/organization/${organization.id}/seating/create` : "#",
+                url: organization ? `/manage/organization/${organization.id}/seating` : "#",
                 icon: RockingChair
             }
         ],
@@ -70,8 +70,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
                         >
                             <Link className="flex items-center space-x-2 " href="/manage/organization">
-                                <Ticket className="!size-6 text-primary" />
-                                {open && <span className="text-xl font-bold text-primary mb-0.5">Ticketly</span>}
+                                <Ticket className="!size-6 text-sidebar-primary" />
+                                {open && <span className="text-xl font-bold text-sidebar-primary mb-0.5">Ticketly</span>}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
