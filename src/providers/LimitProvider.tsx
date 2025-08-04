@@ -39,11 +39,22 @@ export const LimitProvider = ({children}: { children: ReactNode }) => {
         fetchConfig();
     }, []);
 
+    // Helper to safely extract user_groups from tokenParsed
+    function getUserGroupsFromTokenParsed(tokenParsed: any): string[] {
+        if (
+            !tokenParsed ||
+            !Array.isArray(tokenParsed.user_groups) ||
+            !tokenParsed.user_groups.every((g: any) => typeof g === 'string')
+        ) {
+            return [];
+        }
+        return tokenParsed.user_groups;
+    }
+
     // A memoized helper to get the current user's highest tier from their JWT
     const currentUserTier = useMemo((): TierName => {
-        if (!keycloak?.tokenParsed?.user_groups || !Array.isArray(keycloak.tokenParsed.user_groups)) return 'FREE';
-
-        const userGroups: string[] = keycloak.tokenParsed.user_groups;
+        const userGroups: string[] = getUserGroupsFromTokenParsed(keycloak?.tokenParsed);
+        if (userGroups.length === 0) return 'FREE';
         let highestTier: TierName = 'FREE';
         let maxLevel = 0;
 
