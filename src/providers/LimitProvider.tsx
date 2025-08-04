@@ -79,7 +79,13 @@ export const LimitProvider = ({children}: { children: ReactNode }) => {
     // A memoized value for the current user's specific limits, derived from the full config
     const currentUserTierLimits = useMemo(() => {
         if (!config) return null;
-        return config.tierLimits[currentUserTier] || config.tierLimits.FREE;
+        if (config.tierLimits[currentUserTier]) {
+            return config.tierLimits[currentUserTier];
+        } else if (config.tierLimits.FREE) {
+            return config.tierLimits.FREE;
+        } else {
+            return null;
+        }
     }, [config, currentUserTier]);
 
     // A function to get limits for any specified tier (useful for upgrade pages)
