@@ -4,6 +4,8 @@ import "./globals.css";
 import AuthProvider from '@/providers/AuthProvider'
 import {ThemeProvider} from "next-themes";
 import {Toaster} from "@/components/ui/sonner";
+import {LimitProvider} from "@/providers/LimitProvider";
+import React from "react";
 
 
 const geistSans = Geist({
@@ -38,8 +40,10 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
             >
-                {children}
-                <Toaster />
+                <LimitProvider>
+                    {children}
+                </LimitProvider>
+                <Toaster/>
             </ThemeProvider>
         </AuthProvider>
         </body>
