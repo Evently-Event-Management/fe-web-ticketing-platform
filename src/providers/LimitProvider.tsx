@@ -59,13 +59,17 @@ export const LimitProvider = ({children}: { children: ReactNode }) => {
         let maxLevel = 0;
 
         const tierLevels: Record<TierName, number> = {FREE: 0, PRO: 1, ENTERPRISE: 2};
+        const validTierNames: TierName[] = ['FREE', 'PRO', 'ENTERPRISE'];
 
         userGroups.forEach(group => {
             if (group.startsWith('/Tiers/')) {
-                const tierName = group.substring('/Tiers/'.length).toUpperCase() as TierName;
-                if (tierLevels[tierName] !== undefined && tierLevels[tierName] > maxLevel) {
-                    maxLevel = tierLevels[tierName];
-                    highestTier = tierName;
+                const extractedTier = group.substring('/Tiers/'.length).toUpperCase();
+                if (validTierNames.includes(extractedTier as TierName)) {
+                    const tierName = extractedTier as TierName;
+                    if (tierLevels[tierName] !== undefined && tierLevels[tierName] > maxLevel) {
+                        maxLevel = tierLevels[tierName];
+                        highestTier = tierName;
+                    }
                 }
             }
         });
