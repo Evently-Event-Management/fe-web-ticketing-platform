@@ -10,7 +10,7 @@ import {LayoutBlock, BlockType, LayoutData} from '@/types/seating-layout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
-import {Plus, Save, ZoomIn, ZoomOut} from 'lucide-react';
+import {BrushCleaning, Plus, Save, ZoomIn, ZoomOut} from 'lucide-react';
 
 import {DraggableBlock} from './DraggableBlock';
 import {ResizableDraggableBlock} from './ResizableDraggableBlock';
@@ -152,6 +152,11 @@ export function LayoutEditor({initialData, onSave, isLoading = false}: LayoutEdi
                             </Button>
                         </div>
                         <div className="mt-auto">
+                            <Button className="w-full mb-2" variant="outline" onClick={() => setBlocks([])}
+                                    disabled={isLoading}>
+                                <BrushCleaning className="mr-2 h-4 w-4"/>
+                                Clear Layout
+                            </Button>
                             <Button className="w-full" onClick={handleSaveLayout} disabled={isLoading}>
                                 <Save className="mr-2 h-4 w-4"/>
                                 {isLoading ? 'Saving...' : 'Save Layout'}
