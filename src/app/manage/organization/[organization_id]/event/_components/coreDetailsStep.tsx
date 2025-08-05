@@ -18,13 +18,20 @@ import {Textarea} from '@/components/ui/textarea';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
 import {Switch} from '@/components/ui/switch';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    SelectGroup,
+    SelectLabel
+} from '@/components/ui/select';
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
 import Image from 'next/image';
 import {ImageIcon, X, PlusCircle, Upload} from 'lucide-react';
 import {toast} from 'sonner';
 import Autoplay from 'embla-carousel-autoplay';
-import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
 
 // --- Step 1: Core Details Component ---
 export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
@@ -43,7 +50,7 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
             title: '',
             description: '',
             overview: '',
-            categoryId: '',
+            categoryId: '', // Ensure categoryId is present
             isOnline: false,
         },
     });
@@ -130,7 +137,7 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
                     </CardContent>
                 </Card>
 
-                {/* Event Details Card */}
+                {/* Event Details Card with Category dropdown */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Event Details</CardTitle>
@@ -140,6 +147,38 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
                         <FormField control={form.control} name="title" render={({field}) => (
                             <FormItem><FormLabel>Event Title</FormLabel><FormControl><Input
                                 placeholder="e.g., Annual Tech Conference 2025" {...field} /></FormControl><FormMessage/></FormItem>)}/>
+
+                        {/* Category Selector as dropdown */}
+                        <FormField
+                            control={form.control}
+                            name="categoryId"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a category for your event"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="max-h-100">
+                                            {categories.map((parentCat) => (
+                                                <SelectGroup key={parentCat.id}>
+                                                    <SelectLabel>{parentCat.name}</SelectLabel>
+                                                    {parentCat.subCategories.map((subCat) => (
+                                                        <SelectItem key={subCat.id} value={subCat.id}>
+                                                            {subCat.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+
                         <FormField control={form.control} name="description" render={({field}) => (
                             <FormItem><FormLabel>Short Description</FormLabel><FormControl><Textarea
                                 placeholder="A brief summary of your event." {...field} /></FormControl><FormMessage/></FormItem>)}/>
@@ -147,48 +186,6 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
                             <FormItem><FormLabel>Overview</FormLabel><FormControl><Textarea
                                 placeholder="Provide more details like schedule, speakers, etc."
                                 className="min-h-32" {...field} /></FormControl><FormMessage/></FormItem>)}/>
-                    </CardContent>
-                </Card>
-
-                {/* Category Card - changed to single selection */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Category</CardTitle>
-                        <CardDescription>Select one category that best fits your event.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <FormField
-                            control={form.control}
-                            name="categoryId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            className="space-y-4"
-                                        >
-                                            {categories.map((parentCat) => (
-                                                <div key={parentCat.id}>
-                                                    <h3 className="font-semibold mb-2">{parentCat.name}</h3>
-                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                        {parentCat.subCategories.map((subCat) => (
-                                                            <FormItem key={subCat.id} className="flex items-center space-x-3 space-y-0">
-                                                                <FormControl>
-                                                                    <RadioGroupItem value={subCat.id} />
-                                                                </FormControl>
-                                                                <FormLabel className="font-normal">{subCat.name}</FormLabel>
-                                                            </FormItem>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                     </CardContent>
                 </Card>
 
