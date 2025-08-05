@@ -1,5 +1,6 @@
 import {cn} from "@/lib/utils";
 import {Check} from "lucide-react";
+import React from "react";
 
 interface WizardSidebarProps {
     currentStep: number;
@@ -8,13 +9,14 @@ interface WizardSidebarProps {
 
 export function WizardSidebar({currentStep, steps}: WizardSidebarProps) {
     return (
-        <aside className="hidden md:block w-72 border-r bg-background p-6">
+        // ✅ Changed to fixed positioning to keep it visible on scroll
+        <aside className="w-72 border-r bg-background p-6 h-full top-0 h-screen">
             <h2 className="text-lg font-semibold mb-8">Create New Event</h2>
             <nav className="flex flex-col gap-6">
                 {steps.map((s) => (
                     <div key={s.number} className="flex items-start gap-4">
                         <div className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-full border-2 font-semibold transition-all",
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-all",
                             currentStep === s.number && "bg-primary text-primary-foreground border-primary",
                             currentStep > s.number && "bg-green-500 text-white border-green-500",
                         )}>
