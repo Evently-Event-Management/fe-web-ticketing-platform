@@ -1,4 +1,4 @@
-import {LayoutBlock, SeatingLayoutTemplateResponse} from "@/types/seating-layout";
+import {LayoutBlock, SeatingLayoutTemplateResponse} from "@/types/seatingLayout";
 import {useRouter} from "next/navigation"; // Changed from next/router to next/navigation
 import {useEffect, useState} from "react";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";

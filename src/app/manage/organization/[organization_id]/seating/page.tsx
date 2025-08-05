@@ -1,7 +1,7 @@
 'use client'
 
 import {deleteSeatingLayoutTemplate, getSeatingLayoutTemplatesByOrg} from '@/lib/actions/seatingLayoutTemplateActions';
-import {PaginatedResponse, SeatingLayoutTemplateResponse} from '@/types/seating-layout';
+import {PaginatedResponse, SeatingLayoutTemplateResponse} from '@/types/seatingLayout';
 import {useParams} from 'next/navigation';
 
 import React, {useCallback, useEffect, useState} from 'react';

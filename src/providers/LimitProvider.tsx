@@ -1,100 +1,57 @@
 'use client';
 
-import {createContext, useContext, useState, useEffect, ReactNode, useMemo} from 'react';
+import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
 import {useAuth} from '@/providers/AuthProvider';
-import {getAppConfiguration} from '@/lib/actions/configActions';
-import {AppConfig, TierLimitDetails, TierName} from '@/types/config';
+import {getMyLimits} from '@/lib/actions/configActions';
+import {MyLimitsResponse, TierLimitDetails} from '@/types/config';
 
 // Define the shape of the context
 interface LimitContextType {
-    config: AppConfig | null;
+    myLimits: MyLimitsResponse | null;
     isLoading: boolean;
     error: string | null;
-    currentUserTier: TierName;
+    // For convenience, we can still expose the direct tier limits
     currentUserTierLimits: TierLimitDetails | null;
-    getLimitsForTier: (tier: TierName) => TierLimitDetails | null;
 }
 
 const LimitContext = createContext<LimitContextType | undefined>(undefined);
 
 export const LimitProvider = ({children}: { children: ReactNode }) => {
-    const {keycloak} = useAuth();
-    const [config, setConfig] = useState<AppConfig | null>(null);
+    const {isAuthenticated} = useAuth();
+    const [myLimits, setMyLimits] = useState<MyLimitsResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch the entire configuration on initial application load
+    // Fetch the user-specific limits when authenticated
     useEffect(() => {
-        const fetchConfig = async () => {
+        // Only fetch if the user is authenticated
+        if (!isAuthenticated) {
+            setIsLoading(false);
+            return;
+        }
+
+        const fetchMyLimits = async () => {
+            setIsLoading(true);
             try {
-                const appConfig = await getAppConfiguration();
-                setConfig(appConfig);
+                const limits = await getMyLimits();
+                setMyLimits(limits);
             } catch (err) {
-                setError('Failed to load application configuration. Some features may be unavailable.');
+                setError('Failed to load your account limits.');
                 console.error(err);
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchConfig();
-    }, []);
+        fetchMyLimits().then();
+    }, [isAuthenticated]);
 
-    // Helper to safely extract user_groups from tokenParsed
-    function getUserGroupsFromTokenParsed(tokenParsed: any): string[] {
-        if (
-            !tokenParsed ||
-            !Array.isArray(tokenParsed.user_groups) ||
-            !tokenParsed.user_groups.every((g: any) => typeof g === 'string')
-        ) {
-            return [];
-        }
-        return tokenParsed.user_groups;
-    }
 
-    // A memoized helper to get the current user's highest tier from their JWT
-    const currentUserTier = useMemo((): TierName => {
-        const userGroups: string[] = getUserGroupsFromTokenParsed(keycloak?.tokenParsed);
-        if (userGroups.length === 0) return 'FREE';
-        let highestTier: TierName = 'FREE';
-        let maxLevel = 0;
-
-        const tierLevels: Record<TierName, number> = {FREE: 0, PRO: 1, ENTERPRISE: 2};
-        const validTierNames: TierName[] = ['FREE', 'PRO', 'ENTERPRISE'];
-
-        userGroups.forEach(group => {
-            if (group.startsWith('/Tiers/')) {
-                const extractedTier = group.substring('/Tiers/'.length).toUpperCase();
-                if (validTierNames.includes(extractedTier as TierName)) {
-                    const tierName = extractedTier as TierName;
-                    if (tierLevels[tierName] !== undefined && tierLevels[tierName] > maxLevel) {
-                        maxLevel = tierLevels[tierName];
-                        highestTier = tierName;
-                    }
-                }
-            }
-        });
-        return highestTier;
-    }, [keycloak]);
-
-    // A memoized value for the current user's specific limits, derived from the full config
-    const currentUserTierLimits = useMemo(() => {
-        if (!config) return null;
-        if (config.tierLimits[currentUserTier]) {
-            return config.tierLimits[currentUserTier];
-        } else if (config.tierLimits.FREE) {
-            return config.tierLimits.FREE;
-        } else {
-            return null;
-        }
-    }, [config, currentUserTier]);
-
-    // A function to get limits for any specified tier (useful for upgrade pages)
-    const getLimitsForTier = (tier: TierName): TierLimitDetails | null => {
-        if (!config) return null;
-        return config.tierLimits[tier] || null;
+    const value: LimitContextType = {
+        myLimits,
+        isLoading,
+        error,
+        currentUserTierLimits: myLimits?.tierLimits || null
     };
-
-    const value = {config, isLoading, error, currentUserTier, currentUserTierLimits, getLimitsForTier};
 
     return (
         <LimitContext.Provider value={value}>
@@ -103,7 +60,7 @@ export const LimitProvider = ({children}: { children: ReactNode }) => {
     );
 };
 
-// The custom hook to easily access the limits from any component
+// The custom hook to easily access the limits
 export const useLimits = (): LimitContextType => {
     const context = useContext(LimitContext);
     if (context === undefined) {

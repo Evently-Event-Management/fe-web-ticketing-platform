@@ -3,7 +3,7 @@ import {CSS} from '@dnd-kit/utilities';
 import {Button} from "@/components/ui/button";
 import {GripVertical, MoveDiagonal2, Settings} from "lucide-react";
 import {ResizableBox} from "react-resizable";
-import {LayoutBlock} from "@/types/seating-layout";
+import {LayoutBlock} from "@/types/seatingLayout";
 
 
 export function ResizableDraggableBlock({ block, onSelect, onResize }: { block: LayoutBlock; onSelect: (block: LayoutBlock) => void; onResize: (blockId: string, size: { width: number; height: number }) => void; }) {
