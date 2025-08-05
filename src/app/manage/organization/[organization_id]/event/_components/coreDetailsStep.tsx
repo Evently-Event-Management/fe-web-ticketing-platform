@@ -88,7 +88,7 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
                     </CardHeader>
                     <CardContent>
                         {coverFiles.length > 0 ? (
-                            <Carousel plugins={[Autoplay({delay: 4000, stopOnInteraction: true})]}>
+                            <Carousel plugins={[Autoplay({delay: 4000, stopOnInteraction: false})]}>
                                 <CarouselContent>
                                     {coverFiles.map((file, index) => (
                                         <CarouselItem key={index} className="relative">
