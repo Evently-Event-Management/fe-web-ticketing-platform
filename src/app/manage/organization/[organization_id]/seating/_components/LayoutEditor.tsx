@@ -6,7 +6,7 @@ import {DndContext, DragEndEvent, useDroppable} from '@dnd-kit/core';
 import {restrictToParentElement} from '@dnd-kit/modifiers';
 import 'react-resizable/css/styles.css';
 
-import {LayoutBlock, BlockType, LayoutData} from '@/types/seating-layout';
+import {LayoutBlock, BlockType, LayoutData} from '@/types/seatingLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';

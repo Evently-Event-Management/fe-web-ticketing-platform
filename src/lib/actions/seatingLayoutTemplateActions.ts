@@ -3,7 +3,7 @@ import {
     PaginatedResponse,
     SeatingLayoutTemplateRequest,
     SeatingLayoutTemplateResponse
-} from '@/types/seating-layout';
+} from '@/types/seatingLayout';
 
 const API_BASE_PATH = '/event-seating/v1/seating-templates';
 
