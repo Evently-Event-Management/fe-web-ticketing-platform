@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import {useEffect, useRef} from 'react';
 import {useFormContext, useFieldArray} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
@@ -11,11 +12,25 @@ import {PlusCircle, Trash2} from 'lucide-react';
 
 export function TiersStep() {
     const {control, formState: {errors}} = useFormContext<CreateEventFormData>();
+    const initialRenderRef = useRef(true);
 
     const {fields, append, remove} = useFieldArray({
         control,
         name: "tiers",
     });
+
+    // Add default "General Admission" tier only on initial render
+    useEffect(() => {
+        if (initialRenderRef.current && fields.length === 0) {
+            append({
+                id: `default_tier_${Date.now()}`,
+                name: 'General Admission',
+                price: 0,
+                color: '#3B82F6' // Blue color
+            });
+        }
+        initialRenderRef.current = false;
+    }, [append, fields.length]);
 
     const addNewTier = () => {
         append({
