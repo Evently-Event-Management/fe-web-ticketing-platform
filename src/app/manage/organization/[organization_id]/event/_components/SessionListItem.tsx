@@ -56,7 +56,7 @@ export function SessionListItem({field, index, onRemove}: {
             </div>
 
             <TimeConfigDialog index={index} open={isTimeDialogOpen} setOpen={setIsTimeDialogOpen}/>
-            <LocationConfigDialog index={index} open={isLocationDialogOpen} setOpen={setIsLocationDialogOpen}/>
+            <LocationConfigDialog index={index} open={isLocationDialogOpen} setOpenAction={setIsLocationDialogOpen}/>
         </div>
     );
 }
