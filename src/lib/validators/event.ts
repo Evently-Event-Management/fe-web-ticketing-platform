@@ -112,8 +112,8 @@ export const createEventSchema = z.object({
     title: z.string().min(3, {message: "Title must be at least 3 characters."}),
     description: z.string().optional(),
     overview: z.string().optional(),
-    organizationId: z.string().uuid(),
-    categoryId: z.string().uuid({message: "Please select a category."}),
+    organizationId: z.uuid(),
+    categoryId: z.uuid({message: "Please select a category."}),
     tiers: z.array(tierSchema).min(1, {message: "You must create at least one tier."}),
     sessions: z.array(sessionSchema).min(1, {message: "You must schedule at least one session."}),
 });
