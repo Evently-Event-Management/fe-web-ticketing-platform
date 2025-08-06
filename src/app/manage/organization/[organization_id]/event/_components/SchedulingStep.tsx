@@ -7,9 +7,18 @@ import {CreateEventFormData} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
+import {FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {PlusCircle, Trash2, Calendar as CalendarIcon, Clock, Copy, Repeat} from 'lucide-react';
+import {
+    PlusCircle,
+    Trash2,
+    Calendar as CalendarIcon,
+    Copy,
+    Repeat,
+    LinkIcon,
+    MapPin,
+    Settings,
+} from 'lucide-react';
 import {format, setHours, setMinutes, parseISO, addDays, addWeeks} from 'date-fns';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Calendar} from '@/components/ui/calendar';
@@ -24,6 +33,10 @@ import {
 } from '@/components/ui/dialog';
 import {Switch} from '@/components/ui/switch';
 import {toast} from 'sonner';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Checkbox} from "@/components/ui/checkbox";
+import {Badge} from "@/components/ui/badge";
+import {Label} from "@/components/ui/label";
 
 
 // --- Reusable DateTimePicker Component ---
@@ -273,6 +286,141 @@ function RecurringSessionsDialog({open, setOpen, onGenerate}: {
     );
 }
 
+function TimeConfigDialog({index, open, setOpen}: { index: number; open: boolean; setOpen: (open: boolean) => void }) {
+    const {control} = useFormContext<CreateEventFormData>();
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Configure Time for Session {index + 1}</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <FormField control={control} name={`sessions.${index}.startTime`} render={({field}) => (
+                        <FormItem><FormLabel>Start Time</FormLabel><FormControl><DateTimePicker value={field.value}
+                                                                                                onChange={field.onChange}/></FormControl><FormMessage/></FormItem>)}/>
+                    <FormField control={control} name={`sessions.${index}.endTime`} render={({field}) => (
+                        <FormItem><FormLabel>End Time</FormLabel><FormControl><DateTimePicker value={field.value}
+                                                                                              onChange={field.onChange}/></FormControl><FormMessage/></FormItem>)}/>
+                </div>
+                <DialogFooter>
+                    <Button type="button" onClick={() => setOpen(false)}>Done</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function LocationConfigDialog({index, open, setOpen}: {
+    index: number;
+    open: boolean;
+    setOpen: (open: boolean) => void
+}) {
+    const {control, watch, getValues, setValue} = useFormContext<CreateEventFormData>();
+    const isOnline = watch(`sessions.${index}.isOnline`);
+    const [applyToAll, setApplyToAll] = useState(false);
+
+    const handleSave = () => {
+        if (applyToAll) {
+            const currentSessionData = getValues(`sessions.${index}`);
+            const allSessions = getValues('sessions');
+            allSessions.forEach((_, i) => {
+                setValue(`sessions.${i}.isOnline`, currentSessionData.isOnline);
+                setValue(`sessions.${i}.onlineLink`, currentSessionData.onlineLink);
+                setValue(`sessions.${i}.venueDetails`, currentSessionData.venueDetails);
+            });
+            toast.success("Location details applied to all sessions.");
+        }
+        setOpen(false);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Configure Location for Session {index + 1}</DialogTitle>
+                </DialogHeader>
+                <Tabs defaultValue={isOnline ? "online" : "physical"} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="physical"
+                                     onClick={() => setValue(`sessions.${index}.isOnline`, false)}>Physical</TabsTrigger>
+                        <TabsTrigger value="online"
+                                     onClick={() => setValue(`sessions.${index}.isOnline`, true)}>Online</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="physical" className="pt-4">
+                        <div className="space-y-4">
+                            <FormField control={control} name={`sessions.${index}.venueDetails.name`}
+                                       render={({field}) => (
+                                           <FormItem><FormLabel>Venue Name</FormLabel><FormControl><Input
+                                               placeholder="e.g., Grand Hall" {...field} /></FormControl><FormMessage/></FormItem>)}/>
+                            {/* Add Address and Google Maps component here */}
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="online" className="pt-4">
+                        <FormField control={control} name={`sessions.${index}.onlineLink`} render={({field}) => (
+                            <FormItem><FormLabel>Online Link</FormLabel><FormControl><Input
+                                placeholder="https://zoom.us/..." {...field} /></FormControl><FormMessage/></FormItem>)}/>
+                    </TabsContent>
+                </Tabs>
+                <DialogFooter className="justify-between sm:justify-between mt-4 pt-4 border-t">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox id="apply-to-all" checked={applyToAll} onCheckedChange={setApplyToAll}/>
+                        <Label htmlFor="apply-to-all">Apply to all sessions</Label>
+                    </div>
+                    <Button type="button" onClick={handleSave}>Save Location</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function SessionListItem({field, index, onRemove}: { field: any; index: number; onRemove: (index: number) => void }) {
+    const {watch} = useFormContext<CreateEventFormData>();
+    const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
+    const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+
+    const isOnline = watch(`sessions.${index}.isOnline`);
+    const venueName = watch(`sessions.${index}.venueDetails.name`);
+    const onlineLink = watch(`sessions.${index}.onlineLink`);
+
+    const hasLocation = isOnline ? !!onlineLink : !!venueName;
+
+    const LocationIcon = hasLocation ? (isOnline ? LinkIcon : MapPin) : Settings;
+    const locationIconColor = hasLocation ? "text-primary" : "text-destructive";
+
+    return (
+        <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" className={locationIconColor}
+                        onClick={() => setIsLocationDialogOpen(true)}>
+                    <LocationIcon className="h-5 w-5"/>
+                </Button>
+                <div>
+                    <p className="font-medium">Session {index + 1}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {format(parseISO(field.startTime), "PPP p")}
+                    </p>
+                </div>
+                {hasLocation ? (
+                    <Badge variant={isOnline ? "default" : "secondary"}>{isOnline ? 'Online' : 'Physical'}</Badge>
+                ) : (
+                    <Badge variant="destructive">Location Not Set</Badge>
+                )}
+            </div>
+            <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsTimeDialogOpen(true)}>
+                    Edit Time
+                </Button>
+                <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(index)}>
+                    <Trash2 className="h-4 w-4"/>
+                </Button>
+            </div>
+
+            <TimeConfigDialog index={index} open={isTimeDialogOpen} setOpen={setIsTimeDialogOpen}/>
+            <LocationConfigDialog index={index} open={isLocationDialogOpen} setOpen={setIsLocationDialogOpen}/>
+        </div>
+    );
+}
 
 // --- Main Scheduling Step Component ---
 export function SchedulingStep() {
@@ -305,22 +453,7 @@ export function SchedulingStep() {
             </CardHeader>
             <CardContent className="space-y-6">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-center justify-between gap-4 p-4 border rounded-lg">
-                        <div>
-                            <p className="font-medium">Session {index + 1}</p>
-                            <p className="text-sm text-muted-foreground">
-                                {format(parseISO(field.startTime), "PPP p")}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button type="button" variant="outline" onClick={() => setConfiguringIndex(index)}>
-                                Configure
-                            </Button>
-                            <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
-                                <Trash2 className="h-4 w-4"/>
-                            </Button>
-                        </div>
-                    </div>
+                    <SessionListItem key={field.id} field={field} index={index} onRemove={remove}/>
                 ))}
 
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
