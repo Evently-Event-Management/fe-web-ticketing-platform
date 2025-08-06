@@ -1,5 +1,12 @@
 import {z} from 'zod';
-import {SalesStartRuleType} from "@/types/event";
+
+export enum SalesStartRuleType {
+    IMMEDIATE = 'IMMEDIATE',
+    ROLLING = 'ROLLING',
+    FIXED = 'FIXED',
+}
+
+
 // --- Seating Layout Schemas ---
 
 const positionSchema = z.object({
@@ -120,6 +127,10 @@ export const createEventSchema = z.object({
 // --- Type Inference ---
 
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
+export type SessionFormData = z.infer<typeof sessionSchema>;
+export type TierFormData = z.infer<typeof tierSchema>;
+export type VenueDetails = z.infer<typeof venueDetailsSchema>;
+export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 
 // --- Step-by-Step Validation Fields ---
 
