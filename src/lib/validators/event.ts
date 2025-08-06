@@ -74,7 +74,7 @@ const sessionSchema = z.object({
     ]),
 
     salesStartHoursBefore: z.number().optional(),
-    salesStartFixedDatetime: z.string().datetime({message: "Invalid date format."}).optional(),
+    salesStartFixedDatetime: z.iso.datetime({message: "Invalid date format."}).optional(),
     isOnline: z.boolean(),
     onlineLink: z.string().optional(),
     venueDetails: venueDetailsSchema.optional(),
