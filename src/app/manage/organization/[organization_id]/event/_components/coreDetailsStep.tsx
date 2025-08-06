@@ -6,9 +6,7 @@ import {useForm, FormProvider} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useOrganization} from '@/providers/OrganizationProvider';
 import {useLimits} from '@/providers/LimitProvider';
-import {VenueResponse} from '@/types/venue';
 import {CategoryResponse} from '@/types/category';
-import {getVenuesByOrganization} from '@/lib/actions/venueActions';
 import {getAllCategories} from '@/lib/actions/categoryActions';
 import {coreDetailsSchema, CoreDetailsData} from '@/lib/validators/event';
 
@@ -37,7 +35,6 @@ import Autoplay from 'embla-carousel-autoplay';
 export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
     const {organization} = useOrganization();
     const {myLimits} = useLimits();
-    const [venues, setVenues] = useState<VenueResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [coverFiles, setCoverFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,9 +53,6 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
     });
 
     useEffect(() => {
-        if (organization) {
-            getVenuesByOrganization(organization.id).then(setVenues);
-        }
         getAllCategories().then(setCategories);
     }, [organization]);
 
@@ -188,34 +182,6 @@ export function CoreDetailsStep({onNextAction}: { onNextAction: () => void }) {
                                 className="min-h-32" {...field} /></FormControl><FormMessage/></FormItem>)}/>
                     </CardContent>
                 </Card>
-
-                {/* Location Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Location</CardTitle>
-                        <CardDescription>Where will your event take place?</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <FormField control={form.control} name="isOnline" render={({field}) => (<FormItem
-                            className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5"><FormLabel>Online Event</FormLabel></div>
-                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange}/></FormControl></FormItem>)}/>
-                        {form.watch('isOnline') ? (
-                            <FormField control={form.control} name="onlineLink" render={({field}) => (
-                                <FormItem><FormLabel>Online Link (e.g., Zoom)</FormLabel><FormControl><Input
-                                    placeholder="https://zoom.us/j/1234567890" {...field} /></FormControl><FormMessage/></FormItem>)}/>
-                        ) : (
-                            <FormField control={form.control} name="venueId" render={({field}) => (
-                                <FormItem><FormLabel>Venue</FormLabel><Select onValueChange={field.onChange}
-                                                                              defaultValue={field.value}><FormControl><SelectTrigger><SelectValue
-                                    placeholder="Select a venue"/></SelectTrigger></FormControl><SelectContent>{venues.map(venue =>
-                                    <SelectItem key={venue.id} value={venue.id}>{venue.name}</SelectItem>)}<SelectItem
-                                    value="new-venue" className="text-primary"><PlusCircle
-                                    className="inline-block mr-2 h-4 w-4"/>Create New Venue</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
-                        )}
-                    </CardContent>
-                </Card>
-
                 <div className="flex justify-end mt-8">
                     <Button type="submit">Next: Tiers & Pricing</Button>
                 </div>

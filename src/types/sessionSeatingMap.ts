@@ -7,26 +7,33 @@ export interface Seat {
     status?: 'AVAILABLE' | 'RESERVED';
 }
 
-export interface LayoutRow {
+export interface Row {
     id: string; // Temporary client-side ID
     label: string;
     seats: Seat[];
 }
 
-export interface SeatingMapBlock {
+export interface Block {
     id: string; // Temporary client-side ID
     name: string;
-    type: BlockType
+    type: BlockType;
     position: SeatingMapPosition;
-    rows?: LayoutRow[];
+
+    // For 'seated_grid' type
+    rows?: Row[];
+
+    // For 'standing_capacity' type
     capacity?: number;
+    // ✅ ADDED: A flat list of seats for capacity-based blocks
+    seats?: Seat[];
+
+    // For resizable blocks
     width?: number;
     height?: number;
-    tierId?: string; // Temporary client-side ID of a TierRequest
 }
 
 export interface Layout {
-    blocks: SeatingMapBlock[];
+    blocks: Block[];
 }
 
 export interface SessionSeatingMapRequest {
