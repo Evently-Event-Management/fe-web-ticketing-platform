@@ -1,11 +1,11 @@
-import {SessionSeatingMapRequest} from "@/types/sessionSeatingMap";
+import {SessionSeatingMapRequest} from './sessionSeatingMap';
+import {VenueDetails} from './venue'; // ✅ Import the new VenueDetails type
 
 export enum SalesStartRuleType {
     IMMEDIATE = 'IMMEDIATE',
     ROLLING = 'ROLLING',
     FIXED = 'FIXED',
 }
-
 
 export interface TierRequest {
     id: string; // Temporary client-side ID
@@ -20,6 +20,12 @@ export interface SessionRequest {
     salesStartRuleType: SalesStartRuleType;
     salesStartHoursBefore?: number;
     salesStartFixedDatetime?: string; // ISO 8601 format
+
+    // ✅ All location data is now session-specific
+    isOnline: boolean;
+    onlineLink?: string;
+    venueDetails?: VenueDetails; // Can be null if isOnline is true
+
     layoutData: SessionSeatingMapRequest;
 }
 
@@ -28,13 +34,10 @@ export interface CreateEventRequest {
     description?: string;
     overview?: string;
     organizationId: string;
-    venueId?: string;
-    categoryId: string;
-    isOnline: boolean;
-    onlineLink?: string;
-    locationDescription?: string;
+    categoryId: string; // ✅ Changed to a single string
     tiers: TierRequest[];
     sessions: SessionRequest[];
+    // ❌ REMOVED: venueId, isOnline, onlineLink, locationDescription
 }
 
 export interface EventResponse {
