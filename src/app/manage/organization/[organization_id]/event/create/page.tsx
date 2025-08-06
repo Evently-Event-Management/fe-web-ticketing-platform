@@ -10,6 +10,7 @@ import {Button} from "@/components/ui/button";
 import {TiersStep} from "@/app/manage/organization/[organization_id]/event/_components/TierStep";
 import {zodResolver} from '@hookform/resolvers/zod';
 import {CreateEventFormData, createEventSchema, stepValidationFields} from '@/lib/validators/event';
+import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/_components/SchedulingStep";
 
 
 export default function CreateEventPage() {
@@ -61,6 +62,8 @@ export default function CreateEventPage() {
             case 2:
                 return <TiersStep/>;
             // Add cases for other steps here
+            case 3:
+                return <SchedulingStep/>
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>;
         }

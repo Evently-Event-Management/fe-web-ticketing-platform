@@ -62,7 +62,6 @@ const tierSchema = z.object({
 // --- Session Schema with Conditional Logic ---
 
 const sessionSchema = z.object({
-    // Use z.string().datetime() to validate ISO 8601 strings, which matches the backend DTO.
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
 
