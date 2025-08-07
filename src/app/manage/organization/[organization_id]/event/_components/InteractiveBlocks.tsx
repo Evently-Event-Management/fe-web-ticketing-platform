@@ -51,6 +51,7 @@ export function InteractiveDraggableBlock({block, tiers, onSeatClick, onApplyToA
                         <Button
                             size="sm"
                             variant="outline"
+                            type={'button'}
                             className="text-xs py-0 h-6"
                             onClick={(e) => {
                                 e.stopPropagation();

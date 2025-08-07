@@ -22,6 +22,7 @@ export function TierPalette({tiers, selectedTierId, onSelectTier}: TierPalettePr
             <CardContent className="p-2 flex-grow space-y-2">
                 {tiers.map(tier => (
                     <Button
+                        type={'button'}
                         key={tier.id}
                         variant={selectedTierId === tier.id ? 'default' : 'outline'}
                         className="w-full justify-start gap-2"
@@ -34,6 +35,7 @@ export function TierPalette({tiers, selectedTierId, onSelectTier}: TierPalettePr
                 ))}
                 <hr className="my-4"/>
                 <Button
+                    type={'button'}
                     variant={selectedTierId === 'RESERVED' ? 'secondary' : 'outline'}
                     className="w-full justify-start gap-2"
                     onClick={() => onSelectTier('RESERVED')}
