@@ -59,9 +59,9 @@ export function SeatingConfigDialog({sessionIndex, open, setOpen}: {
                     </DialogDescription>
                 </DialogHeader>
                 {session.isOnline ? (
-                    <OnlineConfigView sessionIndex={sessionIndex} onSave={handleSave}/>
+                    <OnlineConfigView onSave={handleSave}/>
                 ) : (
-                    <PhysicalConfigView sessionIndex={sessionIndex} onSave={handleSave}/>
+                    <PhysicalConfigView onSave={handleSave}/>
                 )}
                 <DialogFooter className="justify-between sm:justify-between mt-4 pt-4 border-t">
                     <div className="flex items-center space-x-2">

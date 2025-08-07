@@ -117,6 +117,41 @@ export function TierAssignmentEditor({initialLayout, onSave}: TierAssignmentEdit
         });
     };
 
+    // New function to apply selected tier to all seats in a seated block
+    const handleApplyToAllSeats = (blockId: string) => {
+        if (!layoutData) return;
+
+        setLayoutData(prevLayout => {
+            const newLayout = JSON.parse(JSON.stringify(prevLayout));
+            const block = newLayout.layout.blocks.find((b: Block) => b.id === blockId);
+
+            if (block?.rows) {
+                // Handle 'RESERVED' status specially
+                if (selectedTierId === 'RESERVED') {
+                    for (const row of block.rows) {
+                        for (const seat of row.seats) {
+                            seat.status = 'RESERVED';
+                            seat.tierId = undefined;
+                        }
+                    }
+                    toast.success(`All seats in ${block.name} have been reserved`);
+                } else {
+                    // Apply the selected tier to all seats
+                    for (const row of block.rows) {
+                        for (const seat of row.seats) {
+                            seat.tierId = selectedTierId;
+                            seat.status = 'AVAILABLE';
+                        }
+                    }
+                    const tierName = tiers.find(t => t.id === selectedTierId)?.name;
+                    toast.success(`Applied ${tierName || 'selected tier'} to all available seats in ${block.name}`);
+                }
+            }
+
+            return newLayout;
+        });
+    };
+
     if (!layoutData) {
         return <div>Loading layout...</div>; // Or a skeleton loader
     }
@@ -127,8 +162,13 @@ export function TierAssignmentEditor({initialLayout, onSave}: TierAssignmentEdit
                 <div className="relative w-full h-full p-4">
                     {layoutData.layout.blocks.map(block => {
                         if (block.type === 'seated_grid') {
-                            return <InteractiveDraggableBlock key={block.id} block={block} tiers={tiers}
-                                                              onSeatClick={handleSeatClick}/>;
+                            return <InteractiveDraggableBlock
+                                key={block.id}
+                                block={block}
+                                tiers={tiers}
+                                onSeatClick={handleSeatClick}
+                                onApplyToAllSeats={handleApplyToAllSeats}
+                            />;
                         }
                         if (block.type === 'standing_capacity') {
                             return <InteractiveResizableBlock key={block.id} block={block} tiers={tiers}

@@ -9,8 +9,7 @@ import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Button} from "@/components/ui/button";
 
-export function OnlineConfigView({sessionIndex, onSave}: {
-    sessionIndex: number;
+export function OnlineConfigView({onSave}: {
     onSave: (layout: SessionSeatingMapRequest) => void;
 }) {
     const {watch, getValues} = useFormContext<CreateEventFormData>();

@@ -69,7 +69,7 @@ export function SessionListItem({field, index, onRemoveAction}: {
         <div className="flex flex-col gap-4 p-4 border rounded-lg">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" className={locationIconColor}
+                    <Button type={'button'} variant="ghost" size="icon" className={locationIconColor}
                             onClick={() => setIsLocationDialogOpen(true)}>
                         <LocationIcon className="h-5 w-5"/>
                     </Button>
