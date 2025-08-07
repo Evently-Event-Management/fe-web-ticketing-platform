@@ -35,6 +35,7 @@ export function PhysicalConfigView({onSave}: {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [layoutToDelete, setLayoutToDelete] = useState<{ id: string, name: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [currentAssignedLayout, setCurrentAssignedLayout] = useState<SessionSeatingMapRequest | null>(null);
 
     // Progress steps configuration
     const steps: Step[] = [
@@ -115,11 +116,21 @@ export function PhysicalConfigView({onSave}: {
         }
     };
 
-    const handleTierAssignmentSave = (layoutWithTiers: SessionSeatingMapRequest) => {
+    // Handle tier assignments updates from the editor
+    const handleTierAssignmentUpdate = (layoutWithTiers: SessionSeatingMapRequest) => {
+        setCurrentAssignedLayout(layoutWithTiers);
+    };
+
+    const handleTierAssignmentSave = () => {
+        if (!currentAssignedLayout) {
+            toast.error("No layout data available");
+            return;
+        }
+
         // Check if all seats and standing blocks have tier assignments
         let hasUnassignedElements = false;
 
-        for (const block of layoutWithTiers.layout.blocks) {
+        for (const block of currentAssignedLayout.layout.blocks) {
             // Check seated blocks (rows with seats)
             if (block.type === 'seated_grid' && block.rows) {
                 for (const row of block.rows) {
@@ -153,7 +164,7 @@ export function PhysicalConfigView({onSave}: {
         }
 
         // All elements are properly assigned, proceed with save
-        onSave(layoutWithTiers);
+        onSave(currentAssignedLayout);
     };
 
     const handleSave = async (layoutData: LayoutData) => {
@@ -226,7 +237,10 @@ export function PhysicalConfigView({onSave}: {
                 );
             case 'assign':
                 return selectedLayout ? (
-                    <TierAssignmentEditor initialLayout={selectedLayout} onSave={handleTierAssignmentSave}/>
+                    <TierAssignmentEditor
+                        initialLayout={selectedLayout}
+                        onSave={handleTierAssignmentUpdate}
+                    />
                 ) : null;
             case 'select':
             default:
@@ -258,6 +272,7 @@ export function PhysicalConfigView({onSave}: {
                 canProgress={!!selectedLayout}
                 onPrevious={goToPrevStep}
                 onNext={goToNextStep}
+                onFinish={handleTierAssignmentSave}
             />
 
             <DeleteConfirmationDialog

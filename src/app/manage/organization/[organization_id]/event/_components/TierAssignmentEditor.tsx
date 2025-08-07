@@ -6,7 +6,6 @@ import {useFormContext} from 'react-hook-form';
 import {Block, CreateEventFormData} from '@/lib/validators/event';
 import {SessionSeatingMapRequest, Row, Seat} from '@/lib/validators/event';
 
-import {Button} from '@/components/ui/button';
 import {TierPalette} from './TierPalette';
 import {InteractiveDraggableBlock, InteractiveResizableBlock} from './InteractiveBlocks';
 import {toast} from 'sonner';
@@ -189,9 +188,6 @@ export function TierAssignmentEditor({initialLayout, onSave}: TierAssignmentEdit
                 </div>
             </main>
             <TierPalette tiers={tiers} selectedTierId={selectedTierId} onSelectTier={setSelectedTierId}/>
-            <div className="absolute bottom-4 left-4 z-10" >
-                <Button onClick={() => onSave(layoutData)} type={'button'}>Confirm Tier Assignments</Button>
-            </div>
         </div>
     );
 }
