@@ -129,6 +129,14 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                         onValueChange={(value) => {
                             const isOnlineTab = value === 'online';
                             setValue(`sessions.${index}.isOnline`, isOnlineTab);
+
+                            if (isOnlineTab) {
+                                // ✅ Remove venueDetails when switching to online
+                                setValue(`sessions.${index}.venueDetails`, undefined);
+                            } else {
+                                // ✅ Remove onlineLink when switching to physical
+                                setValue(`sessions.${index}.onlineLink`, undefined);
+                            }
                         }}
                         className="w-full"
                     >

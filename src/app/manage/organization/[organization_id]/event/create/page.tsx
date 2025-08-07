@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {CoreDetailsStep} from "@/app/manage/organization/[organization_id]/event/_components/CoreDetailsStep";
 import {Progress} from "@/components/ui/progress";
 import {toast} from "sonner";
@@ -11,11 +11,16 @@ import {TiersStep} from "@/app/manage/organization/[organization_id]/event/_comp
 import {zodResolver} from '@hookform/resolvers/zod';
 import {CreateEventFormData, createEventSchema, stepValidationFields} from '@/lib/validators/event';
 import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/_components/SchedulingStep";
+import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_components/SeratingStep";
+import {useOrganization} from "@/providers/OrganizationProvider";
 
 
 export default function CreateEventPage() {
     const [step, setStep] = useState(1);
     const [coverFiles, setCoverFiles] = useState<File[]>([]);
+    const {
+        organization: activeOrganization,
+    } = useOrganization();
     const totalSteps = 5;
 
     const methods = useForm<CreateEventFormData>({
@@ -25,22 +30,31 @@ export default function CreateEventPage() {
             title: 'An Example Event',
             description: 'This is a sample event description.',
             overview: 'An overview of the event goes here.',
-            organizationId: '', // Should be set from context/params
+            organizationId: activeOrganization?.id || '', // This might be undefined initially
             categoryId: '',
             tiers: [],
             sessions: [],
         },
     });
 
+    // Update organizationId when activeOrganization becomes available
+    useEffect(() => {
+        if (activeOrganization?.id) {
+            methods.setValue('organizationId', activeOrganization.id);
+        }
+    }, [activeOrganization, methods]);
+
     const onNext = async () => {
         const fieldsToValidate = stepValidationFields[step as keyof typeof stepValidationFields];
         const isValid = await methods.trigger(fieldsToValidate);
+        console.log(methods.watch());
 
         if (isValid) {
             setStep(s => Math.min(totalSteps, s + 1));
         } else {
             // react-hook-form will automatically show errors next to the invalid fields.
             // A toast is good for a general notification.
+            console.error("Validation failed for step", step);
             toast.error("Please fix the errors before proceeding.");
         }
     };
@@ -64,6 +78,8 @@ export default function CreateEventPage() {
             // Add cases for other steps here
             case 3:
                 return <SchedulingStep/>
+            case 4:
+                return <SeatingStep/>;
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>;
         }
@@ -87,7 +103,7 @@ export default function CreateEventPage() {
                     </div>
                     {hasStepErrors() && (
                         <div className="text-sm text-destructive">
-                            ⚠️ Please fix validation errors
+                            Please fix validation errors
                         </div>
                     )}
                 </div>
