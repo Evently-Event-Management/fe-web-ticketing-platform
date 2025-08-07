@@ -11,7 +11,7 @@ import {TiersStep} from "@/app/manage/organization/[organization_id]/event/_comp
 import {zodResolver} from '@hookform/resolvers/zod';
 import {CreateEventFormData, createEventSchema, stepValidationFields} from '@/lib/validators/event';
 import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/_components/SchedulingStep";
-import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_components/SeratingStep";
+import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_components/SeatingStep";
 import {useOrganization} from "@/providers/OrganizationProvider";
 
 
