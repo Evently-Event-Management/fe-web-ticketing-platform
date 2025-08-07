@@ -131,6 +131,7 @@ export type SessionFormData = z.infer<typeof sessionSchema>;
 export type TierFormData = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
+export type Seat = z.infer<typeof seatSchema>;
 
 // --- Step-by-Step Validation Fields ---
 
