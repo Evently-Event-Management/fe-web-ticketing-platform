@@ -63,7 +63,7 @@ function LayoutPreviewCard({layout, onDelete}: LayoutPreviewCardProps) {
             <CardHeader>
                 <CardTitle>{layout.name}</CardTitle>
                 <CardDescription>
-                    Updated {formatDistanceToNow(new Date(layout.updatedAt), {addSuffix: true})}
+                    Updated {formatDistanceToNow(new Date(layout.updatedAt), { addSuffix: true })}
                 </CardDescription>
                 <CardAction>
                     <DropdownMenu>

@@ -82,7 +82,7 @@ export function SchedulingStep() {
             </CardHeader>
             <CardContent className="space-y-6">
                 {fields.map((field, index) => (
-                    <SessionListItem key={field.id} field={field} index={index} onRemove={remove}/>
+                    <SessionListItem key={field.id} field={field} index={index} onRemoveAction={remove}/>
                 ))}
 
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
