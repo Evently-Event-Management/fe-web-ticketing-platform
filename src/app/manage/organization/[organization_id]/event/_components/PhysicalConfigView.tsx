@@ -1,5 +1,5 @@
 // --- Physical Configuration View ---
-import {CreateEventFormData, SessionSeatingMapRequest} from "@/lib/validators/event";
+import {Block, CreateEventFormData, Row, SessionSeatingMapRequest} from "@/lib/validators/event";
 import {useFormContext} from "react-hook-form";
 import * as React from "react";
 import {useCallback, useEffect, useState} from "react";
@@ -17,6 +17,7 @@ import {ProgressSteps} from "./physical-config/ProgressSteps";
 import {NavigationButtons} from "./physical-config/NavigationButtons";
 import {LayoutSelector} from "./physical-config/LayoutSelector";
 import {DeleteConfirmationDialog} from "./physical-config/DeleteConfirmationDialog";
+import {getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/getRowLabel";
 
 type Step = {
     id: string;
@@ -28,6 +29,7 @@ export function PhysicalConfigView({onSave}: {
 }) {
     const {watch} = useFormContext<CreateEventFormData>();
     const organizationId = watch('organizationId');
+    const tiers = watch('tiers');
     const [templates, setTemplates] = useState<SeatingLayoutTemplateResponse[]>([]);
     const [mode, setMode] = useState<'select' | 'create' | 'assign'>('select');
     const [selectedLayout, setSelectedLayout] = useState<LayoutData | null>(null);
@@ -64,6 +66,53 @@ export function PhysicalConfigView({onSave}: {
         }
     }, [loadTemplates, organizationId]);
 
+    // Transform layout for tier assignment when selectedLayout changes
+    useEffect(() => {
+        if (!selectedLayout || mode !== 'assign') return;
+
+        const transformedBlocks = selectedLayout.layout.blocks.map((block) => {
+            const newBlock: Block = {
+                ...block,
+                rows: [],
+                seats: [],
+            };
+
+            if (block.type === 'seated_grid' && block.rows && block.columns) {
+                const startRowIndex = block.startRowLabel ? block.startRowLabel.charCodeAt(0) - 'A'.charCodeAt(0) : 0;
+                const startCol = block.startColumnLabel || 1;
+                const numRows = block.rows;
+                const numColumns = block.columns;
+
+                newBlock.rows = Array.from({length: numRows}, (_, rowIndex) => {
+                    const newRow: Row = {
+                        id: `temp_row_${block.id}_${rowIndex}`,
+                        label: `${getRowLabel(startRowIndex + rowIndex)}`,
+                        seats: Array.from({length: numColumns}, (_, colIndex) => ({
+                            id: `temp_seat_${block.id}_${rowIndex}_${colIndex}`,
+                            label: `${startCol + colIndex}${getRowLabel(startRowIndex + rowIndex)}`,
+                            status: 'AVAILABLE',
+                        })),
+                    };
+                    return newRow;
+                });
+            } else if (block.type === 'standing_capacity' && block.capacity) {
+                const capacity = block.capacity;
+                newBlock.seats = Array.from({length: capacity}, (_, i) => ({
+                    id: `temp_seat_${block.id}_${i}`,
+                    label: `Slot ${i + 1}`,
+                    status: 'AVAILABLE',
+                }));
+            }
+            return newBlock;
+        });
+
+        setCurrentAssignedLayout({
+            name: selectedLayout.name,
+            layout: {
+                blocks: transformedBlocks,
+            },
+        });
+    }, [selectedLayout, mode]);
 
     // Handle step navigation
     const handleStepClick = (stepId: string) => {
@@ -74,8 +123,6 @@ export function PhysicalConfigView({onSave}: {
     const handleLayoutSelect = (template: SeatingLayoutTemplateResponse) => {
         setSelectedLayout(template.layoutData);
         setSelectedTemplateId(template.id);
-        // Immediately move to the creation step when a layout is selected
-        setMode('create');
     };
 
     // Handle create from scratch
@@ -236,12 +283,15 @@ export function PhysicalConfigView({onSave}: {
                     </div>
                 );
             case 'assign':
-                return selectedLayout ? (
+                return currentAssignedLayout ? (
                     <TierAssignmentEditor
-                        initialLayout={selectedLayout}
-                        onSave={handleTierAssignmentUpdate}
+                        layoutData={currentAssignedLayout}
+                        onChange={handleTierAssignmentUpdate}
+                        tiers={tiers}
                     />
-                ) : null;
+                ) : (
+                    <div className="p-4 text-center">Loading tier assignment editor...</div>
+                );
             case 'select':
             default:
                 return (
