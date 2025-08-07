@@ -44,7 +44,7 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
         defaultValues: {
             frequency: 'weekly',
             interval: 1,
-            count: 8,
+            count: 5,
             startDate: new Date(),
             startTime: '19:00',
             durationHours: 2,
