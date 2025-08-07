@@ -40,7 +40,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     const venueDetails = watch(`sessions.${index}.venueDetails`);
 
     const [applyToAll, setApplyToAll] = useState(false);
-    const [markerPosition, setMarkerPosition] = useState(
+    const [markerPosition, setMarkerPosition] = useState<google.maps.LatLngLiteral>(
         venueDetails?.latitude && venueDetails?.longitude
             ? {lat: venueDetails.latitude, lng: venueDetails.longitude}
             : DEFAULT_MAP_CENTER
@@ -74,8 +74,6 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
         if (event.latLng) {
             const newPos = {lat: event.latLng.lat(), lng: event.latLng.lng()};
             setMarkerPosition(newPos);
-            setValue(`sessions.${index}.venueDetails.latitude`, newPos.lat, {shouldValidate: true});
-            setValue(`sessions.${index}.venueDetails.longitude`, newPos.lng, {shouldValidate: true});
         }
     };
 
@@ -102,6 +100,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     // };
 
     const handleSave = () => {
+        console.log(watch(`sessions.${index}`));
         if (applyToAll) {
             const currentSessionData = getValues(`sessions.${index}`);
             const allSessions = getValues('sessions');
@@ -125,12 +124,17 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
 
                 {/* ✅ Main content area is now scrollable */}
                 <div className="overflow-y-auto">
-                    <Tabs defaultValue={isOnline ? "online" : "physical"} className="w-full">
+                    <Tabs
+                        defaultValue={isOnline ? "online" : "physical"}
+                        onValueChange={(value) => {
+                            const isOnlineTab = value === 'online';
+                            setValue(`sessions.${index}.isOnline`, isOnlineTab);
+                        }}
+                        className="w-full"
+                    >
                         <TabsList className="mx-6 mt-4">
-                            <TabsTrigger value="physical"
-                                         onClick={() => setValue(`sessions.${index}.isOnline`, false)}>Physical</TabsTrigger>
-                            <TabsTrigger value="online"
-                                         onClick={() => setValue(`sessions.${index}.isOnline`, true)}>Online</TabsTrigger>
+                            <TabsTrigger value="physical">Physical</TabsTrigger>
+                            <TabsTrigger value="online">Online</TabsTrigger>
                         </TabsList>
                         <TabsContent value="physical" className={'px-4 py-0'}>
                             <div className="grid grid-cols-1 md:grid-cols-2">
