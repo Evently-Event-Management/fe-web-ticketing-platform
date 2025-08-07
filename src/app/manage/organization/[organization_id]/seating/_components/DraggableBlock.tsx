@@ -2,8 +2,8 @@ import {useDraggable} from "@dnd-kit/core";
 import {GripVertical, Settings} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {CSS} from '@dnd-kit/utilities';
-import {getRowIndex, getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/_utils";
 import {LayoutBlock} from "@/types/seatingLayout";
+import {getRowIndex, getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/getRowLabel";
 
 
 export function DraggableBlock({ block, onSelect }: { block: LayoutBlock; onSelect: (block: LayoutBlock) => void; }) {

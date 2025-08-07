@@ -128,10 +128,12 @@ export const createEventSchema = z.object({
 
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
 export type SessionFormData = z.infer<typeof sessionSchema>;
-export type TierFormData = z.infer<typeof tierSchema>;
+export type Tier = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Seat = z.infer<typeof seatSchema>;
+export type Row = z.infer<typeof rowSchema>;
+export type Block = z.infer<typeof blockSchema>;
 
 // --- Step-by-Step Validation Fields ---
 
