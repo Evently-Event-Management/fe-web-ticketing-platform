@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
@@ -16,8 +16,12 @@ import {Label} from "@/components/ui/label";
 import {toast} from "sonner";
 import {ArrowLeft} from "lucide-react";
 
+interface SeatingStepProps {
+    onConfigModeChange?: (isInConfigMode: boolean) => void;
+}
+
 // --- Main Seating Step Component ---
-export function SeatingStep() {
+export function SeatingStep({ onConfigModeChange }: SeatingStepProps) {
     const { control, formState: { errors }, watch, getValues, setValue } = useFormContext<CreateEventFormData>();
     const [configuringIndex, setConfiguringIndex] = useState<number | null>(null);
     const [applyToAll, setApplyToAll] = useState(false);
@@ -29,6 +33,13 @@ export function SeatingStep() {
 
     // Get the session being configured
     const currentSession = configuringIndex !== null ? watch(`sessions.${configuringIndex}`) : null;
+
+    // Notify parent component when configuration mode changes
+    useEffect(() => {
+        if (onConfigModeChange) {
+            onConfigModeChange(configuringIndex !== null);
+        }
+    }, [configuringIndex, onConfigModeChange]);
 
     const handleSave = (layoutData: any) => {
         if (configuringIndex === null) return;
