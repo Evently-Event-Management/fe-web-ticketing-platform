@@ -1,5 +1,5 @@
 // --- Physical Configuration View ---
-import {CreateEventFormData, SessionSeatingMapRequest, Block, Seat} from "@/lib/validators/event";
+import {CreateEventFormData, SessionSeatingMapRequest} from "@/lib/validators/event";
 import {useFormContext} from "react-hook-form";
 import * as React from "react";
 import {useEffect, useState} from "react";
@@ -87,11 +87,14 @@ export function PhysicalConfigView({onSave}: {
 
 
     if (mode === 'create') {
-        return <LayoutEditor onSave={async (data) => {
-            await handleSave(data);
-            setSelectedLayout(data);
-            setMode("assign");
-        }} initialData={selectedLayout ?? undefined}/>;
+        return (
+            <div className={"h-[90vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
+                <LayoutEditor onSave={async (data) => {
+                    await handleSave(data);
+                    setSelectedLayout(data);
+                    setMode("assign");
+                }} initialData={selectedLayout ?? undefined}/>
+            </div>);
     }
 
     if (mode === 'assign' && selectedLayout) {
@@ -101,7 +104,7 @@ export function PhysicalConfigView({onSave}: {
     return (
         <div className="p-4">
             <h3 className="font-semibold mb-4">Select a Seating Layout</h3>
-            <div className="grid grid-cols-5 gap-4 mb-4">
+            <div className="grid grid-cols-3 gap-4 mb-4">
                 {templates.map(template => (
                     <div key={template.id} onClick={() => {
                         setSelectedLayout(template.layoutData);

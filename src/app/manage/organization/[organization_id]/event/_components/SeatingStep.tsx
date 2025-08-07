@@ -21,12 +21,12 @@ interface SeatingStepProps {
 }
 
 // --- Main Seating Step Component ---
-export function SeatingStep({ onConfigModeChange }: SeatingStepProps) {
-    const { control, formState: { errors }, watch, getValues, setValue } = useFormContext<CreateEventFormData>();
+export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
+    const {control, formState: {errors}, watch, getValues, setValue} = useFormContext<CreateEventFormData>();
     const [configuringIndex, setConfiguringIndex] = useState<number | null>(null);
     const [applyToAll, setApplyToAll] = useState(false);
 
-    const { fields } = useFieldArray({
+    const {fields} = useFieldArray({
         control,
         name: "sessions",
     });
@@ -72,13 +72,14 @@ export function SeatingStep({ onConfigModeChange }: SeatingStepProps) {
                         onClick={() => setConfiguringIndex(null)}
                         className="flex items-center gap-1"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4"/>
                         Back to Sessions
                     </Button>
                     <h2 className="text-xl font-semibold">
                         Configure Seating for Session {configuringIndex + 1}
                     </h2>
-                    <div></div> {/* Empty div for flexbox spacing */}
+                    <div></div>
+                    {/* Empty div for flexbox spacing */}
                 </div>
 
                 <Card>
@@ -96,9 +97,9 @@ export function SeatingStep({ onConfigModeChange }: SeatingStepProps) {
                     </CardHeader>
                     <CardContent>
                         {currentSession.isOnline ? (
-                            <OnlineConfigView onSave={handleSave} />
+                            <OnlineConfigView onSave={handleSave}/>
                         ) : (
-                            <PhysicalConfigView onSave={handleSave} />
+                            <PhysicalConfigView onSave={handleSave}/>
                         )}
                     </CardContent>
                 </Card>
