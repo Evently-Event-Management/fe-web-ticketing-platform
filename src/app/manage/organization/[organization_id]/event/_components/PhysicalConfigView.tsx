@@ -2,7 +2,7 @@
 import {CreateEventFormData, SessionSeatingMapRequest} from "@/lib/validators/event";
 import {useFormContext} from "react-hook-form";
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {LayoutData, SeatingLayoutTemplateResponse} from "@/types/seatingLayout";
 import {
     createSeatingLayoutTemplate,
@@ -12,21 +12,11 @@ import {
 } from "@/lib/actions/seatingLayoutTemplateActions";
 import {toast} from "sonner";
 import {LayoutEditor} from "@/app/manage/organization/[organization_id]/seating/_components/LayoutEditor";
-import {Button} from "@/components/ui/button";
-import LayoutPreviewCard from "@/app/manage/organization/[organization_id]/seating/_components/LayoutPreviewCard";
 import {TierAssignmentEditor} from "@/app/manage/organization/[organization_id]/event/_components/TierAssignmentEditor";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle
-} from "@/components/ui/alert-dialog";
-import {ArrowLeft, ArrowRight, CheckCircle2} from "lucide-react";
-import {cn} from "@/lib/utils";
+import {ProgressSteps} from "./physical-config/ProgressSteps";
+import {NavigationButtons} from "./physical-config/NavigationButtons";
+import {LayoutSelector} from "./physical-config/LayoutSelector";
+import {DeleteConfirmationDialog} from "./physical-config/DeleteConfirmationDialog";
 
 type Step = {
     id: string;
@@ -46,14 +36,14 @@ export function PhysicalConfigView({onSave}: {
     const [layoutToDelete, setLayoutToDelete] = useState<{ id: string, name: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch templates when component loads or organization changes
-    useEffect(() => {
-        if (organizationId) {
-            loadTemplates();
-        }
-    }, [organizationId]);
+    // Progress steps configuration
+    const steps: Step[] = [
+        {id: 'select', label: 'Select Layout'},
+        {id: 'create', label: 'Edit Layout'},
+        {id: 'assign', label: 'Assign Tiers'},
+    ];
 
-    const loadTemplates = async () => {
+    const loadTemplates = useCallback(async () => {
         setIsLoading(true);
         try {
             const res = await getSeatingLayoutTemplatesByOrg(organizationId, 0, 100);
@@ -64,6 +54,34 @@ export function PhysicalConfigView({onSave}: {
         } finally {
             setIsLoading(false);
         }
+    }, [organizationId]);
+
+    // Fetch templates when component loads or organization changes
+    useEffect(() => {
+        if (organizationId) {
+            loadTemplates().then();
+        }
+    }, [loadTemplates, organizationId]);
+
+
+    // Handle step navigation
+    const handleStepClick = (stepId: string) => {
+        setMode(stepId as 'select' | 'create' | 'assign');
+    };
+
+    // Handle layout selection
+    const handleLayoutSelect = (template: SeatingLayoutTemplateResponse) => {
+        setSelectedLayout(template.layoutData);
+        setSelectedTemplateId(template.id);
+        // Immediately move to the creation step when a layout is selected
+        setMode('create');
+    };
+
+    // Handle create from scratch
+    const handleCreateFromScratch = () => {
+        setSelectedLayout(null);
+        setSelectedTemplateId(null);
+        setMode('create');
     };
 
     // Handle delete confirmation - open dialog
@@ -81,7 +99,7 @@ export function PhysicalConfigView({onSave}: {
             toast.success(`Layout "${layoutToDelete.name}" deleted successfully`);
 
             // Refresh the templates list
-            loadTemplates();
+            await loadTemplates();
 
             // If deleted template was selected, clear selection
             if (selectedTemplateId === layoutToDelete.id) {
@@ -194,204 +212,60 @@ export function PhysicalConfigView({onSave}: {
         }
     };
 
-    // Progress steps configuration
-    const steps: Step[] = [
-        {id: 'select', label: 'Select Layout'},
-        {id: 'create', label: 'Edit Layout'},
-        {id: 'assign', label: 'Assign Tiers'},
-    ];
-
-    // Render progress steps indicator with clickable steps for navigation
-    const renderProgressSteps = () => (
-        <div className="mb-6">
-            <div className="flex items-center justify-center">
-                {steps.map((step, idx) => {
-                    // Determine if this step is clickable (can't skip ahead, but can go back)
-                    const currentStepIndex = steps.findIndex(s => s.id === mode);
-                    const isClickable = idx <= currentStepIndex;
-
-                    return (
-                        <React.Fragment key={step.id}>
-                            {/* Step indicator */}
-                            <div
-                                className={cn(
-                                    "flex flex-col items-center",
-                                    isClickable && "cursor-pointer"
-                                )}
-                                onClick={() => {
-                                    if (!isClickable) return;
-                                    setMode(step.id as 'select' | 'create' | 'assign');
-                                }}
-                            >
-                                <div
-                                    className={cn(
-                                        "flex items-center justify-center h-8 w-8 rounded-full border-2",
-                                        mode === step.id
-                                            ? "border-primary bg-primary text-primary-foreground"
-                                            : idx < steps.findIndex(s => s.id === mode)
-                                                ? "border-primary bg-primary/10 text-primary"
-                                                : "border-muted-foreground text-muted-foreground"
-                                    )}
-                                >
-                                    {idx < steps.findIndex(s => s.id === mode) ? (
-                                        <CheckCircle2 className="h-5 w-5"/>
-                                    ) : (
-                                        <span>{idx + 1}</span>
-                                    )}
-                                </div>
-                                <span className={cn(
-                                    "text-xs mt-1",
-                                    mode === step.id ? "text-primary font-medium" : "text-muted-foreground"
-                                )}>
-                                    {step.label}
-                                </span>
-                            </div>
-
-                            {/* Connector line between steps */}
-                            {idx < steps.length - 1 && (
-                                <div
-                                    className={cn(
-                                        "w-12 h-[2px] mx-1",
-                                        idx < steps.findIndex(s => s.id === mode)
-                                            ? "bg-primary"
-                                            : "bg-muted-foreground/30"
-                                    )}
-                                />
-                            )}
-                        </React.Fragment>
-                    )
-                })}
-            </div>
-        </div>
-    );
-
-    // Navigation buttons
-    const renderNavigationButtons = () => (
-        <div className="flex justify-between mt-4">
-            {mode !== 'select' && (
-                <Button
-                    variant="outline"
-                    type={'button'}
-                    onClick={goToPrevStep}
-                    className="flex items-center gap-2"
-                >
-                    <ArrowLeft className="w-4 h-4"/>
-                    Back
-                </Button>
-            )}
-
-            {mode !== 'assign' && (
-                <Button
-                    type={"button"}
-                    onClick={goToNextStep}
-                    className="flex items-center gap-2 ml-auto"
-                    disabled={mode === 'select' && !selectedLayout}
-                >
-                    Next
-                    <ArrowRight className="w-4 h-4"/>
-                </Button>
-            )}
-        </div>
-    );
-
-    if (mode === 'create') {
-        return (
-            <>
-                {renderProgressSteps()}
-                <div className={"h-[70vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
-                    <LayoutEditor
-                        onSave={handleSave}
-                        initialData={selectedLayout ?? undefined}
+    // Render different steps based on current mode
+    const renderCurrentStep = () => {
+        switch (mode) {
+            case 'create':
+                return (
+                    <div className={"h-[70vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
+                        <LayoutEditor
+                            onSave={handleSave}
+                            initialData={selectedLayout ?? undefined}
+                        />
+                    </div>
+                );
+            case 'assign':
+                return selectedLayout ? (
+                    <TierAssignmentEditor initialLayout={selectedLayout} onSave={handleTierAssignmentSave}/>
+                ) : null;
+            case 'select':
+            default:
+                return (
+                    <LayoutSelector
+                        templates={templates}
+                        selectedTemplateId={selectedTemplateId}
+                        isLoading={isLoading}
+                        onLayoutSelect={handleLayoutSelect}
+                        onCreateFromScratch={handleCreateFromScratch}
+                        onDeleteLayout={handleDeleteConfirm}
                     />
-                </div>
-                {renderNavigationButtons()}
-            </>
-        );
-    }
-
-    if (mode === 'assign' && selectedLayout) {
-        return (
-            <>
-                {renderProgressSteps()}
-                <TierAssignmentEditor initialLayout={selectedLayout} onSave={handleTierAssignmentSave}/>
-                {renderNavigationButtons()}
-            </>
-        );
-    }
+                );
+        }
+    };
 
     return (
         <>
-            {renderProgressSteps()}
-            <div className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold">Select a Seating Layout</h3>
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            setSelectedLayout(null);
-                            setSelectedTemplateId(null);
-                            setMode('create');
-                        }}
-                    >
-                        Create From Scratch
-                    </Button>
-                </div>
+            <ProgressSteps
+                steps={steps}
+                currentMode={mode}
+                onStepClick={handleStepClick}
+            />
 
-                {isLoading ? (
-                    <div className="text-center py-8">Loading layouts...</div>
-                ) : templates.length === 0 ? (
-                    <div className="text-center py-8">
-                        <p className="text-muted-foreground">No seating layouts found</p>
-                        <p className="mt-2">Create your first layout to get started</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                        {templates.map(template => (
-                            <div
-                                key={template.id}
-                                className={cn(
-                                    "cursor-pointer",
-                                    selectedTemplateId === template.id && "ring-2 ring-primary rounded-md"
-                                )}
-                                onClick={() => {
-                                    setSelectedLayout(template.layoutData);
-                                    setSelectedTemplateId(template.id);
-                                    // Immediately move to the create step when a layout is selected
-                                    setMode('create');
-                                }}
-                            >
-                                <LayoutPreviewCard
-                                    layout={template}
-                                    onDelete={handleDeleteConfirm}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                )}
+            {renderCurrentStep()}
 
-                {renderNavigationButtons()}
-            </div>
+            <NavigationButtons
+                currentMode={mode}
+                canProgress={!!selectedLayout}
+                onPrevious={goToPrevStep}
+                onNext={goToNextStep}
+            />
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Layout Template</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete &#34;{layoutToDelete?.name}&#34;? This action cannot be undone.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDeleteLayout}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <DeleteConfirmationDialog
+                isOpen={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                layoutName={layoutToDelete?.name}
+                onConfirmDelete={handleDeleteLayout}
+            />
         </>
     );
 }
