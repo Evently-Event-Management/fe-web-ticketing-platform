@@ -4,15 +4,17 @@ import * as React from 'react';
 import {useDraggable} from '@dnd-kit/core';
 import {Block, Tier} from '@/lib/validators/event';
 import {cn} from '@/lib/utils';
+import {Button} from '@/components/ui/button';
 
 // --- Interactive Draggable Block for Seated Grids ---
 interface DraggableBlockProps {
     block: Block;
     tiers: Tier[];
     onSeatClick: (blockId: string, rowId: string, seatId: string) => void;
+    onApplyToAllSeats?: (blockId: string) => void;  // New prop for handling apply to all
 }
 
-export function InteractiveDraggableBlock({block, tiers, onSeatClick}: DraggableBlockProps) {
+export function InteractiveDraggableBlock({block, tiers, onSeatClick, onApplyToAllSeats}: DraggableBlockProps) {
     const {setNodeRef} = useDraggable({
         id: block.id,
         disabled: true, // Dragging is disabled in assignment mode
@@ -25,17 +27,41 @@ export function InteractiveDraggableBlock({block, tiers, onSeatClick}: Draggable
     };
 
     const getTierColor = (tierId?: string) => {
-        if (tierId === 'RESERVED') return 'hsl(var(--muted-foreground))';
+        if (tierId === 'RESERVED') return 'hsla(var(--muted-foreground), 0.5)'; // Added opacity
         if (!tierId) return undefined;
         const tier = tiers.find(t => t.id === tierId);
-        return tier?.color || 'hsl(var(--primary))';
+        // Add opacity to the color
+        if (tier?.color) {
+            // Handle HSL color format
+            if (tier.color.startsWith('hsl')) {
+                return tier.color.replace('hsl', 'hsla').replace(')', ', 0.5)');
+            }
+            // Handle hex or other formats by adding opacity suffix
+            return `${tier.color}80`; // 80 is equivalent to 50% opacity in hex
+        }
+        return 'hsla(var(--primary), 0.5)'; // Added opacity
     };
 
     return (
         <div ref={setNodeRef} style={style} className="absolute p-3 bg-card border rounded-lg">
-            <div className="flex flex-col text-center">
-                <span className="text-sm font-medium">{block.name}</span>
-                <div className="grid gap-1.5 mt-2"
+            <div className="flex flex-col text-center relative">
+                <div className="flex items-center justify-between w-full mb-2">
+                    <span className="text-sm font-medium">{block.name}</span>
+                    {onApplyToAllSeats && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs py-0 h-6"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onApplyToAllSeats(block.id);
+                            }}
+                        >
+                            Apply to All
+                        </Button>
+                    )}
+                </div>
+                <div className="grid gap-1.5"
                      style={{gridTemplateColumns: `repeat(${block.rows?.[0]?.seats?.length || 1}, 1fr)`}}>
                     {block.rows?.map(row =>
                         row.seats.map(seat => (
@@ -45,7 +71,7 @@ export function InteractiveDraggableBlock({block, tiers, onSeatClick}: Draggable
                                 onClick={() => onSeatClick(block.id, row.id, seat.id)}
                                 className={cn(
                                     "h-6 w-6 rounded-full border text-xs font-mono transition-all hover:scale-110 flex items-center justify-center",
-                                    seat.status === 'RESERVED' && "bg-muted-foreground text-primary-foreground line-through border-destructive border-2"
+                                    seat.status === 'RESERVED' && "bg-muted-foreground/50 text-primary-foreground line-through border-destructive border-2"
                                 )}
                                 style={{backgroundColor: seat.tierId && seat.status !== 'RESERVED' ? getTierColor(seat.tierId) : undefined}}
                             >
@@ -79,13 +105,23 @@ export function InteractiveResizableBlock({block, tiers, onClick}: ResizableBloc
         height: block.height,
     };
 
-    // ✅ Determine the background color based on the tier of the seats inside the block.
-    // For simplicity, we'll use the tier of the first seat as the representative color.
+    // Determine the background color based on the tier of the seats inside the block
+    // with 50% opacity
     const getBlockTierColor = () => {
         const firstTieredSeat = block.seats?.find(s => s.tierId);
         if (!firstTieredSeat || !firstTieredSeat.tierId) return undefined;
         const tier = tiers.find(t => t.id === firstTieredSeat.tierId);
-        return tier?.color;
+
+        // Add opacity to the color
+        if (tier?.color) {
+            // Handle HSL color format
+            if (tier.color.startsWith('hsl')) {
+                return tier.color.replace('hsl', 'hsla').replace(')', ', 0.5)');
+            }
+            // Handle hex or other formats by adding opacity suffix
+            return `${tier.color}80`; // 80 is equivalent to 50% opacity in hex
+        }
+        return undefined;
     };
 
     return (

@@ -1,5 +1,5 @@
 // --- Physical Configuration View ---
-import {CreateEventFormData, SessionSeatingMapRequest} from "@/lib/validators/event";
+import {CreateEventFormData, SessionSeatingMapRequest, Block, Seat} from "@/lib/validators/event";
 import {useFormContext} from "react-hook-form";
 import * as React from "react";
 import {useEffect, useState} from "react";
@@ -11,8 +11,7 @@ import {Button} from "@/components/ui/button";
 import LayoutPreviewCard from "@/app/manage/organization/[organization_id]/seating/_components/LayoutPreviewCard";
 import {TierAssignmentEditor} from "@/app/manage/organization/[organization_id]/event/_components/TierAssignmentEditor";
 
-export function PhysicalConfigView({sessionIndex, onSave}: {
-    sessionIndex: number;
+export function PhysicalConfigView({onSave}: {
     onSave: (layout: SessionSeatingMapRequest) => void;
 }) {
     const {watch} = useFormContext<CreateEventFormData>();
@@ -28,14 +27,44 @@ export function PhysicalConfigView({sessionIndex, onSave}: {
         }
     }, [organizationId]);
 
-
-    // This is a simplified tier assignment step. A real implementation would be more visual.
-    const handleTierAssignment = (layout: SessionSeatingMapRequest) => {
-        // Here you would open a more complex editor to assign tiers to the layout's seats/blocks.
-        // For this example, we'll just accept the layout as is.
-        onSave(layout);
-    };
     const handleTierAssignmentSave = (layoutWithTiers: SessionSeatingMapRequest) => {
+        // Check if all seats and standing blocks have tier assignments
+        let hasUnassignedElements = false;
+
+        for (const block of layoutWithTiers.layout.blocks) {
+            // Check seated blocks (rows with seats)
+            if (block.type === 'seated_grid' && block.rows) {
+                for (const row of block.rows) {
+                    for (const seat of row.seats) {
+                        // Seat must either have a tierId or be marked as RESERVED
+                        if (!seat.tierId && seat.status !== 'RESERVED') {
+                            hasUnassignedElements = true;
+                            break;
+                        }
+                    }
+                    if (hasUnassignedElements) break;
+                }
+            }
+
+            // Check standing capacity blocks
+            if (block.type === 'standing_capacity' && block.seats) {
+                // For standing blocks, check if at least one seat has a tier assignment
+                const hasAnyAssignedSeat = block.seats.some(seat => seat.tierId);
+                if (!hasAnyAssignedSeat && block.seats.length > 0) {
+                    hasUnassignedElements = true;
+                    break;
+                }
+            }
+
+            if (hasUnassignedElements) break;
+        }
+
+        if (hasUnassignedElements) {
+            toast.error("Please assign all seats to a tier or mark them as reserved. Standing areas must also have tier assignments.");
+            return;
+        }
+
+        // All elements are properly assigned, proceed with save
         onSave(layoutWithTiers);
     };
 
@@ -50,7 +79,7 @@ export function PhysicalConfigView({sessionIndex, onSave}: {
             loading: 'Saving new layout...',
             success: (data) => {
                 // Redirect to the new edit page on success
-                return `Layout "${data.name}" created successfully!`;
+                return `Layout "${data.name}" saved successfully!`;
             },
             error: (err) => (err.message || 'Failed to create layout.') + 'Moving to assign mode.',
         });
@@ -60,13 +89,13 @@ export function PhysicalConfigView({sessionIndex, onSave}: {
     if (mode === 'create') {
         return <LayoutEditor onSave={async (data) => {
             await handleSave(data);
-            setMode('assign');
             setSelectedLayout(data);
-        }}/>;
+            setMode("assign");
+        }} initialData={selectedLayout ?? undefined}/>;
     }
 
     if (mode === 'assign' && selectedLayout) {
-        return <TierAssignmentEditor initialLayout={selectedLayout} onSave={handleTierAssignmentSave} />;
+        return <TierAssignmentEditor initialLayout={selectedLayout} onSave={handleTierAssignmentSave}/>;
     }
 
     return (
@@ -76,7 +105,7 @@ export function PhysicalConfigView({sessionIndex, onSave}: {
                 {templates.map(template => (
                     <div key={template.id} onClick={() => {
                         setSelectedLayout(template.layoutData);
-                        setMode('assign');
+                        setMode('create');
                     }}>
                         <LayoutPreviewCard layout={template} onDelete={() => {
                         }}/>
