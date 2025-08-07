@@ -189,8 +189,8 @@ export function TierAssignmentEditor({initialLayout, onSave}: TierAssignmentEdit
                 </div>
             </main>
             <TierPalette tiers={tiers} selectedTierId={selectedTierId} onSelectTier={setSelectedTierId}/>
-            <div className="absolute bottom-4 left-4 z-10">
-                <Button onClick={() => onSave(layoutData)}>Confirm Tier Assignments</Button>
+            <div className="absolute bottom-4 left-4 z-10" >
+                <Button onClick={() => onSave(layoutData)} type={'button'}>Confirm Tier Assignments</Button>
             </div>
         </div>
     );
