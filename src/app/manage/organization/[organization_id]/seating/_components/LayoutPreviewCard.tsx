@@ -1,5 +1,4 @@
 import {LayoutBlock, SeatingLayoutTemplateResponse} from "@/types/seatingLayout";
-import {useRouter} from "next/navigation"; // Changed from next/router to next/navigation
 import {useEffect, useState} from "react";
 import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
@@ -15,10 +14,10 @@ interface LayoutPreviewCardProps {
 interface LayoutPreviewCardProps {
     layout: SeatingLayoutTemplateResponse;
     onDelete: (id: string, name: string) => void;
+    onEdit: (id: SeatingLayoutTemplateResponse) => void;
 }
 
-function LayoutPreviewCard({layout, onDelete}: LayoutPreviewCardProps) {
-    const router = useRouter();
+function LayoutPreviewCard({layout, onDelete, onEdit}: LayoutPreviewCardProps) {
     const [viewBox, setViewBox] = useState('0 0 100 100');
     const [blocks, setBlocks] = useState<LayoutBlock[]>([]);
 
@@ -63,7 +62,7 @@ function LayoutPreviewCard({layout, onDelete}: LayoutPreviewCardProps) {
             <CardHeader>
                 <CardTitle>{layout.name}</CardTitle>
                 <CardDescription>
-                    Updated {formatDistanceToNow(new Date(layout.updatedAt), { addSuffix: true })}
+                    Updated {formatDistanceToNow(new Date(layout.updatedAt), {addSuffix: true})}
                 </CardDescription>
                 <CardAction>
                     <DropdownMenu>
@@ -74,7 +73,9 @@ function LayoutPreviewCard({layout, onDelete}: LayoutPreviewCardProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                                onClick={() => router.push(`/manage/organization/${layout.organizationId}/seating/${layout.id}`)}>
+                                onClick={() => {
+                                    onEdit(layout);
+                                }}>
                                 <Edit className="mr-2 h-4 w-4"/> Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
