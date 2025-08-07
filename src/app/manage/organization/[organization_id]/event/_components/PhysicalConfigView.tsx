@@ -9,6 +9,7 @@ import {toast} from "sonner";
 import {LayoutEditor} from "@/app/manage/organization/[organization_id]/seating/_components/LayoutEditor";
 import {Button} from "@/components/ui/button";
 import LayoutPreviewCard from "@/app/manage/organization/[organization_id]/seating/_components/LayoutPreviewCard";
+import {TierAssignmentEditor} from "@/app/manage/organization/[organization_id]/event/_components/TierAssignmentEditor";
 
 export function PhysicalConfigView({sessionIndex, onSave}: {
     sessionIndex: number;
@@ -34,7 +35,9 @@ export function PhysicalConfigView({sessionIndex, onSave}: {
         // For this example, we'll just accept the layout as is.
         onSave(layout);
     };
-
+    const handleTierAssignmentSave = (layoutWithTiers: SessionSeatingMapRequest) => {
+        onSave(layoutWithTiers);
+    };
 
     const handleSave = async (layoutData: LayoutData) => {
         const request = {
@@ -63,14 +66,7 @@ export function PhysicalConfigView({sessionIndex, onSave}: {
     }
 
     if (mode === 'assign' && selectedLayout) {
-        // Placeholder for the tier assignment UI
-        return (
-            <div className="p-6">
-                <h3 className="font-semibold mb-4">Assign Tiers to &#34;{selectedLayout.name}"</h3>
-                <p className="text-muted-foreground mb-4">Tier assignment UI would go here...</p>
-                <Button onClick={() => handleTierAssignment(selectedLayout)}>Confirm Tier Assignments</Button>
-            </div>
-        )
+        return <TierAssignmentEditor initialLayout={selectedLayout} onSave={handleTierAssignmentSave} />;
     }
 
     return (
