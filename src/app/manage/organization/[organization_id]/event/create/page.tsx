@@ -55,6 +55,7 @@ export default function CreateEventPage() {
         } else {
             // react-hook-form will automatically show errors next to the invalid fields.
             // A toast is good for a general notification.
+            console.log("Validation errors for step", step, methods.formState.errors);
             console.error("Validation failed for step", step);
             toast.error("Please fix the errors before proceeding.");
         }
