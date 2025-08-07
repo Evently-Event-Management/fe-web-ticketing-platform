@@ -108,6 +108,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                 setValue(`sessions.${i}.isOnline`, currentSessionData.isOnline);
                 setValue(`sessions.${i}.onlineLink`, currentSessionData.onlineLink);
                 setValue(`sessions.${i}.venueDetails`, currentSessionData.venueDetails);
+                setValue(`sessions.${i}.layoutData`, currentSessionData.layoutData);
             });
             toast.success("Location details applied to all sessions.");
         }
@@ -129,7 +130,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                         onValueChange={(value) => {
                             const isOnlineTab = value === 'online';
                             setValue(`sessions.${index}.isOnline`, isOnlineTab);
-
+                            setValue(`sessions.${index}.layoutData`, {name: null, layout: {blocks: []}});
                             if (isOnlineTab) {
                                 // ✅ Remove venueDetails when switching to online
                                 setValue(`sessions.${index}.venueDetails`, undefined);
