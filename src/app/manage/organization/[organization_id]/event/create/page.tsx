@@ -18,6 +18,7 @@ import {useOrganization} from "@/providers/OrganizationProvider";
 export default function CreateEventPage() {
     const [step, setStep] = useState(1);
     const [coverFiles, setCoverFiles] = useState<File[]>([]);
+    const [inConfigMode, setInConfigMode] = useState(false);
     const {
         organization: activeOrganization,
     } = useOrganization();
@@ -79,7 +80,7 @@ export default function CreateEventPage() {
             case 3:
                 return <SchedulingStep/>
             case 4:
-                return <SeatingStep/>;
+                return <SeatingStep onConfigModeChange={setInConfigMode} />;
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>;
         }
@@ -114,27 +115,30 @@ export default function CreateEventPage() {
                 <form onSubmit={methods.handleSubmit(onSubmit)}>
                     {renderStep()}
 
-                    <div className="flex justify-between mt-8">
-                        <Button type="button" variant="outline" onClick={onPrev} disabled={step === 1}>
-                            Previous
-                        </Button>
-                        {step < totalSteps ? (
-                            <Button
-                                type="button"
-                                onClick={onNext}
-                                disabled={methods.formState.isSubmitting}
-                            >
-                                {methods.formState.isSubmitting ? 'Validating...' : 'Next'}
+                    {/* Hide the Next/Previous buttons when in configuration mode */}
+                    {!inConfigMode && (
+                        <div className="flex justify-between mt-8">
+                            <Button type="button" variant="outline" onClick={onPrev} disabled={step === 1}>
+                                Previous
                             </Button>
-                        ) : (
-                            <Button
-                                type="submit"
-                                disabled={methods.formState.isSubmitting}
-                            >
-                                {methods.formState.isSubmitting ? 'Submitting...' : 'Submit for Approval'}
-                            </Button>
-                        )}
-                    </div>
+                            {step < totalSteps ? (
+                                <Button
+                                    type="button"
+                                    onClick={onNext}
+                                    disabled={methods.formState.isSubmitting}
+                                >
+                                    {methods.formState.isSubmitting ? 'Validating...' : 'Next'}
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="submit"
+                                    disabled={methods.formState.isSubmitting}
+                                >
+                                    {methods.formState.isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+                                </Button>
+                            )}
+                        </div>
+                    )}
                 </form>
             </FormProvider>
         </div>
