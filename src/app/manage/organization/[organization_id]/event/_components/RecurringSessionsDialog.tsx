@@ -92,7 +92,7 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
                 salesStartRuleType: data.salesStartRuleType,
                 salesStartHoursBefore: data.salesStartHoursBefore,
                 salesStartFixedDatetime: data.salesStartFixedDatetime?.toISOString(),
-                layoutData: {name: 'Default', layout: {blocks: []}},
+                layoutData: {name: null, layout: {blocks: []}},
             });
 
             if (data.frequency === 'daily') {

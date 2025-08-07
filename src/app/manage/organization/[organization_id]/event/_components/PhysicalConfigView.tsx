@@ -18,14 +18,16 @@ import {NavigationButtons} from "./physical-config/NavigationButtons";
 import {LayoutSelector} from "./physical-config/LayoutSelector";
 import {DeleteConfirmationDialog} from "./physical-config/DeleteConfirmationDialog";
 import {getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/getRowLabel";
+import {Button} from "@/components/ui/button";
 
 type Step = {
     id: string;
     label: string;
 }
 
-export function PhysicalConfigView({onSave}: {
+export function PhysicalConfigView({onSave, initialConfig}: {
     onSave: (layout: SessionSeatingMapRequest) => void;
+    initialConfig?: SessionSeatingMapRequest;
 }) {
     const {watch} = useFormContext<CreateEventFormData>();
     const organizationId = watch('organizationId');
@@ -45,6 +47,14 @@ export function PhysicalConfigView({onSave}: {
         {id: 'create', label: 'Edit Layout'},
         {id: 'assign', label: 'Assign Tiers'},
     ];
+
+    // If initialConfig is provided, we should start at the assign step
+    useEffect(() => {
+        if (initialConfig && initialConfig.name !== null) {
+            setCurrentAssignedLayout(initialConfig);
+            setMode('assign');
+        }
+    }, [initialConfig]);
 
     const loadTemplates = useCallback(async () => {
         setIsLoading(true);
@@ -114,8 +124,30 @@ export function PhysicalConfigView({onSave}: {
         });
     }, [selectedLayout, mode]);
 
+    // Check if we need to auto-navigate to step 1 when going to step 2 without a layout
+    useEffect(() => {
+        if (mode === 'create' && !selectedLayout && !initialConfig) {
+            toast.error("Please select a layout first");
+            setMode('select');
+        }
+    }, [mode, selectedLayout, initialConfig]);
+
     // Handle step navigation
     const handleStepClick = (stepId: string) => {
+        // If trying to go to create step but no layout is selected, redirect to select
+        if (stepId === 'create' && !selectedLayout) {
+            toast.error("Please select a layout first");
+            setMode('select');
+            return;
+        }
+
+        // If trying to go to assign step but no layout is prepared, redirect to select
+        if (stepId === 'assign' && !currentAssignedLayout && !selectedLayout) {
+            toast.error("Please select and configure a layout first");
+            setMode('select');
+            return;
+        }
+
         setMode(stepId as 'select' | 'create' | 'assign');
     };
 
@@ -255,6 +287,12 @@ export function PhysicalConfigView({onSave}: {
             setMode('select');
         } else if (mode === 'assign') {
             setMode('create');
+
+            // Check if we have a layout to edit
+            if (!selectedLayout) {
+                toast.error("No layout available to edit");
+                setMode('select');
+            }
         }
     };
 
@@ -283,14 +321,26 @@ export function PhysicalConfigView({onSave}: {
                     </div>
                 );
             case 'assign':
-                return currentAssignedLayout ? (
+                // If we have initialConfig or currentAssignedLayout, show the TierAssignmentEditor
+                const layoutToEdit = currentAssignedLayout || initialConfig;
+
+                return layoutToEdit ? (
                     <TierAssignmentEditor
-                        layoutData={currentAssignedLayout}
+                        layoutData={layoutToEdit}
                         onChange={handleTierAssignmentUpdate}
                         tiers={tiers}
                     />
                 ) : (
-                    <div className="p-4 text-center">Loading tier assignment editor...</div>
+                    <div className="p-4 text-center">
+                        <p>No layout data available.</p>
+                        <Button
+                            variant="outline"
+                            onClick={() => setMode('select')}
+                            className="mt-4"
+                        >
+                            Go to layout selection
+                        </Button>
+                    </div>
                 );
             case 'select':
             default:

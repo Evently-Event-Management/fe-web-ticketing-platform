@@ -81,7 +81,7 @@ export default function CreateEventPage() {
             case 3:
                 return <SchedulingStep/>
             case 4:
-                return <SeatingStep onConfigModeChange={setInConfigMode} />;
+                return <SeatingStep onConfigModeChange={setInConfigMode}/>;
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>;
         }

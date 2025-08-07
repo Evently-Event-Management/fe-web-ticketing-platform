@@ -14,13 +14,13 @@ interface LayoutSelectorProps {
 }
 
 export function LayoutSelector({
-    templates,
-    selectedTemplateId,
-    isLoading,
-    onLayoutSelect,
-    onCreateFromScratch,
-    onDeleteLayout
-}: LayoutSelectorProps) {
+                                   templates,
+                                   selectedTemplateId,
+                                   isLoading,
+                                   onLayoutSelect,
+                                   onCreateFromScratch,
+                                   onDeleteLayout
+                               }: LayoutSelectorProps) {
     return (
         <div className="p-4">
             <div className="flex justify-between items-center mb-4">
@@ -54,6 +54,9 @@ export function LayoutSelector({
                             <LayoutPreviewCard
                                 layout={template}
                                 onDelete={onDeleteLayout}
+                                onEdit={(layout) => {
+                                    onLayoutSelect(layout);
+                                }}
                             />
                         </div>
                     ))}

@@ -45,7 +45,7 @@ const layoutSchema = z.object({
 });
 
 const sessionSeatingMapRequestSchema = z.object({
-    name: z.string(),
+    name: z.string().nullable(),
     layout: layoutSchema,
 });
 

@@ -95,7 +95,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             ...(data.salesStartRuleType === 'FIXED' && {
                 salesStartFixedDatetime: data.salesStartFixedDatetime.toISOString(),
             }),
-            layoutData: {name: 'Default', layout: {blocks: []}}
+            layoutData: {name: null, layout: {blocks: []}}
         };
 
         onAdd(newSession);
@@ -242,7 +242,8 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
                                         <PopoverTrigger asChild>
                                             <Button variant="outline" className="w-full justify-start font-normal">
                                                 <CalendarIcon className="mr-2 h-4 w-4"/>
-                                                {field.value ? format(field.value, 'PPP p') : <span>Pick a datetime</span>}
+                                                {field.value ? format(field.value, 'PPP p') :
+                                                    <span>Pick a datetime</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
