@@ -1,7 +1,6 @@
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Check} from "lucide-react";
 import * as React from "react";
-import {MouseEventHandler} from "react";
 import {SessionSeatingMapRequest} from "@/lib/validators/event";
 
 interface NavigationButtonsProps {
