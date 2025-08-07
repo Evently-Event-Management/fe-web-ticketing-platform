@@ -27,16 +27,17 @@ const rowSchema = z.object({
     seats: z.array(seatSchema),
 });
 
-const blockSchema = z.object({
+export const blockSchema = z.object({
     id: z.string(),
     name: z.string().min(1, "Block name is required."),
     type: z.enum(['seated_grid', 'standing_capacity', 'non_sellable']),
     position: positionSchema,
     rows: z.array(rowSchema).optional(),
-    capacity: z.number().optional(),
+    // Make these fields nullable
+    capacity: z.number().nullable().optional(),
+    width: z.number().nullable().optional(),
+    height: z.number().nullable().optional(),
     seats: z.array(seatSchema).optional(),
-    width: z.number().optional(),
-    height: z.number().optional(),
 });
 
 const layoutSchema = z.object({
