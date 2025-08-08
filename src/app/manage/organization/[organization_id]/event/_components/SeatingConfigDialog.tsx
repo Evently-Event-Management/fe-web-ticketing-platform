@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionSeatingMapRequest} from '@/lib/validators/event';
+import {CreateEventFormData, SessionSeatingMap} from '@/lib/validators/event';
 import {
     Dialog,
     DialogContent,
@@ -29,7 +29,7 @@ export function SeatingConfigDialog({sessionIndex, open, setOpen}: {
     const session = watch(`sessions.${sessionIndex}`);
     const [applyToAll, setApplyToAll] = useState(false);
 
-    const handleSave = (layoutData: SessionSeatingMapRequest) => {
+    const handleSave = (layoutData: SessionSeatingMap) => {
         setValue(`sessions.${sessionIndex}.layoutData`, layoutData);
 
         if (applyToAll) {

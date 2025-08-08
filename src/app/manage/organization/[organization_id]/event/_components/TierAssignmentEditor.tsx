@@ -3,16 +3,16 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {Block, Tier} from '@/lib/validators/event';
-import {SessionSeatingMapRequest, Row, Seat} from '@/lib/validators/event';
+import {SessionSeatingMap, Row, Seat} from '@/lib/validators/event';
 
 import {TierPalette} from './TierPalette';
 import {InteractiveDraggableBlock, InteractiveResizableBlock} from './InteractiveBlocks';
 import {toast} from 'sonner';
 
 interface TierAssignmentEditorProps {
-    layoutData: SessionSeatingMapRequest; // Now receiving the already-prepared layout data
+    layoutData: SessionSeatingMap; // Now receiving the already-prepared layout data
     tiers: Tier[];
-    onChange: (layout: SessionSeatingMapRequest) => void;
+    onChange: (layout: SessionSeatingMap) => void;
 }
 
 export function TierAssignmentEditor({layoutData, tiers, onChange}: TierAssignmentEditorProps) {
