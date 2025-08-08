@@ -1,43 +1,69 @@
-// import {SessionSeatingMapRequest} from './sessionSeatingMap';
-// import {VenueDetails} from './venue'; // ✅ Import the new VenueDetails type
-//
-// export interface TierRequest {
-//     id: string; // Temporary client-side ID
-//     name: string;
-//     color?: string;
-//     price: number;
-// }
-//
-// export interface SessionRequest {
-//     startTime: string; // ISO 8601 format
-//     endTime: string;   // ISO 8601 format
-//     salesStartRuleType: SalesStartRuleType;
-//     salesStartHoursBefore?: number;
-//     salesStartFixedDatetime?: string; // ISO 8601 format
-//
-//     // ✅ All location data is now session-specific
-//     isOnline: boolean;
-//     onlineLink?: string;
-//     venueDetails?: VenueDetails; // Can be null if isOnline is true
-//
-//     layoutData: SessionSeatingMapRequest;
-// }
-//
-// export interface CreateEventRequest {
-//     title: string;
-//     description?: string;
-//     overview?: string;
-//     organizationId: string;
-//     categoryId: string; // ✅ Changed to a single string
-//     tiers: TierRequest[];
-//     sessions: SessionRequest[];
-//     // ❌ REMOVED: venueId, isOnline, onlineLink, locationDescription
-// }
-//
-// export interface EventResponse {
-//     id: string;
-//     title: string;
-//     status: string;
-//     organizationId: string;
-//     createdAt: string;
-// }
+/**
+ * Type definitions based on the provided Java DTOs
+ */
+import {SessionSeatingMap, Tier, VenueDetails} from "@/lib/validators/event";
+
+export enum EventStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED'
+}
+
+export interface EventResponseDTO {
+    id: string;
+    title: string;
+    status: string;
+    organizationId: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface EventSummaryDTO {
+    id: string;
+    title: string;
+    status: EventStatus;
+    organizationName: string;
+    organizationId: string;
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    coverPhoto: string;
+    sessionCount: number;
+    earliestSessionDate: string;
+}
+
+export interface EventDetailDTO {
+    id: string;
+    title: string;
+    description: string;
+    overview: string;
+    status: EventStatus;
+    rejectionReason: string | null;
+    coverPhotos: string[];
+    organizationId: string;
+    organizationName: string;
+    categoryId: string;
+    categoryName: string;
+    createdAt: string;
+    updatedAt: string;
+    tiers: Tier[];
+    sessions: SessionDetailDTO[];
+}
+
+export interface SessionDetailDTO {
+    id: string;
+    startTime: string;
+    endTime: string;
+    isOnline: boolean;
+    onlineLink: string | null;
+    venueDetails: VenueDetails | null;
+    salesStartRuleType: 'IMMEDIATE' | 'ROLLING' | 'FIXED';
+    salesStartHoursBefore: number | null;
+    salesStartFixedDatetime: string | null;
+    status: string;
+    layoutData: SessionSeatingMap;
+}
+
+export interface RejectEventRequest {
+    reason: string;
+}

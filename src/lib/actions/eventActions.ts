@@ -1,32 +1,124 @@
-import { apiFetch } from '@/lib/api';
-import { CreateEventRequest, EventResponse } from '@/types/event';
+import {CreateEventFormData} from "@/lib/validators/event";
+import {apiFetch} from '@/lib/api';
+import {EventDetailDTO, EventResponseDTO, EventStatus, EventSummaryDTO} from "@/types/event";
 
 const API_BASE_PATH = '/event-seating/v1/events';
 
 /**
- * Creates a new event with optional cover images.
- * This function constructs a multipart/form-data request.
- * @param request - The event data.
- * @param coverImages - An array of File objects for the cover photos.
- * @returns A promise that resolves to the newly created EventResponse.
+ * Create a new event
+ * @param eventData Form data for the new event
+ * @param coverImages Cover images for the event
  */
-export const createEvent = (request: CreateEventRequest, coverImages: File[]): Promise<EventResponse> => {
-    const formData = new FormData();
+export async function createEvent(eventData: CreateEventFormData, coverImages: File[]): Promise<EventResponseDTO> {
+    try {
+        const formData = new FormData();
 
-    // 1. Append the main request data as a JSON string blob
-    // This is the standard way to send a JSON object alongside files.
-    const requestBlob = new Blob([JSON.stringify(request)], { type: 'application/json' });
-    formData.append('request', requestBlob);
+        // Convert the event data to a JSON string and add it as a part
+        formData.append('request', JSON.stringify(eventData));
 
-    // 2. Append each image file
-    coverImages.forEach((file) => {
-        formData.append('coverImages', file);
-    });
+        // Add each cover image as a separate part
+        if (coverImages && coverImages.length > 0) {
+            coverImages.forEach((file) => {
+                formData.append('coverImages', file);
+            });
+        }
 
-    // 3. Make the API call. Note: We do NOT set the Content-Type header here.
-    // The browser will automatically set it to 'multipart/form-data' with the correct boundary.
-    return apiFetch<EventResponse>(API_BASE_PATH, {
-        method: 'POST',
-        body: formData,
-    });
-};
+        // Use apiFetch instead of raw fetch
+        return await apiFetch<EventResponseDTO>(`${API_BASE_PATH}`, {
+            method: 'POST',
+            body: formData,
+            // No need to set headers, apiFetch handles that
+        });
+    } catch (error) {
+        console.error('Error creating event:', error);
+        throw error;
+    }
+}
+
+/**
+ * Fetch event details by ID
+ * @param eventId The ID of the event to fetch
+ */
+export async function getEventById(eventId: string): Promise<EventDetailDTO> {
+    try {
+        return await apiFetch<EventDetailDTO>(`${API_BASE_PATH}/${eventId}`, {
+            method: 'GET',
+        });
+    } catch (error) {
+        console.error(`Error fetching event ${eventId}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Fetch all events (admin only)
+ * @param status Optional filter for event status
+ * @param page Page number (0-based)
+ * @param size Number of events per page
+ */
+export async function getAllEvents(
+    status?: EventStatus,
+    page: number = 0,
+    size: number = 10
+): Promise<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }> {
+    try {
+        let url = `${API_BASE_PATH}?page=${page}&size=${size}`;
+        if (status) {
+            url += `&status=${status}`;
+        }
+
+        return await apiFetch<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }>(url, {
+            method: 'GET',
+        });
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+    }
+}
+
+/**
+ * Approve an event (admin only)
+ * @param eventId The ID of the event to approve
+ */
+export async function approveEvent(eventId: string): Promise<void> {
+    try {
+        await apiFetch<void>(`${API_BASE_PATH}/${eventId}/approve`, {
+            method: 'POST',
+        });
+    } catch (error) {
+        console.error(`Error approving event ${eventId}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Reject an event (admin only)
+ * @param eventId The ID of the event to reject
+ * @param reason The reason for rejecting the event
+ */
+export async function rejectEvent(eventId: string, reason: string): Promise<void> {
+    try {
+        await apiFetch<void>(`${API_BASE_PATH}/${eventId}/reject`, {
+            method: 'POST',
+            body: JSON.stringify({reason}),
+        });
+    } catch (error) {
+        console.error(`Error rejecting event ${eventId}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Delete an event
+ * @param eventId The ID of the event to delete
+ */
+export async function deleteEvent(eventId: string): Promise<void> {
+    try {
+        await apiFetch<void>(`${API_BASE_PATH}/${eventId}`, {
+            method: 'DELETE',
+        });
+    } catch (error) {
+        console.error(`Error deleting event ${eventId}:`, error);
+        throw error;
+    }
+}

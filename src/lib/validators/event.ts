@@ -131,7 +131,7 @@ export type CreateEventFormData = z.infer<typeof createEventSchema>;
 export type SessionFormData = z.infer<typeof sessionSchema>;
 export type Tier = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
-export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
+export type SessionSeatingMap = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type Row = z.infer<typeof rowSchema>;
 export type Block = z.infer<typeof blockSchema>;
@@ -142,6 +142,5 @@ export const stepValidationFields = {
     1: ['title', 'categoryId', 'description', 'overview'] as const,
     2: ['tiers'] as const,
     3: ['sessions'] as const,
-    // Step 4 is for seating, which is part of the session object
-    // Step 5 is for cover photos and review (handled separately)
+    4: ['sessions'] as const, // This is for session details, including seating layout
 } as const;

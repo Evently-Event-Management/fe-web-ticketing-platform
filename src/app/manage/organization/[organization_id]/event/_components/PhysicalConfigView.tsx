@@ -1,5 +1,5 @@
 // --- Physical Configuration View ---
-import {Block, CreateEventFormData, Row, SessionSeatingMapRequest} from "@/lib/validators/event";
+import {Block, CreateEventFormData, Row, SessionSeatingMap} from "@/lib/validators/event";
 import {useFormContext} from "react-hook-form";
 import * as React from "react";
 import {useCallback, useEffect, useState} from "react";
@@ -26,8 +26,8 @@ type Step = {
 }
 
 export function PhysicalConfigView({onSave, initialConfig}: {
-    onSave: (layout: SessionSeatingMapRequest) => void;
-    initialConfig?: SessionSeatingMapRequest;
+    onSave: (layout: SessionSeatingMap) => void;
+    initialConfig?: SessionSeatingMap;
 }) {
     const {watch} = useFormContext<CreateEventFormData>();
     const organizationId = watch('organizationId');
@@ -39,7 +39,7 @@ export function PhysicalConfigView({onSave, initialConfig}: {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [layoutToDelete, setLayoutToDelete] = useState<{ id: string, name: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [currentAssignedLayout, setCurrentAssignedLayout] = useState<SessionSeatingMapRequest | null>(null);
+    const [currentAssignedLayout, setCurrentAssignedLayout] = useState<SessionSeatingMap | null>(null);
 
     // Progress steps configuration
     const steps: Step[] = [
@@ -196,7 +196,7 @@ export function PhysicalConfigView({onSave, initialConfig}: {
     };
 
     // Handle tier assignments updates from the editor
-    const handleTierAssignmentUpdate = (layoutWithTiers: SessionSeatingMapRequest) => {
+    const handleTierAssignmentUpdate = (layoutWithTiers: SessionSeatingMap) => {
         setCurrentAssignedLayout(layoutWithTiers);
     };
 

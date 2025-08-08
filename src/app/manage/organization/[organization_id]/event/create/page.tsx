@@ -23,6 +23,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { createEvent } from "@/lib/actions/eventActions";
+import { useRouter } from "next/navigation";
 
 
 export default function CreateEventPage() {
@@ -30,6 +32,9 @@ export default function CreateEventPage() {
     const [coverFiles, setCoverFiles] = useState<File[]>([]);
     const [inConfigMode, setInConfigMode] = useState(false);
     const [showApprovalDialog, setShowApprovalDialog] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
+
     const {
         organization: activeOrganization,
     } = useOrganization();
@@ -74,19 +79,37 @@ export default function CreateEventPage() {
 
     const onPrev = () => setStep(s => Math.max(1, s - 1));
 
-    const onSubmit = (data: CreateEventFormData) => {
-        console.log("Final Assembled Form Data:", data);
-        console.log("Final Cover Files:", coverFiles);
-        // 2s delay to simulate API call
-        toast.loading("Submitting event...");
-        setTimeout(() => {
-            toast.dismiss();
-            toast.success("Event created successfully!");
-            // Reset form and cover files after successful submission
-            // methods.reset();
-            // setCoverFiles([]);
-            // setStep(1); // Reset to the first step
-        }, 2000);
+    const onSubmit = async (data: CreateEventFormData) => {
+        setIsSubmitting(true);
+        const loadingToast = toast.loading("Submitting your event...");
+
+        try {
+            console.log("Submitting event data:", data);
+            console.log("Cover files:", coverFiles);
+
+            // Call the API to create the event
+            const response = await createEvent(data, coverFiles);
+
+            toast.dismiss(loadingToast);
+            toast.success("Event submitted successfully!");
+
+            console.log("Event created:", response);
+
+            // Navigate to the events page after a short delay
+            setTimeout(() => {
+                if (activeOrganization?.id) {
+                    router.push(`/manage/organization/${activeOrganization.id}/event`);
+                }
+            }, 1500);
+
+        } catch (error) {
+            toast.dismiss(loadingToast);
+            console.error("Error creating event:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to create event. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+            setShowApprovalDialog(false);
+        }
     };
 
 
@@ -147,25 +170,23 @@ export default function CreateEventPage() {
                                 <Button
                                     type="button"
                                     onClick={onNext}
-                                    disabled={methods.formState.isSubmitting}
+                                    disabled={isSubmitting}
                                 >
-                                    {methods.formState.isSubmitting ? 'Validating...' : 'Next'}
+                                    {isSubmitting ? 'Validating...' : 'Next'}
                                 </Button>
                             ) : (
                                 <AlertDialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
                                     <AlertDialogTrigger asChild>
-                                        <Button type="button" disabled={methods.formState.isSubmitting}>
+                                        <Button type="button" disabled={isSubmitting}>
                                             Submit Event
                                         </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogTitle>Event Submission</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                You are about to submit your event for approval. Please ensure all
-                                                details are correct.
-                                                Once submitted, you will not be able to make changes until the event is
-                                                approved by an admin.
+                                                Thank you for submitting your event. Our admin team will review your request shortly and get back to you.
+                                                You&#39;ll receive a notification once the review is complete.
                                                 <br/>
                                                 <br/>
                                                 <strong>Event Title:</strong> {methods.watch('title')}
@@ -174,11 +195,11 @@ export default function CreateEventPage() {
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogAction onClick={() => {
-                                                setShowApprovalDialog(false);
-                                                onSubmit(methods.getValues());
-                                            }}>
-                                                Confirm and Submit
+                                            <AlertDialogAction
+                                                onClick={() => onSubmit(methods.getValues())}
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? 'Submitting...' : 'Confirm'}
                                             </AlertDialogAction>
                                             <AlertDialogCancel>
                                                 Cancel

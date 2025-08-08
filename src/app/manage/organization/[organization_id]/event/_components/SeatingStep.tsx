@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState, useEffect} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionSeatingMapRequest} from '@/lib/validators/event';
+import {CreateEventFormData, SessionSeatingMap} from '@/lib/validators/event';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {
     SessionListItemSeating
@@ -41,7 +41,7 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
         }
     }, [configuringIndex, onConfigModeChange]);
 
-    const handleSave = (layoutData: SessionSeatingMapRequest) => {
+    const handleSave = (layoutData: SessionSeatingMap) => {
         if (configuringIndex === null) return;
 
         setValue(`sessions.${configuringIndex}.layoutData`, layoutData);
@@ -101,7 +101,7 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
                         ) : (
                             <PhysicalConfigView
                                 onSave={handleSave}
-                                initialConfig={currentSession.layoutData as SessionSeatingMapRequest}
+                                initialConfig={currentSession.layoutData as SessionSeatingMap}
                             />
                         )}
                     </CardContent>

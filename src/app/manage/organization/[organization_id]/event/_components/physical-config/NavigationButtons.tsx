@@ -1,7 +1,7 @@
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Check} from "lucide-react";
 import * as React from "react";
-import {SessionSeatingMapRequest} from "@/lib/validators/event";
+import {SessionSeatingMap} from "@/lib/validators/event";
 
 interface NavigationButtonsProps {
     currentMode: 'select' | 'create' | 'assign';
@@ -9,7 +9,7 @@ interface NavigationButtonsProps {
     onPrevious: () => void;
     onNext: () => void;
     onFinish?: () => void;
-    layoutData?: SessionSeatingMapRequest;
+    layoutData?: SessionSeatingMap;
 }
 
 export function NavigationButtons({
