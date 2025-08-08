@@ -39,19 +39,20 @@ export function SessionListItemSeating({field, index, onConfigure}: {
             // For physical events, show layout name and total seats
             const layoutName = layoutData.name;
             const totalSeats = layoutData.layout.blocks.reduce((sum, block) => {
-                if (block.rows) {
-                    // For seated blocks, count all seats
+                if (block.rows && block.rows.length > 0) {
                     return sum + block.rows.reduce((rowSum, row) => rowSum + row.seats.length, 0);
                 } else if (block.capacity) {
                     // For standing blocks, use capacity
                     return sum + block.capacity;
+                } else if (block.seats) {
+                    return sum + (block.seats?.length || 0)
                 }
                 return sum;
             }, 0);
 
             return (
                 <>
-                    {layoutName && <div>Layout: {layoutName}</div>}
+                    {layoutName && <div>Layout: {layoutName} •</div>}
                     <div>Total capacity: {totalSeats}</div>
                 </>
             );
@@ -74,7 +75,7 @@ export function SessionListItemSeating({field, index, onConfigure}: {
                     </p>
                     {isConfigured && metadata && (
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Info className="h-3 w-3" />
+                            <Info className="h-3 w-3"/>
                             {metadata}
                         </div>
                     )}

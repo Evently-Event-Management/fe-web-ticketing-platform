@@ -31,7 +31,7 @@ import {CreateEventFormData} from "@/lib/validators/event";
 
 interface CoreDetailsStepProps {
     coverFiles: File[];
-    setCoverFilesAction: React.Dispatch<React.SetStateAction<File[]>>;
+    setCoverFilesAction: React.Dispatch<React.SetStateAction<File[]>>
 }
 
 export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsStepProps) {
