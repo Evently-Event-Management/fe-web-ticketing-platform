@@ -49,11 +49,11 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     const autocompleteInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (markerPosition) {
+        if (markerPosition && !watch(`sessions.${index}.isOnline`)) {
             setValue(`sessions.${index}.venueDetails.latitude`, markerPosition.lat, {shouldValidate: true});
             setValue(`sessions.${index}.venueDetails.longitude`, markerPosition.lng, {shouldValidate: true});
         }
-    }, [markerPosition, index, setValue]);
+    }, [markerPosition, index, setValue, watch]);
 
     const {isLoaded} = useJsApiLoader({
         id: 'google-map-script',
