@@ -48,6 +48,13 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
     const autocompleteInputRef = useRef<HTMLInputElement>(null);
 
+    useEffect(() => {
+        if (markerPosition) {
+            setValue(`sessions.${index}.venueDetails.latitude`, markerPosition.lat, {shouldValidate: true});
+            setValue(`sessions.${index}.venueDetails.longitude`, markerPosition.lng, {shouldValidate: true});
+        }
+    }, [markerPosition, index, setValue]);
+
     const {isLoaded} = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
@@ -207,9 +214,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                                                     onDragEnd={(e) => {
                                                         if (e.latLng) {
                                                             const newPos = {lat: e.latLng.lat(), lng: e.latLng.lng()};
-                                                            setMarkerPosition(newPos);
-                                                            setValue(`sessions.${index}.venueDetails.latitude`, newPos.lat, {shouldValidate: true});
-                                                            setValue(`sessions.${index}.venueDetails.longitude`, newPos.lng, {shouldValidate: true});
+                                                            setMarkerPosition(newPos); // useEffect will push to form
                                                         }
                                                     }}
                                                 />

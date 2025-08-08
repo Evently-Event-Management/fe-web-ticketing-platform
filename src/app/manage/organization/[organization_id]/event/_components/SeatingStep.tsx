@@ -44,8 +44,6 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
     const handleSave = (layoutData: SessionSeatingMapRequest) => {
         if (configuringIndex === null) return;
 
-        layoutData.name = 'custom'
-
         setValue(`sessions.${configuringIndex}.layoutData`, layoutData);
 
         if (applyToAll) {

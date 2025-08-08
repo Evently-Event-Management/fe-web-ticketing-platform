@@ -13,6 +13,7 @@ import {CreateEventFormData, createEventSchema, stepValidationFields} from '@/li
 import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/_components/SchedulingStep";
 import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_components/SeatingStep";
 import {useOrganization} from "@/providers/OrganizationProvider";
+import {ReviewStep} from "@/app/manage/organization/[organization_id]/event/_components/ReviewStep";
 
 
 export default function CreateEventPage() {
@@ -82,6 +83,8 @@ export default function CreateEventPage() {
                 return <SchedulingStep/>
             case 4:
                 return <SeatingStep onConfigModeChange={setInConfigMode}/>;
+            case 5:
+                return <ReviewStep coverFiles={coverFiles}/>; // ✅ Render the new step
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>;
         }

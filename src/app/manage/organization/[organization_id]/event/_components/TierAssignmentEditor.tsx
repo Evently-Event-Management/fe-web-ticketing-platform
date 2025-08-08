@@ -123,8 +123,8 @@ export function TierAssignmentEditor({layoutData, tiers, onChange}: TierAssignme
                             <div key={block.id} style={{
                                 left: block.position.x,
                                 top: block.position.y,
-                                width: block.width,
-                                height: block.height
+                                width: block.width ? block.width : undefined,
+                                height: block.height ? block.height : undefined
                             }}
                                  className="absolute p-2 bg-muted border rounded-lg flex items-center justify-center">
                                 <p className="text-sm text-muted-foreground">{block.name}</p>
