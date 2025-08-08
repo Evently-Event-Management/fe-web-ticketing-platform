@@ -253,31 +253,38 @@ export function PhysicalConfigView({onSave, initialConfig}: {
             layoutData,
         };
 
-        // If we're editing an existing template, update it instead of creating a new one
-        if (selectedTemplateId) {
-            toast.promise(updateSeatingLayoutTemplate(selectedTemplateId, request), {
-                loading: 'Updating layout...',
-                success: (data) => {
-                    // Proceed to assign mode with updated layout data
-                    setSelectedLayout(data.layoutData);
-                    setMode("assign");
-                    return `Layout "${data.name}" updated successfully!`;
-                },
-                error: (err) => err.message || 'Failed to update layout.',
-            });
-        } else {
-            // Creating a new template from scratch
-            toast.promise(createSeatingLayoutTemplate(request), {
-                loading: 'Saving new layout...',
-                success: (data) => {
-                    // Proceed to assign mode with the new layout
-                    setSelectedLayout(data.layoutData);
-                    setSelectedTemplateId(data.id);
-                    setMode("assign");
-                    return `Layout "${data.name}" saved successfully!`;
-                },
-                error: (err) => err.message || 'Failed to create layout.',
-            });
+        try {
+            // If we're editing an existing template, update it instead of creating a new one
+            if (selectedTemplateId) {
+                const data = await updateSeatingLayoutTemplate(selectedTemplateId, request);
+                toast.success(`Layout "${data.name}" updated successfully!`);
+
+                // Only set layout data and change mode on success
+                setSelectedLayout(data.layoutData);
+                setMode("assign");
+
+                // Refresh the templates list to show the updated template
+                await loadTemplates();
+            } else {
+                // Creating a new template from scratch
+                const data = await createSeatingLayoutTemplate(request);
+                toast.success(`Layout "${data.name}" saved successfully!`);
+
+                // Only set layout data and change mode on success
+                setSelectedLayout(data.layoutData);
+                setSelectedTemplateId(data.id);
+                setMode("assign");
+
+                // Refresh the templates list to include the new template
+                await loadTemplates();
+            }
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message || 'Failed to save layout');
+            } else {
+                toast.error('An unexpected error occurred while saving the layout');
+            }
+            console.error(err);
         }
     };
 
