@@ -14,12 +14,22 @@ import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/
 import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_components/SeatingStep";
 import {useOrganization} from "@/providers/OrganizationProvider";
 import {ReviewStep} from "@/app/manage/organization/[organization_id]/event/_components/ReviewStep";
+import {
+    AlertDialog,
+    AlertDialogAction, AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 export default function CreateEventPage() {
     const [step, setStep] = useState(1);
     const [coverFiles, setCoverFiles] = useState<File[]>([]);
     const [inConfigMode, setInConfigMode] = useState(false);
+    const [showApprovalDialog, setShowApprovalDialog] = useState(false);
     const {
         organization: activeOrganization,
     } = useOrganization();
@@ -67,8 +77,16 @@ export default function CreateEventPage() {
     const onSubmit = (data: CreateEventFormData) => {
         console.log("Final Assembled Form Data:", data);
         console.log("Final Cover Files:", coverFiles);
-        // Here you would call your createEvent API action
-        toast.success("Event submitted for approval!");
+        // 2s delay to simulate API call
+        toast.loading("Submitting event...");
+        setTimeout(() => {
+            toast.dismiss();
+            toast.success("Event created successfully!");
+            // Reset form and cover files after successful submission
+            // methods.reset();
+            // setCoverFiles([]);
+            // setStep(1); // Reset to the first step
+        }, 2000);
     };
 
 
@@ -134,12 +152,40 @@ export default function CreateEventPage() {
                                     {methods.formState.isSubmitting ? 'Validating...' : 'Next'}
                                 </Button>
                             ) : (
-                                <Button
-                                    type="submit"
-                                    disabled={methods.formState.isSubmitting}
-                                >
-                                    {methods.formState.isSubmitting ? 'Submitting...' : 'Submit for Approval'}
-                                </Button>
+                                <AlertDialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+                                    <AlertDialogTrigger asChild>
+                                        <Button type="button" disabled={methods.formState.isSubmitting}>
+                                            Submit Event
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                You are about to submit your event for approval. Please ensure all
+                                                details are correct.
+                                                Once submitted, you will not be able to make changes until the event is
+                                                approved by an admin.
+                                                <br/>
+                                                <br/>
+                                                <strong>Event Title:</strong> {methods.watch('title')}
+                                                <br/>
+                                                <strong>Organization:</strong> {activeOrganization?.name || 'N/A'}
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogAction onClick={() => {
+                                                setShowApprovalDialog(false);
+                                                onSubmit(methods.getValues());
+                                            }}>
+                                                Confirm and Submit
+                                            </AlertDialogAction>
+                                            <AlertDialogCancel>
+                                                Cancel
+                                            </AlertDialogCancel>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             )}
                         </div>
                     )}
