@@ -120,10 +120,12 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
 
                 if (isCurrentOnline) {
                     // Copy online link, clear venue
+                    setValue(`sessions.${i}.isOnline`, true, {shouldValidate: true});
                     setValue(`sessions.${i}.onlineLink`, currentSessionData.onlineLink, {shouldValidate: true});
                     setValue(`sessions.${i}.venueDetails`, undefined, {shouldValidate: true});
                 } else {
                     // Copy venue details, clear online link
+                    setValue(`sessions.${i}.isOnline`, false, {shouldValidate: true});
                     setValue(`sessions.${i}.venueDetails`, currentSessionData.venueDetails, {shouldValidate: true});
                     setValue(`sessions.${i}.onlineLink`, undefined, {shouldValidate: true});
                 }
