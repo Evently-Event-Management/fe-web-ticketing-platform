@@ -107,20 +107,37 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     // };
 
     const handleSave = () => {
-        console.log(watch(`sessions.${index}`));
+        const currentSessionData = getValues(`sessions.${index}`);
+
         if (applyToAll) {
-            const currentSessionData = getValues(`sessions.${index}`);
             const allSessions = getValues('sessions');
+
             allSessions.forEach((_, i) => {
-                setValue(`sessions.${i}.isOnline`, currentSessionData.isOnline);
-                setValue(`sessions.${i}.onlineLink`, currentSessionData.onlineLink);
-                setValue(`sessions.${i}.venueDetails`, currentSessionData.venueDetails);
-                setValue(`sessions.${i}.layoutData`, currentSessionData.layoutData);
+                const isCurrentOnline = currentSessionData.isOnline;
+
+                // Always reset layoutData
+                setValue(`sessions.${i}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
+
+                if (isCurrentOnline) {
+                    // Copy online link, clear venue
+                    setValue(`sessions.${i}.onlineLink`, currentSessionData.onlineLink, {shouldValidate: true});
+                    setValue(`sessions.${i}.venueDetails`, undefined, {shouldValidate: true});
+                } else {
+                    // Copy venue details, clear online link
+                    setValue(`sessions.${i}.venueDetails`, currentSessionData.venueDetails, {shouldValidate: true});
+                    setValue(`sessions.${i}.onlineLink`, undefined, {shouldValidate: true});
+                }
+
+                // In both cases set layout data to default
+                setValue(`sessions.${i}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
             });
+
             toast.success("Location details applied to all sessions.");
         }
+
         setOpenAction(false);
     };
+
 
     return (
         <Dialog open={open} onOpenChange={setOpenAction}>
