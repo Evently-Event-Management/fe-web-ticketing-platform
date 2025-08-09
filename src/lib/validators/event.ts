@@ -1,5 +1,11 @@
 import {z} from 'zod';
 
+// ✅ NEW: Enum to match the backend SessionType
+export enum SessionType {
+    PHYSICAL = 'PHYSICAL',
+    ONLINE = 'ONLINE',
+}
+
 export enum SalesStartRuleType {
     IMMEDIATE = 'IMMEDIATE',
     ROLLING = 'ROLLING',
@@ -33,7 +39,6 @@ export const blockSchema = z.object({
     type: z.enum(['seated_grid', 'standing_capacity', 'non_sellable']),
     position: positionSchema,
     rows: z.array(rowSchema).optional(),
-    // Make these fields nullable
     capacity: z.number().nullable().optional(),
     width: z.number().nullable().optional(),
     height: z.number().nullable().optional(),
@@ -52,11 +57,13 @@ const sessionSeatingMapRequestSchema = z.object({
 
 // --- Venue & Tier Schemas ---
 
+// ✅ UPDATED: This DTO now holds details for both physical and online locations
 const venueDetailsSchema = z.object({
-    name: z.string().min(1, "Venue name is required."),
+    name: z.string().optional(), // Optional for online, required for physical
     address: z.string().optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
+    onlineLink: z.string().optional(),
 });
 
 const tierSchema = z.object({
@@ -72,40 +79,38 @@ const tierSchema = z.object({
 const sessionSchema = z.object({
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
-
-    // ✅ Corrected: Use z.enum() for string-based enums.
     salesStartRuleType: z.enum([
         SalesStartRuleType.IMMEDIATE,
         SalesStartRuleType.ROLLING,
         SalesStartRuleType.FIXED
     ]),
-
     salesStartHoursBefore: z.number().optional().nullable(),
     salesStartFixedDatetime: z.iso.datetime({message: "Invalid date format."}).optional().nullable(),
-    isOnline: z.boolean(),
-    onlineLink: z.string().optional().nullable(),
+
+    // ✅ UPDATED: Use the new SessionType enum
+    sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
     venueDetails: venueDetailsSchema.optional().nullable(),
     layoutData: sessionSeatingMapRequestSchema,
+
 }).refine(data => {
-    // If it's an online event, the onlineLink must be a valid URL.
-    if (data.isOnline) {
-        return data.onlineLink && z.url().safeParse(data.onlineLink).success;
+    // If it's an online session, the onlineLink must be a valid URL.
+    if (data.sessionType === SessionType.ONLINE) {
+        return data.venueDetails?.onlineLink && z.url().safeParse(data.venueDetails.onlineLink).success;
     }
     return true;
 }, {
-    message: "A valid URL is required for online events.",
-    path: ["onlineLink"],
+    message: "A valid URL is required for online sessions.",
+    path: ["venueDetails", "onlineLink"], // Point error to the correct field
 }).refine(data => {
-    // If it's a physical event, venueDetails must be provided.
-    if (!data.isOnline) {
-        return !!data.venueDetails;
+    // If it's a physical session, venueDetails and its name must be provided.
+    if (data.sessionType === SessionType.PHYSICAL) {
+        return !!data.venueDetails && !!data.venueDetails.name && data.venueDetails.name.length > 0;
     }
     return true;
 }, {
-    message: "Venue details are required for physical events.",
-    path: ["venueDetails"],
+    message: "Venue details are required for physical sessions.",
+    path: ["venueDetails", "name"], // Point error to the correct field
 }).refine(data => {
-    // End time must be after start time
     return new Date(data.endTime) > new Date(data.startTime);
 }, {
     message: "End time must be after the start time.",
@@ -132,7 +137,7 @@ export type CreateEventFormData = z.infer<typeof createEventSchema>;
 export type SessionFormData = z.infer<typeof sessionSchema>;
 export type Tier = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
-export type SessionSeatingMap = z.infer<typeof sessionSeatingMapRequestSchema>;
+export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type Row = z.infer<typeof rowSchema>;
 export type Block = z.infer<typeof blockSchema>;
@@ -143,5 +148,66 @@ export const stepValidationFields = {
     1: ['title', 'categoryId', 'description', 'overview'] as const,
     2: ['tiers'] as const,
     3: ['sessions'] as const,
-    4: ['sessions'] as const, // This is for session details, including seating layout
+    4: ['sessions'] as const,
 } as const;
+
+
+// --- API Response Schemas ---
+
+
+export enum EventStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED'
+}
+
+export const eventSummarySchema = z.object({
+    id: z.uuid(),
+    title: z.string(),
+    status: z.enum(EventStatus),
+    organizationName: z.string(),
+    organizationId: z.uuid(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    description: z.string(),
+    coverPhoto: z.url(),
+    sessionCount: z.number(),
+    earliestSessionDate: z.iso.datetime(),
+});
+
+export const sessionDetailSchema = z.object({
+    id: z.uuid(),
+    startTime: z.iso.datetime(),
+    endTime: z.iso.datetime(),
+    isOnline: z.boolean(),
+    onlineLink: z.url().nullable(),
+    venueDetails: venueDetailsSchema.nullable(),
+    salesStartRuleType: z.enum(SalesStartRuleType),
+    salesStartHoursBefore: z.number().nullable(),
+    salesStartFixedDatetime: z.iso.datetime().nullable(),
+    status: z.string(), // Corresponds to SessionStatus enum
+    layoutData: sessionSeatingMapRequestSchema, // Assuming this is the correct shape
+});
+
+export const eventDetailSchema = z.object({
+    id: z.uuid(),
+    title: z.string(),
+    description: z.string(),
+    overview: z.string(),
+    status: z.enum(EventStatus),
+    rejectionReason: z.string().nullable(),
+    coverPhotos: z.array(z.url()),
+    organizationId: z.uuid(),
+    organizationName: z.string(),
+    categoryId: z.uuid(),
+    categoryName: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    tiers: z.array(tierSchema),
+    sessions: z.array(sessionDetailSchema),
+});
+
+// --- Type Inference for API Responses ---
+export type EventSummaryDTO = z.infer<typeof eventSummarySchema>;
+export type SessionDetailDTO = z.infer<typeof sessionDetailSchema>;
+export type EventDetailDTO = z.infer<typeof eventDetailSchema>;
