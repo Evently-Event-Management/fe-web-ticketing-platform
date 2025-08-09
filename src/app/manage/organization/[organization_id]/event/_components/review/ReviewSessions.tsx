@@ -1,22 +1,22 @@
 'use client';
 
 import * as React from 'react';
-import { format, parseISO } from 'date-fns';
-import { Calendar, MapPin, Tag, Users, Clock, Armchair, LinkIcon } from 'lucide-react';
+import {format, parseISO} from 'date-fns';
+import {Calendar, MapPin, Tag, Users, Clock, Armchair, LinkIcon} from 'lucide-react';
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from '@/components/ui/badge';
-import { SessionFormData, SalesStartRuleType } from '@/lib/validators/event';
+import {Badge} from '@/components/ui/badge';
+import {SessionFormData, SalesStartRuleType, SessionType} from '@/lib/validators/event';
 
 interface ReviewSessionsProps {
     sessions: SessionFormData[];
 }
 
-export const ReviewSessions: React.FC<ReviewSessionsProps> = ({ sessions }) => {
+export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions}) => {
     if (sessions.length === 0) return null;
 
     return (
@@ -40,11 +40,11 @@ interface SessionAccordionItemProps {
     index: number;
 }
 
-const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({ session, index }) => {
+const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({session, index}) => {
     const startDate = parseISO(session.startTime);
     const endDate = parseISO(session.endTime);
-    const isOnline = session.isOnline;
-    const { venueDetails, onlineLink, layoutData } = session;
+    const isOnline = session.sessionType === SessionType.ONLINE
+    const {layoutData} = session;
 
     return (
         <AccordionItem
@@ -53,7 +53,7 @@ const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({ session, in
         >
             <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40">
                 <div className="flex items-center gap-3 text-left">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 text-muted-foreground"/>
                     <div>
                         <div className="font-medium">
                             {format(startDate, "EEEE, MMMM d, yyyy")}
@@ -63,15 +63,15 @@ const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({ session, in
                         </div>
                     </div>
                     <Badge variant={isOnline ? "secondary" : "default"} className="ml-4">
-                        {isOnline ? 'Online' : 'In Person'}
+                        {isOnline ? 'Online' : 'Physical'}
                     </Badge>
                 </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pt-2 pb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <SessionDetails session={session} />
+                    <SessionDetails session={session}/>
                     {layoutData && layoutData.layout.blocks.length > 0 && (
-                        <SeatingInformation isOnline={isOnline} layoutData={layoutData} />
+                        <SeatingInformation isOnline={isOnline} layoutData={layoutData}/>
                     )}
                 </div>
             </AccordionContent>
@@ -83,11 +83,11 @@ interface SessionDetailsProps {
     session: SessionFormData;
 }
 
-const SessionDetails: React.FC<SessionDetailsProps> = ({ session }) => {
+const SessionDetails: React.FC<SessionDetailsProps> = ({session}) => {
     const startDate = parseISO(session.startTime);
     const endDate = parseISO(session.endTime);
-    const isOnline = session.isOnline;
-    const { venueDetails, onlineLink } = session;
+    const isOnline = session.sessionType === SessionType.ONLINE;
+    const {venueDetails} = session;
 
     // Calculate event duration
     const getDuration = (): string => {
@@ -132,19 +132,19 @@ const SessionDetails: React.FC<SessionDetailsProps> = ({ session }) => {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-muted-foreground"/>
                 <span>Duration: {getDuration()}</span>
             </div>
 
             <div className="flex items-start gap-2">
                 {isOnline ? (
                     <>
-                        <LinkIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <LinkIcon className="h-4 w-4 text-muted-foreground mt-0.5"/>
                         <div>
                             <div>Online Event</div>
-                            {onlineLink ? (
+                            {venueDetails?.onlineLink ? (
                                 <div className="text-sm text-muted-foreground break-all">
-                                    {onlineLink}
+                                    {venueDetails.onlineLink}
                                 </div>
                             ) : (
                                 <div className="text-sm text-destructive">
@@ -155,7 +155,7 @@ const SessionDetails: React.FC<SessionDetailsProps> = ({ session }) => {
                     </>
                 ) : (
                     <>
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5"/>
                         <div>
                             {venueDetails?.name ? (
                                 <>
@@ -177,7 +177,7 @@ const SessionDetails: React.FC<SessionDetailsProps> = ({ session }) => {
             </div>
 
             <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-muted-foreground" />
+                <Tag className="h-4 w-4 text-muted-foreground"/>
                 <span>{getSalesRuleDescription()}</span>
             </div>
         </div>
@@ -189,7 +189,7 @@ interface SeatingInformationProps {
     layoutData: SessionFormData['layoutData'];
 }
 
-const SeatingInformation: React.FC<SeatingInformationProps> = ({ isOnline, layoutData }) => {
+const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline, layoutData}) => {
     // Layout metadata
     const getLayoutMetadata = (): React.ReactNode => {
         if (!layoutData || layoutData.layout.blocks.length === 0) return null;
@@ -231,9 +231,9 @@ const SeatingInformation: React.FC<SeatingInformationProps> = ({ isOnline, layou
         <div className="bg-muted/30 p-4 rounded-lg">
             <div className="flex items-start gap-2 mb-2">
                 {isOnline ? (
-                    <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <Users className="h-4 w-4 text-muted-foreground mt-0.5"/>
                 ) : (
-                    <Armchair className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <Armchair className="h-4 w-4 text-muted-foreground mt-0.5"/>
                 )}
                 <span className="font-medium">Seating Information</span>
             </div>

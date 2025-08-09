@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SalesStartRuleType, SessionFormData} from '@/lib/validators/event';
+import {CreateEventFormData, SalesStartRuleType, SessionFormData, SessionType} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
@@ -23,7 +23,7 @@ const getSalesRuleDescription = (session: SessionFormData): string => {
                 ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy')}`
                 : "Fixed date not set";
         case SalesStartRuleType.ROLLING:
-            if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore < 0) {
+            if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore === null || session.salesStartHoursBefore < 0) {
                 return "Rolling days not set or invalid";
             } else if (session.salesStartHoursBefore < 24) {
                 return `Sales start ${session.salesStartHoursBefore} hour(s) before the session`;
@@ -54,9 +54,11 @@ export function SessionListItem({field, index, onRemoveAction}: {
         return null;
     }
 
-    const {isOnline, onlineLink, venueDetails} = sessionData;
+    const {sessionType, venueDetails} = sessionData;
 
-    const hasLocation = isOnline ? !!onlineLink : !!venueDetails?.name;
+    const hasLocation = venueDetails !== undefined;
+    const isOnline = sessionType === SessionType.ONLINE
+    const onlineLink = sessionData.venueDetails?.onlineLink
 
     const LocationIcon = hasLocation ? (isOnline ? LinkIcon : MapPin) : Settings;
     const locationIconColor = hasLocation

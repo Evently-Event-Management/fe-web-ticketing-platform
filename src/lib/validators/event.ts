@@ -89,7 +89,7 @@ const sessionSchema = z.object({
 
     // ✅ UPDATED: Use the new SessionType enum
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
-    venueDetails: venueDetailsSchema.optional().nullable(),
+    venueDetails: venueDetailsSchema.optional(),
     layoutData: sessionSeatingMapRequestSchema,
 
 }).refine(data => {
