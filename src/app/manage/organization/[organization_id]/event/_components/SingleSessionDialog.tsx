@@ -16,7 +16,7 @@ import {Button} from "@/components/ui/button";
 import {Calendar as CalendarIcon} from "lucide-react";
 import {Calendar} from "@/components/ui/calendar";
 import * as React from "react";
-import {SalesStartRuleType, SessionFormData} from "@/lib/validators/event";
+import {SalesStartRuleType, SessionFormData, SessionType} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
 
@@ -87,7 +87,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
         const newSession: SessionFormData = {
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
-            isOnline: false,
+            sessionType: SessionType.PHYSICAL,
             salesStartRuleType: data.salesStartRuleType,
             ...(data.salesStartRuleType === SalesStartRuleType.ROLLING && {
                 salesStartHoursBefore: data.salesStartHoursBefore,

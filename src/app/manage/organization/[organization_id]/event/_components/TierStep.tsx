@@ -53,7 +53,7 @@ export function TiersStep() {
             <CardContent className="space-y-6">
                 {fields.length === 0 && (
                     <div className="py-8 text-center">
-                        <Ticket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                        <Ticket className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
                         <p className="text-lg text-muted-foreground">
                             No tiers added yet. Click &#34;Add Tier&#34; to create your first ticket tier.
                         </p>
@@ -77,7 +77,8 @@ export function TiersStep() {
                                     name={`tiers.${index}.name`}
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                            <FormLabel
+                                                className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                                 Tier Name
                                             </FormLabel>
                                             <FormControl>
@@ -87,7 +88,7 @@ export function TiersStep() {
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage/>
                                         </FormItem>
                                     )}
                                 />
@@ -96,7 +97,8 @@ export function TiersStep() {
                                     name={`tiers.${index}.price`}
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                            <FormLabel
+                                                className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                                 Price (USD)
                                             </FormLabel>
                                             <FormControl>
@@ -110,7 +112,7 @@ export function TiersStep() {
                                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
                                                 />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage/>
                                         </FormItem>
                                     )}
                                 />
@@ -119,7 +121,8 @@ export function TiersStep() {
                                     name={`tiers.${index}.color`}
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                            <FormLabel
+                                                className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                                 Theme Color
                                             </FormLabel>
                                             <FormControl>
@@ -137,7 +140,7 @@ export function TiersStep() {
                                                     />
                                                 </div>
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage/>
                                         </FormItem>
                                     )}
                                 />
@@ -153,7 +156,7 @@ export function TiersStep() {
                         onClick={addNewTier}
                         className="w-full md:w-auto border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                     >
-                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <PlusCircle className="mr-2 h-4 w-4"/>
                         Add New Tier
                     </Button>
                 </div>
