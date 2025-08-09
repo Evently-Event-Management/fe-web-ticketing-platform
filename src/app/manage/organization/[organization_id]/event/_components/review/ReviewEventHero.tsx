@@ -60,12 +60,6 @@ export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
                 <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm">
-                    {categoryName && (
-                        <div className="flex items-center gap-1">
-                            <Tag className="h-4 w-4 text-muted-foreground"/>
-                            <span>{categoryName}</span>
-                        </div>
-                    )}
 
                     {organization?.name && (
                         <div className="flex items-center gap-1">
@@ -74,6 +68,13 @@ export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
                                 <AvatarFallback> {organization.name.charAt(0).toUpperCase()} </AvatarFallback>
                             </Avatar>
                             <span>By {organization.name}</span>
+                        </div>
+                    )}
+
+                    {categoryName && (
+                        <div className="flex items-center gap-1">
+                            <Tag className="h-4 w-4 text-muted-foreground"/>
+                            <span>{categoryName}</span>
                         </div>
                     )}
 
