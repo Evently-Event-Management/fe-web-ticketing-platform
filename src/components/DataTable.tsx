@@ -1,6 +1,6 @@
-// components/ui/data-table.tsx
 "use client"
 
+import * as React from "react"
 import {
     ColumnDef,
     flexRender,
@@ -16,15 +16,19 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {Skeleton} from "@/components/ui/skeleton"
 
+// ✅ Props are now simpler, no pagination logic
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    isLoading?: boolean
 }
 
 export function DataTable<TData, TValue>({
                                              columns,
                                              data,
+                                             isLoading = false,
                                          }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
@@ -54,7 +58,17 @@ export function DataTable<TData, TValue>({
                     ))}
                 </TableHeader>
                 <TableBody>
-                    {table.getRowModel().rows?.length ? (
+                    {isLoading ? (
+                        Array.from({length: 10}).map((_, i) => (
+                            <TableRow key={i}>
+                                {columns.map((column, j) => (
+                                    <TableCell key={j}>
+                                        <Skeleton className="h-8 w-full"/>
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))
+                    ) : table.getRowModel().rows?.length ? (
                         table.getRowModel().rows.map((row) => (
                             <TableRow
                                 key={row.id}

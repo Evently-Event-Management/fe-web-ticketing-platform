@@ -1,7 +1,7 @@
 /**
  * Type definitions based on the provided Java DTOs
  */
-import {SessionSeatingMap, Tier, VenueDetails} from "@/lib/validators/event";
+import {SalesStartRuleType, SessionSeatingMap, Tier, VenueDetails} from "@/lib/validators/event";
 
 export enum EventStatus {
     PENDING = 'PENDING',
@@ -57,7 +57,7 @@ export interface SessionDetailDTO {
     isOnline: boolean;
     onlineLink: string | null;
     venueDetails: VenueDetails | null;
-    salesStartRuleType: 'IMMEDIATE' | 'ROLLING' | 'FIXED';
+    salesStartRuleType: SalesStartRuleType;
     salesStartHoursBefore: number | null;
     salesStartFixedDatetime: string | null;
     status: string;
