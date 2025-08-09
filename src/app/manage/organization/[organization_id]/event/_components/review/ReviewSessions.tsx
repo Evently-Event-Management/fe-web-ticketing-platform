@@ -88,6 +88,7 @@ const SessionDetails: React.FC<SessionDetailsProps> = ({session}) => {
     const endDate = parseISO(session.endTime);
     const isOnline = session.sessionType === SessionType.ONLINE;
     const {venueDetails} = session;
+    console.log("Session Details:", session);
 
     // Calculate event duration
     const getDuration = (): string => {

@@ -21,6 +21,7 @@ export default function OrganizationSettingsPage() {
     const fetchOrgData = useCallback(async () => {
         try {
             const data = await getOrganizationById(organization_id);
+            console.log("Fetched organization data:", data);
             setOrganization(data);
         } catch (error) {
             toast.error("Failed to fetch organization details.");

@@ -2,28 +2,33 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { Tag, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import {Tag} from 'lucide-react';
+import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
 import Autoplay from 'embla-carousel-autoplay';
 import {OrganizationResponse} from "@/types/oraganizations";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 
 interface ReviewEventHeroProps {
     title: string;
     categoryName?: string | null;
     organization?: OrganizationResponse | null;
-    coverFiles: File[];
+    coverFiles: File[] | string[];
 }
 
 export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
-    title,
-    categoryName,
-    organization,
-    coverFiles
-}) => {
-    const getImageUrl = (file: File): string => {
-        return URL.createObjectURL(file);
+                                                                    title,
+                                                                    categoryName,
+                                                                    organization,
+                                                                    coverFiles
+                                                                }) => {
+
+    // Helper function to get image URL
+    const getImageUrl = (file: File | string): string => {
+        if (typeof file === 'string') {
+            return file; // Assuming it's already a URL
+        }
+        return URL.createObjectURL(file); // Create a local URL for the file
     };
 
     return (
@@ -57,23 +62,21 @@ export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
                 <div className="flex flex-wrap items-center gap-4 text-sm">
                     {categoryName && (
                         <div className="flex items-center gap-1">
-                            <Tag className="h-4 w-4 text-muted-foreground" />
+                            <Tag className="h-4 w-4 text-muted-foreground"/>
                             <span>{categoryName}</span>
                         </div>
                     )}
 
                     {organization?.name && (
                         <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={organization.logoUrl} alt={organization.name}/>
+                                <AvatarFallback> {organization.name.charAt(0).toUpperCase()} </AvatarFallback>
+                            </Avatar>
                             <span>By {organization.name}</span>
                         </div>
                     )}
 
-                    <div className="ml-auto">
-                        <Button variant="outline" disabled>
-                            Buy Tickets
-                        </Button>
-                    </div>
                 </div>
             </div>
         </div>
