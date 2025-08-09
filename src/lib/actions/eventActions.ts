@@ -53,18 +53,25 @@ export async function getEventById(eventId: string): Promise<EventDetailDTO> {
 /**
  * Fetch all events (admin only)
  * @param status Optional filter for event status
+ * @param search Optional search term for filtering events
  * @param page Page number (0-based)
  * @param size Number of events per page
  */
 export async function getAllEvents(
     status?: EventStatus,
+    search?: string,
     page: number = 0,
     size: number = 10
 ): Promise<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }> {
     try {
         let url = `${API_BASE_PATH}?page=${page}&size=${size}`;
+
         if (status) {
             url += `&status=${status}`;
+        }
+
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
         }
 
         return await apiFetch<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }>(url, {
@@ -72,6 +79,41 @@ export async function getAllEvents(
         });
     } catch (error) {
         console.error('Error fetching events:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get paginated list of events for a specific organization
+ * @param organizationId The ID of the organization
+ * @param status Optional filter for event status
+ * @param search Optional search term for filtering events
+ * @param page Page number (0-based)
+ * @param size Number of events per page
+ */
+export async function getOrganizationEvents(
+    organizationId: string,
+    status?: EventStatus,
+    search?: string,
+    page: number = 0,
+    size: number = 10
+): Promise<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }> {
+    try {
+        let url = `${API_BASE_PATH}/organization/${organizationId}?page=${page}&size=${size}`;
+
+        if (status) {
+            url += `&status=${status}`;
+        }
+
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+
+        return await apiFetch<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }>(url, {
+            method: 'GET',
+        });
+    } catch (error) {
+        console.error(`Error fetching organization events for ${organizationId}:`, error);
         throw error;
     }
 }

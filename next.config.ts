@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
                 protocol: 'http',
                 hostname: 'localhost',
                 port: '4566',
-                pathname: '/event-seating-uploads/organization-logos/**',
+                pathname: '/event-seating-uploads/**',
             }
         ],
     },

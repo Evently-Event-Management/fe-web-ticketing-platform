@@ -7,7 +7,7 @@ import {MoreHorizontal, PlusCircle} from 'lucide-react';
 
 import {OrganizationResponse} from '@/types/oraganizations';
 import {Button} from '@/components/ui/button';
-import {DataTable} from './_components/DataTable';
+import {DataTable} from '@/components/DataTable';
 import {
     DropdownMenu,
     DropdownMenuContent,

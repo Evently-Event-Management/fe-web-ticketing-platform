@@ -41,7 +41,7 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // ✅ Use the form context from parent instead of creating a new form
-    const {control} = useFormContext<CreateEventFormData>();
+    const {control, setValue} = useFormContext<CreateEventFormData>();
 
     const maxPhotos = myLimits?.eventLimits.maxCoverPhotos || 1;
 
@@ -130,7 +130,23 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                     <FormField control={control} name="categoryId" render={({field}) => (
                         <FormItem>
                             <FormLabel>Category</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select
+                                onValueChange={(value) => {
+                                    // ✅ Find the full category object to get its name
+                                    let selectedCategoryName: string | undefined;
+                                    for (const parentCat of categories) {
+                                        const subCat = parentCat.subCategories.find(sc => sc.id === value);
+                                        if (subCat) {
+                                            selectedCategoryName = subCat.name;
+                                            break;
+                                        }
+                                    }
+                                    // ✅ Set both the ID and the name in the form state
+                                    field.onChange(value);
+                                    setValue('categoryName', selectedCategoryName);
+                                }}
+                                defaultValue={field.value}
+                            >
                                 <FormControl><SelectTrigger><SelectValue
                                     placeholder="Select a category for your event"/></SelectTrigger></FormControl>
                                 <SelectContent>

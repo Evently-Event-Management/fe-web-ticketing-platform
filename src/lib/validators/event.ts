@@ -80,11 +80,11 @@ const sessionSchema = z.object({
         SalesStartRuleType.FIXED
     ]),
 
-    salesStartHoursBefore: z.number().optional(),
-    salesStartFixedDatetime: z.iso.datetime({message: "Invalid date format."}).optional(),
+    salesStartHoursBefore: z.number().optional().nullable(),
+    salesStartFixedDatetime: z.iso.datetime({message: "Invalid date format."}).optional().nullable(),
     isOnline: z.boolean(),
-    onlineLink: z.string().optional(),
-    venueDetails: venueDetailsSchema.optional(),
+    onlineLink: z.string().optional().nullable(),
+    venueDetails: venueDetailsSchema.optional().nullable(),
     layoutData: sessionSeatingMapRequestSchema,
 }).refine(data => {
     // If it's an online event, the onlineLink must be a valid URL.
@@ -121,6 +121,7 @@ export const createEventSchema = z.object({
     overview: z.string().optional(),
     organizationId: z.uuid(),
     categoryId: z.uuid({message: "Please select a category."}),
+    categoryName: z.string().optional().nullable(),
     tiers: z.array(tierSchema).min(1, {message: "You must create at least one tier."}),
     sessions: z.array(sessionSchema).min(1, {message: "You must schedule at least one session."}),
 });

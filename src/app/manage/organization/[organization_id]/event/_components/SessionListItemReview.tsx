@@ -18,7 +18,7 @@ export function SessionListItemReview({session, index}: { session: SessionFormDa
                     ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy h:mm a')}`
                     : "Fixed date not set";
             case SalesStartRuleType.ROLLING:
-                if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore < 0) {
+                if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore === null || session.salesStartHoursBefore < 0) {
                     return "Rolling hours not set or invalid";
                 } else if (session.salesStartHoursBefore < 24) {
                     return `Sales start ${session.salesStartHoursBefore} hour(s) before the session`;

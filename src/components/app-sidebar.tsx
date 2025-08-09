@@ -48,7 +48,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                         title: "Create an Event",
                         url: organization ? `/manage/organization/${organization.id}/event/create` : "#"
                     },
-                    {title: "All Events", url: organization ? `/manage/organization/${organization.id}/event` : "#"},
+                    {title: "My Events", url: organization ? `/manage/organization/${organization.id}/event` : "#"},
                 ],
             },
             {
