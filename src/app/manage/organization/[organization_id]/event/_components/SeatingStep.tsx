@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState, useEffect} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionSeatingMap} from '@/lib/validators/event';
+import {CreateEventFormData, SessionSeatingMapRequest, SessionType} from '@/lib/validators/event';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {
     SessionListItemSeating
@@ -41,7 +41,7 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
         }
     }, [configuringIndex, onConfigModeChange]);
 
-    const handleSave = (layoutData: SessionSeatingMap) => {
+    const handleSave = (layoutData: SessionSeatingMapRequest) => {
         if (configuringIndex === null) return;
 
         setValue(`sessions.${configuringIndex}.layoutData`, layoutData);
@@ -50,11 +50,11 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
             const allSessions = getValues('sessions');
             allSessions.forEach((s, i) => {
                 // Apply only to sessions of the same type (online/physical)
-                if (s.isOnline === currentSession?.isOnline) {
+                if (s.sessionType === currentSession?.sessionType) {
                     setValue(`sessions.${i}.layoutData`, layoutData);
                 }
             });
-            toast.success(`Seating applied to all ${currentSession?.isOnline ? 'online' : 'physical'} sessions.`);
+            toast.success(`Seating applied to all ${currentSession?.sessionType === SessionType.ONLINE ? 'online' : 'physical'} sessions.`);
         } else {
             toast.success(`Seating configured for Session ${configuringIndex + 1}.`);
         }
@@ -85,23 +85,23 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
                 <Card>
                     <CardHeader>
                         <CardTitle>
-                            {currentSession.isOnline
+                            {currentSession.sessionType === SessionType.ONLINE
                                 ? "Online Capacity Configuration"
                                 : "Physical Seating Configuration"}
                         </CardTitle>
                         <CardDescription>
-                            {currentSession.isOnline
+                            {currentSession.sessionType === SessionType.ONLINE
                                 ? "Set the capacity and ticket tier for your online event."
                                 : "Choose a layout template or create a new one, then assign your tiers."}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {currentSession.isOnline ? (
+                        {currentSession.sessionType === SessionType.ONLINE ? (
                             <OnlineConfigView onSave={handleSave}/>
                         ) : (
                             <PhysicalConfigView
                                 onSave={handleSave}
-                                initialConfig={currentSession.layoutData as SessionSeatingMap}
+                                initialConfig={currentSession.layoutData as SessionSeatingMapRequest}
                             />
                         )}
                     </CardContent>
@@ -115,7 +115,8 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
                             onCheckedChange={(checked) => setApplyToAll(checked === true)}
                         />
                         <Label htmlFor="apply-to-all-seating">
-                            Apply to all {currentSession.isOnline ? 'online' : 'physical'} sessions
+                            Apply to
+                            all {currentSession.sessionType === SessionType.ONLINE ? 'online' : 'physical'} sessions
                         </Label>
                     </div>
                 </div>

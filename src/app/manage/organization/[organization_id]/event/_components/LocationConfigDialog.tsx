@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import {useFormContext} from 'react-hook-form';
-import {CreateEventFormData} from '@/lib/validators/event';
+import {CreateEventFormData, SessionType} from '@/lib/validators/event';
 import {toast} from 'sonner';
 import {GoogleMap, useJsApiLoader, Marker} from '@react-google-maps/api';
 
@@ -12,7 +12,6 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {FormField, FormItem, FormLabel, FormControl, FormMessage} from '@/components/ui/form';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Skeleton} from '@/components/ui/skeleton';
 
@@ -35,25 +34,67 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     open: boolean;
     setOpenAction: (open: boolean) => void
 }) {
-    const {control, watch, getValues, setValue} = useFormContext<CreateEventFormData>();
-    const isOnline = watch(`sessions.${index}.isOnline`);
-    const venueDetails = watch(`sessions.${index}.venueDetails`);
+    const {getValues, setValue} = useFormContext<CreateEventFormData>();
 
+    // Local form state
+    const [localFormState, setLocalFormState] = useState({
+        sessionType: SessionType.PHYSICAL,
+        venueDetails: {
+            name: '',
+            address: '',
+            onlineLink: '',
+            latitude: DEFAULT_MAP_CENTER.lat,
+            longitude: DEFAULT_MAP_CENTER.lng,
+        }
+    });
     const [applyToAll, setApplyToAll] = useState(false);
-    const [markerPosition, setMarkerPosition] = useState<google.maps.LatLngLiteral>(
-        venueDetails?.latitude && venueDetails?.longitude
-            ? {lat: venueDetails.latitude, lng: venueDetails.longitude}
-            : DEFAULT_MAP_CENTER
-    );
+    const [localErrors, setLocalErrors] = useState<{
+        venueName?: string;
+        onlineLink?: string;
+    }>({});
+
+    const [markerPosition, setMarkerPosition] = useState<google.maps.LatLngLiteral>(DEFAULT_MAP_CENTER);
     const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
     const autocompleteInputRef = useRef<HTMLInputElement>(null);
 
+    // Snapshot form values when dialog opens
     useEffect(() => {
-        if (markerPosition && !watch(`sessions.${index}.isOnline`)) {
-            setValue(`sessions.${index}.venueDetails.latitude`, markerPosition.lat, {shouldValidate: true});
-            setValue(`sessions.${index}.venueDetails.longitude`, markerPosition.lng, {shouldValidate: true});
+        if (open) {
+            const sessionData = getValues(`sessions.${index}`);
+            setLocalFormState({
+                sessionType: sessionData.sessionType || SessionType.PHYSICAL,
+                venueDetails: {
+                    name: sessionData.venueDetails?.name || '',
+                    address: sessionData.venueDetails?.address || '',
+                    onlineLink: sessionData.venueDetails?.onlineLink || '',
+                    latitude: sessionData.venueDetails?.latitude || DEFAULT_MAP_CENTER.lat,
+                    longitude: sessionData.venueDetails?.longitude || DEFAULT_MAP_CENTER.lng,
+                }
+            });
+
+            // Set marker position based on venueDetails if available
+            if (sessionData.venueDetails?.latitude && sessionData.venueDetails?.longitude) {
+                setMarkerPosition({
+                    lat: sessionData.venueDetails.latitude,
+                    lng: sessionData.venueDetails.longitude
+                });
+            } else {
+                setMarkerPosition(DEFAULT_MAP_CENTER);
+            }
+
+            setLocalErrors({});
         }
-    }, [markerPosition, index, setValue, watch]);
+    }, [open, getValues, index]);
+
+    // Update marker position when local venue details change
+    useEffect(() => {
+        if (localFormState.sessionType === SessionType.PHYSICAL) {
+            setMarkerPosition({
+                lat: localFormState.venueDetails.latitude || DEFAULT_MAP_CENTER.lat,
+                lng: localFormState.venueDetails.longitude || DEFAULT_MAP_CENTER.lng
+            });
+        }
+    }, [localFormState.venueDetails.latitude, localFormState.venueDetails.longitude, localFormState.sessionType]);
 
     const {isLoaded} = useJsApiLoader({
         id: 'google-map-script',
@@ -71,75 +112,115 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
             });
         }
     }, [isLoaded]);
-    useEffect(() => {
-        if (venueDetails?.latitude && venueDetails?.longitude) {
-            setMarkerPosition({lat: venueDetails.latitude, lng: venueDetails.longitude});
-        }
-    }, [venueDetails]);
 
     const handleMapClick = (event: google.maps.MapMouseEvent) => {
         if (event.latLng) {
             const newPos = {lat: event.latLng.lat(), lng: event.latLng.lng()};
             setMarkerPosition(newPos);
+
+            // Update local state
+            setLocalFormState(prev => ({
+                ...prev,
+                venueDetails: {
+                    ...prev.venueDetails,
+                    latitude: newPos.lat,
+                    longitude: newPos.lng
+                }
+            }));
+
         }
     };
 
-    // const onAutocompleteLoad = (autocomplete: google.maps.places.Autocomplete) => {
-    //     autocompleteRef.current = autocomplete;
-    // };
-    //
-    // const onPlaceChanged = () => {
-    //     console.log('Place changed:', autocompleteRef.current?.getPlace());
-    //     if (autocompleteRef.current) {
-    //         const place = autocompleteRef.current.getPlace();
-    //         if (place.geometry?.location) {
-    //             const newPos = {
-    //                 lat: place.geometry.location.lat(),
-    //                 lng: place.geometry.location.lng(),
-    //             };
-    //             setMarkerPosition(newPos);
-    //             setValue(`sessions.${index}.venueDetails.name`, place.name || '', {shouldValidate: true});
-    //             setValue(`sessions.${index}.venueDetails.address`, place.formatted_address || '', {shouldValidate: true});
-    //             setValue(`sessions.${index}.venueDetails.latitude`, newPos.lat, {shouldValidate: true});
-    //             setValue(`sessions.${index}.venueDetails.longitude`, newPos.lng, {shouldValidate: true});
-    //         }
-    //     }
-    // };
+    // Local validation
+    const validateLocalState = () => {
+        const errors: { venueName?: string; onlineLink?: string } = {};
+
+        if (localFormState.sessionType === SessionType.PHYSICAL && !localFormState.venueDetails.name) {
+            errors.venueName = "Venue name is required";
+        }
+
+        if (localFormState.sessionType === SessionType.ONLINE) {
+            if (!localFormState.venueDetails.onlineLink) {
+                errors.onlineLink = "Online link is required";
+            } else if (!/^https?:\/\/.+/.test(localFormState.venueDetails.onlineLink)) {
+                errors.onlineLink = "Must be a valid URL";
+            }
+        }
+
+        setLocalErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     const handleSave = () => {
-        const currentSessionData = getValues(`sessions.${index}`);
+        // Validate before saving
+        const isValid = validateLocalState();
+
+        if (!isValid) return;
+
+        // Apply changes to current session
+        setValue(`sessions.${index}.sessionType`, localFormState.sessionType, {shouldValidate: true});
+
+        if (localFormState.sessionType === SessionType.PHYSICAL) {
+            setValue(`sessions.${index}.venueDetails`, {
+                name: localFormState.venueDetails.name,
+                address: localFormState.venueDetails.address,
+                latitude: localFormState.venueDetails.latitude,
+                longitude: localFormState.venueDetails.longitude
+            }, {shouldValidate: true});
+        } else {
+            setValue(`sessions.${index}.venueDetails`, {
+                onlineLink: localFormState.venueDetails.onlineLink
+            }, {shouldValidate: true});
+        }
+
+        // Reset layoutData for current session
+        setValue(`sessions.${index}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
 
         if (applyToAll) {
             const allSessions = getValues('sessions');
-
             allSessions.forEach((_, i) => {
-                const isCurrentOnline = currentSessionData.isOnline;
+                if (i === index) return; // Skip the current session
 
-                // Always reset layoutData
-                setValue(`sessions.${i}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
+                setValue(`sessions.${i}.sessionType`, localFormState.sessionType, {shouldValidate: true});
 
-                if (isCurrentOnline) {
-                    // Copy online link, clear venue
-                    setValue(`sessions.${i}.isOnline`, true, {shouldValidate: true});
-                    setValue(`sessions.${i}.onlineLink`, currentSessionData.onlineLink, {shouldValidate: true});
-                    setValue(`sessions.${i}.venueDetails`, undefined, {shouldValidate: true});
+                if (localFormState.sessionType === SessionType.PHYSICAL) {
+                    setValue(`sessions.${i}.venueDetails`, {
+                        name: localFormState.venueDetails.name,
+                        address: localFormState.venueDetails.address,
+                        latitude: localFormState.venueDetails.latitude,
+                        longitude: localFormState.venueDetails.longitude
+                    }, {shouldValidate: true});
                 } else {
-                    // Copy venue details, clear online link
-                    setValue(`sessions.${i}.isOnline`, false, {shouldValidate: true});
-                    setValue(`sessions.${i}.venueDetails`, currentSessionData.venueDetails, {shouldValidate: true});
-                    setValue(`sessions.${i}.onlineLink`, undefined, {shouldValidate: true});
+                    setValue(`sessions.${i}.venueDetails`, {
+                        onlineLink: localFormState.venueDetails.onlineLink
+                    }, {shouldValidate: true});
                 }
 
-                // In both cases set layout data to default
+                // Reset layoutData for all sessions
                 setValue(`sessions.${i}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
             });
-
             toast.success("Location details applied to all sessions.");
         }
 
         setOpenAction(false);
     };
 
+    const handleInputChange = (field: string, value: string | number) => {
+        setLocalFormState(prev => ({
+            ...prev,
+            venueDetails: {
+                ...prev.venueDetails,
+                [field]: value
+            }
+        }));
+    };
+
+    const handleSessionTypeChange = (type: SessionType) => {
+        setLocalFormState(prev => ({
+            ...prev,
+            sessionType: type
+        }));
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpenAction}>
@@ -152,18 +233,9 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                 {/* ✅ Main content area is now scrollable */}
                 <div className="overflow-y-auto">
                     <Tabs
-                        defaultValue={isOnline ? "online" : "physical"}
+                        defaultValue={localFormState.sessionType === SessionType.ONLINE ? "online" : "physical"}
                         onValueChange={(value) => {
-                            const isOnlineTab = value === 'online';
-                            setValue(`sessions.${index}.isOnline`, isOnlineTab);
-                            setValue(`sessions.${index}.layoutData`, {name: null, layout: {blocks: []}});
-                            if (isOnlineTab) {
-                                // ✅ Remove venueDetails when switching to online
-                                setValue(`sessions.${index}.venueDetails`, undefined);
-                            } else {
-                                // ✅ Remove onlineLink when switching to physical
-                                setValue(`sessions.${index}.onlineLink`, undefined);
-                            }
+                            handleSessionTypeChange(value === 'online' ? SessionType.ONLINE : SessionType.PHYSICAL);
                         }}
                         className="w-full"
                     >
@@ -175,14 +247,27 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                             <div className="grid grid-cols-1 md:grid-cols-2">
                                 {/* Left Side - Form Fields */}
                                 <div className="space-y-4 p-6">
-                                    <FormField control={control} name={`sessions.${index}.venueDetails.name`}
-                                               render={({field}) => (
-                                                   <FormItem><FormLabel>Venue Name</FormLabel><FormControl><Input
-                                                       placeholder="e.g., Grand Hall" {...field} /></FormControl><FormMessage/></FormItem>)}/>
-                                    <FormField control={control} name={`sessions.${index}.venueDetails.address`}
-                                               render={({field}) => (
-                                                   <FormItem><FormLabel>Address</FormLabel><FormControl><Input
-                                                       placeholder="Street, City" {...field} /></FormControl><FormMessage/></FormItem>)}/>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="venue-name">Venue Name</Label>
+                                        <Input
+                                            id="venue-name"
+                                            placeholder="e.g., Grand Hall"
+                                            value={localFormState.venueDetails.name || ''}
+                                            onChange={(e) => handleInputChange('name', e.target.value)}
+                                        />
+                                        {localErrors.venueName && (
+                                            <p className="text-sm text-destructive">{localErrors.venueName}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="venue-address">Address</Label>
+                                        <Input
+                                            id="venue-address"
+                                            placeholder="Street, City"
+                                            value={localFormState.venueDetails.address || ''}
+                                            onChange={(e) => handleInputChange('address', e.target.value)}
+                                        />
+                                    </div>
                                     <div className="text-sm text-muted-foreground pt-4">
                                         <p>Use the map to locate the venue precisely. You can:</p>
                                         <ul className="list-disc pl-5 mt-2 space-y-1">
@@ -197,27 +282,6 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                                 <div className="flex flex-col md:h-full gap-4">
                                     {isLoaded ? (
                                         <>
-                                            {/*
-                                              * Autocomplete functionality temporarily disabled
-                                              * TODO: Fix this to properly handle clickable suggestions
-                                              */}
-                                            {/*
-                                            <Autocomplete
-                                                onLoad={onAutocompleteLoad}
-                                                className={'!z-10'}
-                                                onPlaceChanged={() => {
-                                                    console.log('Place changed');
-                                                }}
-                                            >
-                                                <Input
-                                                    type="text"
-                                                    placeholder="Search for a location..."
-                                                    className="w-full shadow-md"
-                                                />
-                                            </Autocomplete>
-                                            */}
-
-                                            {/* Simple input field while autocomplete is disabled */}
                                             <Input
                                                 type="text"
                                                 placeholder="Search functionality coming soon..."
@@ -233,7 +297,15 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                                                     onDragEnd={(e) => {
                                                         if (e.latLng) {
                                                             const newPos = {lat: e.latLng.lat(), lng: e.latLng.lng()};
-                                                            setMarkerPosition(newPos); // useEffect will push to form
+                                                            setMarkerPosition(newPos);
+                                                            setLocalFormState(prev => ({
+                                                                ...prev,
+                                                                venueDetails: {
+                                                                    ...prev.venueDetails,
+                                                                    latitude: newPos.lat,
+                                                                    longitude: newPos.lng
+                                                                }
+                                                            }));
                                                         }
                                                     }}
                                                 />
@@ -244,9 +316,18 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                             </div>
                         </TabsContent>
                         <TabsContent value="online" className="p-6">
-                            <FormField control={control} name={`sessions.${index}.onlineLink`} render={({field}) => (
-                                <FormItem><FormLabel>Online Link</FormLabel><FormControl><Input
-                                    placeholder="https://zoom.us/..." {...field} /></FormControl><FormMessage/></FormItem>)}/>
+                            <div className="space-y-2">
+                                <Label htmlFor="online-link">Online Link</Label>
+                                <Input
+                                    id="online-link"
+                                    placeholder="https://zoom.us/..."
+                                    value={localFormState.venueDetails.onlineLink || ''}
+                                    onChange={(e) => handleInputChange('onlineLink', e.target.value)}
+                                />
+                                {localErrors.onlineLink && (
+                                    <p className="text-sm text-destructive">{localErrors.onlineLink}</p>
+                                )}
+                            </div>
                         </TabsContent>
                     </Tabs>
                 </div>

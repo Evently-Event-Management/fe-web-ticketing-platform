@@ -1,6 +1,6 @@
 // --- Session List Item ---
 import {useFormContext} from "react-hook-form";
-import {CreateEventFormData, SessionFormData} from "@/lib/validators/event";
+import {CreateEventFormData, SessionFormData, SessionType} from "@/lib/validators/event";
 import {AlertCircle, Armchair, Info, Users} from "lucide-react";
 import {format, parseISO} from "date-fns";
 import {Badge} from "@/components/ui/badge";
@@ -19,7 +19,8 @@ export function SessionListItemSeating({field, index, onConfigure}: {
     onConfigure: () => void;
 }) {
     const {watch} = useFormContext<CreateEventFormData>();
-    const {isOnline, layoutData} = watch(`sessions.${index}`);
+    const {sessionType, layoutData} = watch(`sessions.${index}`);
+    const isOnline = sessionType === SessionType.ONLINE;
 
     const isConfigured = layoutData && layoutData.layout.blocks.length > 0;
     const badgeVariant = isConfigured ? "default" : "destructive";

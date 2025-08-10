@@ -34,7 +34,7 @@ function LogoManagementCard({organization, onUpdate}: LogoManagementCardProps) {
         try {
             toast.promise(uploadLogo(organization.id, file), {
                 loading: 'Uploading logo...',
-                success: () => {
+                success: ( ) => {
                     onUpdate();
                     return 'Logo uploaded successfully!';
                 },

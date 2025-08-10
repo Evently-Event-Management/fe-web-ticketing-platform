@@ -16,7 +16,7 @@ import {Button} from "@/components/ui/button";
 import {Calendar as CalendarIcon} from "lucide-react";
 import {Calendar} from "@/components/ui/calendar";
 import * as React from "react";
-import {SalesStartRuleType, SessionFormData} from "@/lib/validators/event";
+import {SalesStartRuleType, SessionFormData, SessionType} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
 
@@ -87,8 +87,8 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
             const endTime = new Date(currentStartTime.getTime() + data.durationHours * 60 * 60 * 1000);
             newSessions.push({
                 startTime: currentStartTime.toISOString(),
+                sessionType: SessionType.PHYSICAL,
                 endTime: endTime.toISOString(),
-                isOnline: false,
                 salesStartRuleType: data.salesStartRuleType,
                 salesStartHoursBefore: data.salesStartHoursBefore,
                 salesStartFixedDatetime: data.salesStartFixedDatetime?.toISOString(),

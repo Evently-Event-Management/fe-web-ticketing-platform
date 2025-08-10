@@ -3,31 +3,50 @@
 import * as React from 'react';
 import {useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
-import {
-    CoverPhotosCard,
-    EventDetailsCard,
-    TiersCard,
-    SessionsCard
-} from './EventReviewCards'; // Assuming these are in a separate file now
+import {useOrganization} from '@/providers/OrganizationProvider';
+import {ReviewEventHero} from './review/ReviewEventHero';
+import {ReviewEventDetails} from './review/ReviewEventDetails';
+import {ReviewTicketTiers} from './review/ReviewTicketTiers';
+import {ReviewSessions} from './review/ReviewSessions';
+import {JSX} from "react";
 
-// --- Main Review Step Component ---
-export function ReviewStep({coverFiles}: { coverFiles: File[] }) {
+interface ReviewStepProps {
+    coverFiles: File[];
+}
+
+export function ReviewStep({coverFiles}: ReviewStepProps): JSX.Element {
     const {watch} = useFormContext<CreateEventFormData>();
-    const formData = watch(); // Get all form data to pass to the review cards
+    const formData = watch();
+    const {organization} = useOrganization();
 
     return (
-        <div className="space-y-8">
-            <h2 className="text-2xl font-bold">Review Your Event</h2>
-            <p className="text-muted-foreground">
-                This is a preview of how your event information will be structured. Please review all details carefully
-                before submitting for approval.
-            </p>
+        <div className="space-y-8 max-w-4xl mx-auto">
+            <div className="text-center space-y-2 mb-8">
+                <h2 className="text-2xl font-bold">Event Preview</h2>
+                <p className="text-muted-foreground">
+                    This is how your event will appear to customers. Review all details before submitting.
+                </p>
+            </div>
 
-            {/* Reusing the modular card components */}
-            <CoverPhotosCard items={coverFiles}/>
-            <EventDetailsCard details={formData}/>
-            <TiersCard tiers={formData.tiers}/>
-            <SessionsCard sessions={formData.sessions}/>
+            {/* Hero Section with Cover Photos and Title */}
+            <ReviewEventHero
+                title={formData.title}
+                categoryName={formData.categoryName}
+                organization={organization}
+                coverFiles={coverFiles}
+            />
+
+            {/* Event Details Section with Description and Overview */}
+            <ReviewEventDetails
+                description={formData.description}
+                overview={formData.overview}
+            />
+
+            {/* Tiers & Pricing Section */}
+            <ReviewTicketTiers tiers={formData.tiers}/>
+
+            {/* Sessions & Schedule Section */}
+            <ReviewSessions sessions={formData.sessions} tiers={formData.tiers}/>
         </div>
     );
 }

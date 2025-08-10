@@ -1,6 +1,15 @@
 import {CreateEventFormData} from "@/lib/validators/event";
 import {apiFetch} from '@/lib/api';
-import {EventDetailDTO, EventResponseDTO, EventStatus, EventSummaryDTO} from "@/types/event";
+import {EventDetailDTO, EventStatus, EventSummaryDTO} from "@/lib/validators/event";
+
+interface EventResponseDTO {
+    id: string;
+    title: string;
+    status: string;
+    organizationId: string;
+    createdAt: string;
+    updatedAt: string;
+}
 
 const API_BASE_PATH = '/event-seating/v1/events';
 

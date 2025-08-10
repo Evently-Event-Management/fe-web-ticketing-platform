@@ -9,7 +9,7 @@ import {MoreHorizontal, PlusCircle, Trash2, Eye} from 'lucide-react';
 import {format, parseISO} from 'date-fns';
 
 import {getOrganizationEvents} from '@/lib/actions/eventActions';
-import {EventStatus, EventSummaryDTO} from '@/types/event';
+import {EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {
