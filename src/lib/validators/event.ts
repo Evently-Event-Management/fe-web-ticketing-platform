@@ -164,7 +164,7 @@ export enum EventStatus {
 export const eventSummarySchema = z.object({
     id: z.uuid(),
     title: z.string(),
-    status: z.enum(EventStatus),
+    status: z.enum(Object.values(EventStatus)),
     organizationName: z.string(),
     organizationId: z.uuid(),
     createdAt: z.iso.datetime(),
