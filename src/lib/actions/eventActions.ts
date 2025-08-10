@@ -115,6 +115,7 @@ export const getAnyOrganizationEvents_Admin = (
 
 /**
  * [ADMIN] Approves a pending event.
+ * Returns void as the endpoint returns no content
  */
 export const approveEvent_Admin = (eventId: string): Promise<void> => {
     return apiFetch<void>(`${API_BASE_PATH}/${eventId}/approve`, {
@@ -124,6 +125,7 @@ export const approveEvent_Admin = (eventId: string): Promise<void> => {
 
 /**
  * [ADMIN] Rejects a pending event.
+ * Returns void as the endpoint returns no content
  */
 export const rejectEvent_Admin = (eventId: string, reason: string): Promise<void> => {
     return apiFetch<void>(`${API_BASE_PATH}/${eventId}/reject`, {
