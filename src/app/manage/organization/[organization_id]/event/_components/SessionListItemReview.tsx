@@ -1,9 +1,10 @@
 // --- Read-Only Session List Item for Review ---
-import {SalesStartRuleType, SessionFormData} from "@/lib/validators/event";
+import {SessionFormData} from "@/lib/validators/event";
 import {format, parseISO} from "date-fns";
 import {Armchair, Calendar, Clock, Info, Link as LinkIcon, MapPin, Tag, Users} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import * as React from "react";
+import {SalesStartRuleType} from "@/lib/validators/salesStartRuleType";
 
 export function SessionListItemReview({session, index}: { session: SessionFormData; index: number; }) {
     const {isOnline, onlineLink, venueDetails, layoutData} = session;

@@ -4,7 +4,7 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import {useParams} from "next/navigation";
 import {toast} from "sonner";
-import {getEventById} from "@/lib/actions/eventActions";
+import {getMyEventById} from "@/lib/actions/eventActions";
 import {EventDetailDTO} from "@/lib/validators/event";
 import {Skeleton} from "@/components/ui/skeleton";
 import {EventStatusTracker} from "../_components/EventStatusTracker";
@@ -26,7 +26,7 @@ export default function EventDetailsPage() {
         console.log("Fetching event data for ID:", eventId);
         if (eventId) {
             setIsLoading(true);
-            getEventById(eventId)
+            getMyEventById(eventId)
                 .then((eventData) => {
                     setEvent(eventData);
                     // After we have event data, fetch organization details

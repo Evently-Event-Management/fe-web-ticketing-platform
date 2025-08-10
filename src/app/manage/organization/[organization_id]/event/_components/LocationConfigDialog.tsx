@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import {useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionType} from '@/lib/validators/event';
+import {CreateEventFormData} from '@/lib/validators/event';
 import {toast} from 'sonner';
 import {GoogleMap, useJsApiLoader, Marker} from '@react-google-maps/api';
 
@@ -14,6 +14,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Skeleton} from '@/components/ui/skeleton';
+import {SessionType} from "@/lib/validators/salesStartRuleType";
 
 const MAP_CONTAINER_STYLE = {
     width: '100%',

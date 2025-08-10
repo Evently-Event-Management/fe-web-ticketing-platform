@@ -1,18 +1,5 @@
 // This file defines the shapes of data sent to and received from the seating layout API.
 
-// ✅ New generic type for Spring Boot's Page object
-export interface PaginatedResponse<T> {
-    content: T[];
-    totalPages: number;
-    totalElements: number;
-    last: boolean;
-    size: number;
-    number: number; // The current page number
-    first: boolean;
-    numberOfElements: number;
-    empty: boolean;
-}
-
 
 // Matches the LayoutDataDTO.Position class
 export interface LayoutPosition {

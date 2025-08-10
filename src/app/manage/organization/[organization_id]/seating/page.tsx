@@ -1,7 +1,7 @@
 'use client'
 
 import {deleteSeatingLayoutTemplate, getSeatingLayoutTemplatesByOrg} from '@/lib/actions/seatingLayoutTemplateActions';
-import {PaginatedResponse, SeatingLayoutTemplateResponse} from '@/types/seatingLayout';
+import {SeatingLayoutTemplateResponse} from '@/types/seatingLayout';
 import {useParams, useRouter} from 'next/navigation';
 
 import React, {useCallback, useEffect, useState} from 'react';
@@ -18,6 +18,7 @@ import {
     PaginationPrevious
 } from "@/components/ui/pagination";
 import LayoutPreviewCard from "@/app/manage/organization/[organization_id]/seating/_components/LayoutPreviewCard";
+import {PaginatedResponse} from "@/types/paginatedResponse";
 
 export default function SeatingLayoutsPage() {
     const params = useParams();

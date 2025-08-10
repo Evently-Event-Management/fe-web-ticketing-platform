@@ -1,26 +1,26 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { getOrganizationEvents } from '@/lib/actions/eventActions';
-import { EventSummaryDTO } from '@/lib/validators/event';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, parseISO } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import {useState, useEffect} from 'react';
+import {getAnyOrganizationEvents_Admin} from '@/lib/actions/eventActions';
+import {EventSummaryDTO} from '@/lib/validators/event';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
+import {format, parseISO} from 'date-fns';
+import {Badge} from '@/components/ui/badge';
+import {Skeleton} from '@/components/ui/skeleton';
 
 interface OrganizationHistoryCardProps {
     organizationId: string;
 }
 
-export function OrganizationHistoryCard({ organizationId }: OrganizationHistoryCardProps) {
+export function OrganizationHistoryCard({organizationId}: OrganizationHistoryCardProps) {
     const [history, setHistory] = useState<EventSummaryDTO[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (organizationId) {
             // Fetch the last 5 events for this organization
-            getOrganizationEvents(organizationId, undefined, undefined, 0, 5)
+            getAnyOrganizationEvents_Admin(organizationId, undefined, undefined, 0, 5)
                 .then(data => setHistory(data.content))
                 .catch(err => console.error("Failed to fetch org history:", err))
                 .finally(() => setIsLoading(false));
@@ -36,9 +36,9 @@ export function OrganizationHistoryCard({ organizationId }: OrganizationHistoryC
             <CardContent>
                 {isLoading ? (
                     <div className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full"/>
+                        <Skeleton className="h-10 w-full"/>
+                        <Skeleton className="h-10 w-full"/>
                     </div>
                 ) : (
                     <ul className="space-y-3">
