@@ -99,11 +99,12 @@ export function InteractiveResizableBlock({block, tiers, onClick}: ResizableBloc
         disabled: true,
     });
 
-    const style = {
+    // Fix the TypeScript error by ensuring width and height are valid CSS values
+    const style: React.CSSProperties = {
         left: block.position.x,
         top: block.position.y,
-        width: block.width,
-        height: block.height,
+        width: block.width ?? undefined,
+        height: block.height ?? undefined,
     };
 
     // Determine the background color based on the tier of the seats inside the block

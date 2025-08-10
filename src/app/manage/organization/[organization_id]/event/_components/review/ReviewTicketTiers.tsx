@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tier } from '@/lib/validators/event';
 
 interface ReviewTicketTiersProps {
@@ -39,7 +38,7 @@ const TicketTierCard: React.FC<TicketTierCardProps> = ({ tier }) => {
                 <CardTitle className="mb-2">{tier.name}</CardTitle>
                 <div className="flex justify-between items-center mt-4">
                     <span className="text-2xl font-bold">${tier.price.toFixed(2)}</span>
-                    <Button variant="secondary" size="sm" disabled>Select</Button>
+                    {/*<Button variant="secondary" size="sm" disabled>Select</Button>*/}
                 </div>
             </CardContent>
         </Card>
