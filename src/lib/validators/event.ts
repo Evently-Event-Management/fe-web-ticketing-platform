@@ -193,7 +193,7 @@ export const eventDetailSchema = z.object({
     title: z.string(),
     description: z.string(),
     overview: z.string(),
-    status: z.enum(EventStatus),
+    status: z.enum(Object.values(EventStatus)),
     rejectionReason: z.string().nullable(),
     coverPhotos: z.array(z.url()),
     organizationId: z.uuid(),
