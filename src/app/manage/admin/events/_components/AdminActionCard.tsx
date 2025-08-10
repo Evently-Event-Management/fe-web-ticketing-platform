@@ -1,33 +1,33 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { approveEvent, rejectEvent } from '@/lib/actions/eventActions';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
+import {useState} from 'react';
+import {toast} from 'sonner';
+import {approveEvent_Admin, rejectEvent_Admin} from '@/lib/actions/eventActions';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
+import {Textarea} from '@/components/ui/textarea';
+import {Label} from '@/components/ui/label';
 
 interface AdminActionCardProps {
     eventId: string;
     onActionComplete: () => void; // Callback to refresh the page data
 }
 
-export function AdminActionCard({ eventId, onActionComplete }: AdminActionCardProps) {
+export function AdminActionCard({eventId, onActionComplete}: AdminActionCardProps) {
     const [rejectionReason, setRejectionReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleApprove = async () => {
         setIsSubmitting(true);
-        toast.promise(approveEvent(eventId), {
+        toast.promise(approveEvent_Admin(eventId), {
             loading: 'Approving event...',
             success: () => {
                 onActionComplete();
                 return 'Event approved successfully!';
             },
             error: (err) => {
+                console.error("Approval error:", err);
                 setIsSubmitting(false);
                 return err.message || 'Failed to approve event.';
             },
@@ -40,7 +40,7 @@ export function AdminActionCard({ eventId, onActionComplete }: AdminActionCardPr
             return;
         }
         setIsSubmitting(true);
-        toast.promise(rejectEvent(eventId, rejectionReason), {
+        toast.promise(rejectEvent_Admin(eventId, rejectionReason), {
             loading: 'Rejecting event...',
             success: () => {
                 onActionComplete();

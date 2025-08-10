@@ -85,11 +85,12 @@ export default function AdminEventDetailsPage() {
                 />
             </div>
 
-            {/* Admin Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
+            {/* Admin Sidebar - Now fixed on scroll */}
+            <div
+                className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 lg:self-start max-h-[calc(100vh-120px)] overflow-y-auto">
                 <AdminActionCard eventId={event.id} onActionComplete={fetchEventData}/>
                 <Separator/>
-                <OrganizationHistoryCard organizationId={event.organizationId}/>
+                <OrganizationHistoryCard organization={organization}/>
             </div>
         </div>
     );
