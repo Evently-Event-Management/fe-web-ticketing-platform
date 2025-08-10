@@ -213,17 +213,16 @@ interface SeatingInformationProps {
 const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline, session, tiers}) => {
     const {layoutData} = session;
     const {venueDetails} = session;
-
+    
     // For physical events with coordinates, prepare Google Map
-    const {isLoaded} = useJsApiLoader({
-        id: 'google-map-script',
     const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!googleMapsApiKey) {
-        throw new Error('Google Maps API key is missing. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your environment.');
+        console.error('Google Maps API key is missing. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your environment.');
     }
+    
     const {isLoaded} = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey,
+        googleMapsApiKey: googleMapsApiKey || '',
     });
 
     const mapCenter = venueDetails?.latitude && venueDetails?.longitude
