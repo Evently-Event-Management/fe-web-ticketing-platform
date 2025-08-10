@@ -21,13 +21,17 @@ import {
     PopoverTrigger
 } from '@/components/ui/popover';
 import {Button} from '@/components/ui/button';
-import {GoogleMap, useJsApiLoader, Marker} from '@react-google-maps/api';
+import {GoogleMap, Marker} from '@react-google-maps/api';
 import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import { useLoadScript, Libraries } from '@react-google-maps/api';
 
 interface ReviewSessionsProps {
     sessions: SessionFormData[];
     tiers: Tier[];
 }
+
+// Shared libraries configuration for Google Maps
+const mapLibraries: Libraries = ["places", "maps"];
 
 export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions, tiers}) => {
     if (sessions.length === 0) return null;
@@ -212,16 +216,13 @@ interface SeatingInformationProps {
 const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline, session, tiers}) => {
     const {layoutData} = session;
     const {venueDetails} = session;
-    
+
     // For physical events with coordinates, prepare Google Map
-    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!googleMapsApiKey) {
-        console.error('Google Maps API key is missing. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your environment.');
-    }
-    
-    const {isLoaded} = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: googleMapsApiKey || '',
+    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+    const { isLoaded } = useLoadScript({
+        googleMapsApiKey,
+        libraries: mapLibraries,
     });
 
     const mapCenter = venueDetails?.latitude && venueDetails?.longitude

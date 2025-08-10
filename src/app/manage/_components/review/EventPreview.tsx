@@ -9,7 +9,7 @@ import {ReviewSessions} from "@/app/manage/_components/review/ReviewSessions";
 
 export const EventPreview = ({event, organization}: { event: EventDetailDTO, organization: OrganizationResponse }) => {
     return (
-        <>
+        <div className="space-y-8">
             <ReviewEventHero
                 title={event.title}
                 categoryName={event.categoryName}
@@ -30,7 +30,7 @@ export const EventPreview = ({event, organization}: { event: EventDetailDTO, org
                 <ReviewSessions sessions={event.sessions} tiers={event.tiers}/>
             </Card>
 
-        </>
+        </div>
     );
 };
 

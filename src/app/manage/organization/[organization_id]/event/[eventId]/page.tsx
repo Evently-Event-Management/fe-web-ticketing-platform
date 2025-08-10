@@ -10,7 +10,7 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {EventStatusTracker} from "../_components/EventStatusTracker";
 import {EventPreview} from "@/app/manage/_components/review/EventPreview";
 import {Separator} from "@/components/ui/separator";
-import {getOrganizationById} from "@/lib/actions/organizationActions";
+import {getMyOrganizationById} from "@/lib/actions/organizationActions";
 import {OrganizationResponse} from "@/types/oraganizations";
 
 export default function EventDetailsPage() {
@@ -31,7 +31,7 @@ export default function EventDetailsPage() {
                     setEvent(eventData);
                     // After we have event data, fetch organization details
                     if (eventData && eventData.organizationId) {
-                        return getOrganizationById(eventData.organizationId);
+                        return getMyOrganizationById(eventData.organizationId);
                     }
                     return null;
                 })

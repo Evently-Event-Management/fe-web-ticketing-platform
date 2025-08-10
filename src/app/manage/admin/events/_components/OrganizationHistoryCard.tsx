@@ -8,30 +8,52 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/compo
 import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
 import {Skeleton} from '@/components/ui/skeleton';
+import {OrganizationResponse} from "@/types/oraganizations";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 interface OrganizationHistoryCardProps {
-    organizationId: string;
+    organization: OrganizationResponse;
 }
 
-export function OrganizationHistoryCard({organizationId}: OrganizationHistoryCardProps) {
+export function OrganizationHistoryCard({organization}: OrganizationHistoryCardProps) {
     const [history, setHistory] = useState<EventSummaryDTO[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (organizationId) {
+        if (organization.id) {
             // Fetch the last 5 events for this organization
-            getAnyOrganizationEvents_Admin(organizationId, undefined, undefined, 0, 5)
+            getAnyOrganizationEvents_Admin(organization.id, undefined, undefined, 0, 5)
                 .then(data => setHistory(data.content))
                 .catch(err => console.error("Failed to fetch org history:", err))
                 .finally(() => setIsLoading(false));
         }
-    }, [organizationId]);
+    }, [organization.id]);
+
+    // Get initials for avatar fallback
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+    };
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Organization History</CardTitle>
-                <CardDescription>A brief look at their recent activity.</CardDescription>
+            <CardHeader className="space-y-4">
+                <div className="flex items-center space-x-4">
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={organization.logoUrl || ''} alt={organization.name} />
+                        <AvatarFallback>
+                            {getInitials(organization.name)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle>{organization.name}</CardTitle>
+                        <CardDescription>A brief look at their recent activity.</CardDescription>
+                    </div>
+                </div>
             </CardHeader>
             <CardContent>
                 {isLoading ? (
