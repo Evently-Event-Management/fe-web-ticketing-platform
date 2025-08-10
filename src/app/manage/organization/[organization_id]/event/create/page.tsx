@@ -140,78 +140,80 @@ export default function CreateEventPage() {
     };
 
     return (
-        <div className="p-4 md:p-8">
-            <div className="mb-8">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold">Create New Event</h1>
-                        <p className="text-sm text-muted-foreground">Step {step} of {totalSteps}</p>
+        <div className="w-full flex justify-center p-4 md:p-8">
+            <div className="w-full max-w-5xl space-y-8">
+                <div className="mb-8">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h1 className="text-2xl font-bold">Create New Event</h1>
+                            <p className="text-sm text-muted-foreground">Step {step} of {totalSteps}</p>
+                        </div>
+                        {hasStepErrors() && (
+                            <div className="text-sm text-destructive">
+                                Please fix validation errors
+                            </div>
+                        )}
                     </div>
-                    {hasStepErrors() && (
-                        <div className="text-sm text-destructive">
-                            Please fix validation errors
-                        </div>
-                    )}
+                    <Progress value={(step / totalSteps) * 100} className="mt-2"/>
                 </div>
-                <Progress value={(step / totalSteps) * 100} className="mt-2"/>
-            </div>
 
-            <FormProvider {...methods}>
-                <form onSubmit={methods.handleSubmit(onSubmit)}>
-                    {renderStep()}
+                <FormProvider {...methods}>
+                    <form onSubmit={methods.handleSubmit(onSubmit)}>
+                        {renderStep()}
 
-                    {/* Hide the Next/Previous buttons when in configuration mode */}
-                    {!inConfigMode && (
-                        <div className="flex justify-between mt-8">
-                            <Button type="button" variant="outline" onClick={onPrev} disabled={step === 1}>
-                                Previous
-                            </Button>
-                            {step < totalSteps ? (
-                                <Button
-                                    type="button"
-                                    onClick={onNext}
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? 'Validating...' : 'Next'}
+                        {/* Hide the Next/Previous buttons when in configuration mode */}
+                        {!inConfigMode && (
+                            <div className="flex justify-between mt-8">
+                                <Button type="button" variant="outline" onClick={onPrev} disabled={step === 1}>
+                                    Previous
                                 </Button>
-                            ) : (
-                                <AlertDialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
-                                    <AlertDialogTrigger asChild>
-                                        <Button type="button" disabled={isSubmitting}>
-                                            Submit Event
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Event Submission</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Thank you for submitting your event. Our admin team will review your request shortly and get back to you.
-                                                You&#39;ll receive a notification once the review is complete.
-                                                <br/>
-                                                <br/>
-                                                <strong>Event Title:</strong> {methods.watch('title')}
-                                                <br/>
-                                                <strong>Organization:</strong> {activeOrganization?.name || 'N/A'}
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogAction
-                                                onClick={() => onSubmit(methods.getValues())}
-                                                disabled={isSubmitting}
-                                            >
-                                                {isSubmitting ? 'Submitting...' : 'Confirm'}
-                                            </AlertDialogAction>
-                                            <AlertDialogCancel>
-                                                Cancel
-                                            </AlertDialogCancel>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            )}
-                        </div>
-                    )}
-                </form>
-            </FormProvider>
+                                {step < totalSteps ? (
+                                    <Button
+                                        type="button"
+                                        onClick={onNext}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'Validating...' : 'Next'}
+                                    </Button>
+                                ) : (
+                                    <AlertDialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+                                        <AlertDialogTrigger asChild>
+                                            <Button type="button" disabled={isSubmitting}>
+                                                Submit Event
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Event Submission</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Thank you for submitting your event. Our admin team will review your request shortly and get back to you.
+                                                    You&#39;ll receive a notification once the review is complete.
+                                                    <br/>
+                                                    <br/>
+                                                    <strong>Event Title:</strong> {methods.watch('title')}
+                                                    <br/>
+                                                    <strong>Organization:</strong> {activeOrganization?.name || 'N/A'}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogAction
+                                                    onClick={() => onSubmit(methods.getValues())}
+                                                    disabled={isSubmitting}
+                                                >
+                                                    {isSubmitting ? 'Submitting...' : 'Confirm'}
+                                                </AlertDialogAction>
+                                                <AlertDialogCancel>
+                                                    Cancel
+                                                </AlertDialogCancel>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
+                            </div>
+                        )}
+                    </form>
+                </FormProvider>
+            </div>
         </div>
     );
 }

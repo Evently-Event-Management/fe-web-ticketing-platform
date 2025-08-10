@@ -46,7 +46,7 @@ export function ReviewStep({coverFiles}: ReviewStepProps): JSX.Element {
             <ReviewTicketTiers tiers={formData.tiers}/>
 
             {/* Sessions & Schedule Section */}
-            <ReviewSessions sessions={formData.sessions}/>
+            <ReviewSessions sessions={formData.sessions} tiers={formData.tiers}/>
         </div>
     );
 }
