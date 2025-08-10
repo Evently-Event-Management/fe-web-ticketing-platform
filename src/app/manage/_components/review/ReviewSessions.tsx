@@ -12,8 +12,6 @@ import {
 import {Badge} from '@/components/ui/badge';
 import {
     SessionFormData,
-    SalesStartRuleType,
-    SessionType,
     Seat,
     Tier
 } from '@/lib/validators/event';
@@ -24,6 +22,7 @@ import {
 } from '@/components/ui/popover';
 import {Button} from '@/components/ui/button';
 import {GoogleMap, useJsApiLoader, Marker} from '@react-google-maps/api';
+import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
 
 interface ReviewSessionsProps {
     sessions: SessionFormData[];

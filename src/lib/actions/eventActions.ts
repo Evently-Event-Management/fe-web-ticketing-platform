@@ -1,175 +1,133 @@
-import {CreateEventFormData} from "@/lib/validators/event";
 import {apiFetch} from '@/lib/api';
-import {EventDetailDTO, EventStatus, EventSummaryDTO} from "@/lib/validators/event";
+import {CreateEventFormData} from '@/lib/validators/event';
+import {EventDetailDTO, EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 
-interface EventResponseDTO {
-    id: string;
-    title: string;
-    status: string;
-    organizationId: string;
-    createdAt: string;
-    updatedAt: string;
-}
+import {PaginatedResponse} from "@/types/paginatedResponse";
+import {EventResponseDTO} from "@/types/event";
 
 const API_BASE_PATH = '/event-seating/v1/events';
 
+// ================================================================================
+// General User & Organizer Actions
+// ================================================================================
+
 /**
- * Create a new event
- * @param eventData Form data for the new event
- * @param coverImages Cover images for the event
+ * Creates a new event.
  */
-export async function createEvent(eventData: CreateEventFormData, coverImages: File[]): Promise<EventResponseDTO> {
-    try {
-        const formData = new FormData();
-
-        // Convert the event data to a JSON string and add it as a part
-        formData.append('request', JSON.stringify(eventData));
-
-        // Add each cover image as a separate part
-        if (coverImages && coverImages.length > 0) {
-            coverImages.forEach((file) => {
-                formData.append('coverImages', file);
-            });
-        }
-
-        // Use apiFetch instead of raw fetch
-        return await apiFetch<EventResponseDTO>(`${API_BASE_PATH}`, {
-            method: 'POST',
-            body: formData,
-            // No need to set headers, apiFetch handles that
-        });
-    } catch (error) {
-        console.error('Error creating event:', error);
-        throw error;
+export const createEvent = (eventData: CreateEventFormData, coverImages: File[]): Promise<EventResponseDTO> => {
+    const formData = new FormData();
+    formData.append('request', JSON.stringify(eventData));
+    if (coverImages?.length > 0) {
+        coverImages.forEach(file => formData.append('coverImages', file));
     }
-}
+    return apiFetch<EventResponseDTO>(API_BASE_PATH, {
+        method: 'POST',
+        body: formData,
+    });
+};
 
 /**
- * Fetch event details by ID
- * @param eventId The ID of the event to fetch
+ * Fetches event details for an event the current user OWNS.
  */
-export async function getEventById(eventId: string): Promise<EventDetailDTO> {
-    try {
-        return await apiFetch<EventDetailDTO>(`${API_BASE_PATH}/${eventId}`, {
-            method: 'GET',
-        });
-    } catch (error) {
-        console.error(`Error fetching event ${eventId}:`, error);
-        throw error;
-    }
-}
+export const getMyEventById = (eventId: string): Promise<EventDetailDTO> => {
+    return apiFetch<EventDetailDTO>(`${API_BASE_PATH}/${eventId}`);
+};
 
 /**
- * Fetch all events (admin only)
- * @param status Optional filter for event status
- * @param search Optional search term for filtering events
- * @param page Page number (0-based)
- * @param size Number of events per page
+ * Fetches a paginated list of events for an organization the current user OWNS.
  */
-export async function getAllEvents(
-    status?: EventStatus,
-    search?: string,
-    page: number = 0,
-    size: number = 10
-): Promise<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }> {
-    try {
-        let url = `${API_BASE_PATH}?page=${page}&size=${size}`;
-
-        if (status) {
-            url += `&status=${status}`;
-        }
-
-        if (search) {
-            url += `&search=${encodeURIComponent(search)}`;
-        }
-
-        return await apiFetch<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }>(url, {
-            method: 'GET',
-        });
-    } catch (error) {
-        console.error('Error fetching events:', error);
-        throw error;
-    }
-}
-
-/**
- * Get paginated list of events for a specific organization
- * @param organizationId The ID of the organization
- * @param status Optional filter for event status
- * @param search Optional search term for filtering events
- * @param page Page number (0-based)
- * @param size Number of events per page
- */
-export async function getOrganizationEvents(
+export const getMyOrganizationEvents = (
     organizationId: string,
     status?: EventStatus,
     search?: string,
     page: number = 0,
     size: number = 10
-): Promise<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }> {
-    try {
-        let url = `${API_BASE_PATH}/organization/${organizationId}?page=${page}&size=${size}`;
+): Promise<PaginatedResponse<EventSummaryDTO>> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    });
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
 
-        if (status) {
-            url += `&status=${status}`;
-        }
-
-        if (search) {
-            url += `&search=${encodeURIComponent(search)}`;
-        }
-
-        return await apiFetch<{ content: EventSummaryDTO[], totalPages: number, totalElements: number }>(url, {
-            method: 'GET',
-        });
-    } catch (error) {
-        console.error(`Error fetching organization events for ${organizationId}:`, error);
-        throw error;
-    }
-}
+    return apiFetch<PaginatedResponse<EventSummaryDTO>>(`${API_BASE_PATH}/organization/${organizationId}?${params.toString()}`);
+};
 
 /**
- * Approve an event (admin only)
- * @param eventId The ID of the event to approve
+ * Deletes an event the current user OWNS.
  */
-export async function approveEvent(eventId: string): Promise<void> {
-    try {
-        await apiFetch<void>(`${API_BASE_PATH}/${eventId}/approve`, {
-            method: 'POST',
-        });
-    } catch (error) {
-        console.error(`Error approving event ${eventId}:`, error);
-        throw error;
-    }
-}
+export const deleteEvent = (eventId: string): Promise<void> => {
+    return apiFetch<void>(`${API_BASE_PATH}/${eventId}`, {
+        method: 'DELETE',
+    });
+};
+
+
+// ================================================================================
+// Administrator-Only Actions
+// ================================================================================
 
 /**
- * Reject an event (admin only)
- * @param eventId The ID of the event to reject
- * @param reason The reason for rejecting the event
+ * [ADMIN] Fetches event details for ANY event by its ID.
  */
-export async function rejectEvent(eventId: string, reason: string): Promise<void> {
-    try {
-        await apiFetch<void>(`${API_BASE_PATH}/${eventId}/reject`, {
-            method: 'POST',
-            body: JSON.stringify({reason}),
-        });
-    } catch (error) {
-        console.error(`Error rejecting event ${eventId}:`, error);
-        throw error;
-    }
-}
+export const getAnyEventById_Admin = (eventId: string): Promise<EventDetailDTO> => {
+    return apiFetch<EventDetailDTO>(`${API_BASE_PATH}/admin/${eventId}`);
+};
 
 /**
- * Delete an event
- * @param eventId The ID of the event to delete
+ * [ADMIN] Fetches a paginated list of ALL events in the system.
  */
-export async function deleteEvent(eventId: string): Promise<void> {
-    try {
-        await apiFetch<void>(`${API_BASE_PATH}/${eventId}`, {
-            method: 'DELETE',
-        });
-    } catch (error) {
-        console.error(`Error deleting event ${eventId}:`, error);
-        throw error;
-    }
-}
+export const getAllEvents_Admin = (
+    status?: EventStatus,
+    search?: string,
+    page: number = 0,
+    size: number = 10
+): Promise<PaginatedResponse<EventSummaryDTO>> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    });
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
+
+    return apiFetch<PaginatedResponse<EventSummaryDTO>>(`${API_BASE_PATH}/admin/all?${params.toString()}`);
+};
+
+/**
+ * [ADMIN] Fetches a paginated list of events for ANY organization.
+ */
+export const getAnyOrganizationEvents_Admin = (
+    organizationId: string,
+    status?: EventStatus,
+    search?: string,
+    page: number = 0,
+    size: number = 10
+): Promise<PaginatedResponse<EventSummaryDTO>> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    });
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
+
+    return apiFetch<PaginatedResponse<EventSummaryDTO>>(`${API_BASE_PATH}/admin/organization/${organizationId}?${params.toString()}`);
+};
+
+/**
+ * [ADMIN] Approves a pending event.
+ */
+export const approveEvent_Admin = (eventId: string): Promise<void> => {
+    return apiFetch<void>(`${API_BASE_PATH}/${eventId}/approve`, {
+        method: 'POST',
+    });
+};
+
+/**
+ * [ADMIN] Rejects a pending event.
+ */
+export const rejectEvent_Admin = (eventId: string, reason: string): Promise<void> => {
+    return apiFetch<void>(`${API_BASE_PATH}/${eventId}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({reason}),
+    });
+};

@@ -8,7 +8,7 @@ import {ColumnDef} from '@tanstack/react-table';
 import {MoreHorizontal, Eye} from 'lucide-react';
 import {format, parseISO} from 'date-fns';
 
-import {getAllEvents,} from '@/lib/actions/eventActions';
+import {getAllEvents_Admin} from '@/lib/actions/eventActions';
 import {EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -68,7 +68,7 @@ export default function AdminEventsPage() {
 
     const fetchEvents = useCallback(() => {
         setIsLoading(true);
-        getAllEvents(
+        getAllEvents_Admin(
             statusFilter === 'ALL' ? undefined : statusFilter as EventStatus,
             debouncedSearchTerm,
             page,

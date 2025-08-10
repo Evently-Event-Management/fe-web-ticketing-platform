@@ -8,7 +8,7 @@ import {ColumnDef} from '@tanstack/react-table';
 import {MoreHorizontal, PlusCircle, Trash2, Eye} from 'lucide-react';
 import {format, parseISO} from 'date-fns';
 
-import {getOrganizationEvents} from '@/lib/actions/eventActions';
+import {getMyOrganizationEvents} from '@/lib/actions/eventActions';
 import {EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -69,7 +69,7 @@ export default function OrganizationEventsPage() {
 
     useEffect(() => {
         setIsLoading(true);
-        getOrganizationEvents(
+        getMyOrganizationEvents(
             organizationId,
             statusFilter === 'ALL' ? undefined : statusFilter,
             debouncedSearchTerm,

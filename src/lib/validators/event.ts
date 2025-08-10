@@ -1,16 +1,5 @@
 import {z} from 'zod';
-
-// ✅ NEW: Enum to match the backend SessionType
-export enum SessionType {
-    PHYSICAL = 'PHYSICAL',
-    ONLINE = 'ONLINE',
-}
-
-export enum SalesStartRuleType {
-    IMMEDIATE = 'IMMEDIATE',
-    ROLLING = 'ROLLING',
-    FIXED = 'FIXED',
-}
+import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
 
 
 // --- Seating Layout Schemas ---

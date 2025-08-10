@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState, useEffect} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionSeatingMapRequest, SessionType} from '@/lib/validators/event';
+import {CreateEventFormData, SessionSeatingMapRequest} from '@/lib/validators/event';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {
     SessionListItemSeating
@@ -15,6 +15,7 @@ import {Checkbox} from "@/components/ui/checkbox";
 import {Label} from "@/components/ui/label";
 import {toast} from "sonner";
 import {ArrowLeft} from "lucide-react";
+import {SessionType} from "@/lib/validators/salesStartRuleType";
 
 interface SeatingStepProps {
     onConfigModeChange?: (isInConfigMode: boolean) => void;

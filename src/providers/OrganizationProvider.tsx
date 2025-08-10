@@ -4,8 +4,8 @@ import React, {createContext, useContext, useState, useEffect, ReactNode, useCal
 import {useAuth} from '@/providers/AuthProvider';
 import {OrganizationRequest, OrganizationResponse} from '@/types/oraganizations';
 import {
-    getOrganizations,
-    getOrganizationById,
+    getMyOrganizations,
+    getMyOrganizationById,
     createNewOrganization,
     deleteOrganizationById, uploadOrganizationLogo, removeOrganizationLogo, updateOrganizationById
 } from '@/lib/actions/organizationActions';
@@ -48,7 +48,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
         setError(null);
 
         try {
-            const fetchedOrgs = await getOrganizations();
+            const fetchedOrgs = await getMyOrganizations();
             if (!isMounted) return;
 
             setOrganizations(fetchedOrgs);
@@ -89,7 +89,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
     }, [isAuthenticated, keycloak, setupOrganization]);
 
     const refreshOrganizations = async () => {
-        const fetchedOrgs = await getOrganizations();
+        const fetchedOrgs = await getMyOrganizations();
         setOrganizations(fetchedOrgs);
         if (organization) {
             const activeOrg = fetchedOrgs.find(org => org.id === organization.id);
@@ -106,7 +106,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
     const switchOrganization = async (orgId: string) => {
         setIsLoading(true);
         try {
-            const orgDetails = await getOrganizationById(orgId);
+            const orgDetails = await getMyOrganizationById(orgId);
             localStorage.setItem('selectedOrgId', orgId);
             setOrganization(orgDetails);
             router.push(`/manage/organization/${orgId}`);

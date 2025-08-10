@@ -3,13 +3,14 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SalesStartRuleType, SessionFormData, SessionType} from '@/lib/validators/event';
+import {CreateEventFormData, SessionFormData} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
 import {TimeConfigDialog} from './TimeConfigDialog'; // Assuming this component exists
 import {LocationConfigDialog} from './LocationConfigDialog';
 import {LinkIcon, MapPin, Settings, Trash2, Edit, Tag} from 'lucide-react';
+import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
 
 // Helper function to create a descriptive string for the sales rule
 const getSalesRuleDescription = (session: SessionFormData): string => {

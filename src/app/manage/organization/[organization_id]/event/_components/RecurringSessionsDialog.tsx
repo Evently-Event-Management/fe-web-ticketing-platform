@@ -16,9 +16,10 @@ import {Button} from "@/components/ui/button";
 import {Calendar as CalendarIcon} from "lucide-react";
 import {Calendar} from "@/components/ui/calendar";
 import * as React from "react";
-import {SalesStartRuleType, SessionFormData, SessionType} from "@/lib/validators/event";
+import {SessionFormData} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
+import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
 
 interface RecurringSessionFormValues {
     frequency: 'daily' | 'weekly';

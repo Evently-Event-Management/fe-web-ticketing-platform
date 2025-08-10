@@ -4,11 +4,11 @@ import * as React from 'react';
 import {useState, useEffect, useCallback} from 'react';
 import {useParams} from 'next/navigation';
 import {toast} from 'sonner';
-import {getEventById} from '@/lib/actions/eventActions';
+import {getAnyEventById_Admin} from '@/lib/actions/eventActions';
 import {EventDetailDTO} from '@/lib/validators/event';
 import {Skeleton} from '@/components/ui/skeleton';
 import {Separator} from '@/components/ui/separator';
-import {getOrganizationById} from "@/lib/actions/organizationActions";
+import {getAnyOrganizationById_Admin} from "@/lib/actions/organizationActions";
 import {OrganizationResponse} from "@/types/oraganizations";
 import EventPreview from "@/app/manage/_components/review/EventPreview";
 import {AdminActionCard} from "@/app/manage/admin/events/_components/AdminActionCard";
@@ -25,7 +25,7 @@ export default function AdminEventDetailsPage() {
     const fetchEventData = useCallback(() => {
         if (eventId) {
             setIsLoading(true);
-            getEventById(eventId)
+            getAnyEventById_Admin(eventId)
                 .then(setEvent)
                 .catch(() => toast.error("Failed to load event details."))
                 .finally(() => setIsLoading(false));
@@ -34,7 +34,7 @@ export default function AdminEventDetailsPage() {
 
     const fetchOrganizationData = useCallback((orgId: string) => {
         if (orgId) {
-            getOrganizationById(orgId)
+            getAnyOrganizationById_Admin(orgId)
                 .then(setOrganization)
                 .catch(() => toast.error("Failed to load organization details."));
         }
