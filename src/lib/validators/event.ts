@@ -181,7 +181,7 @@ export const sessionDetailSchema = z.object({
     endTime: z.iso.datetime(),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
     venueDetails: venueDetailsSchema,
-    salesStartRuleType: z.enum(SalesStartRuleType),
+    salesStartRuleType: z.enum(Object.values(SalesStartRuleType)),
     salesStartHoursBefore: z.number().nullable(),
     salesStartFixedDatetime: z.iso.datetime().nullable(),
     status: z.string(), // Corresponds to SessionStatus enum
