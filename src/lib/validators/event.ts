@@ -59,7 +59,7 @@ const sessionSeatingMapRequestSchema = z.object({
 
 // ✅ UPDATED: This DTO now holds details for both physical and online locations
 const venueDetailsSchema = z.object({
-    name: z.string().optional(), // Optional for online, required for physical
+    name: z.string().optional(), // Optional in schema; requirement for physical venues is enforced in session schema refinements
     address: z.string().optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
