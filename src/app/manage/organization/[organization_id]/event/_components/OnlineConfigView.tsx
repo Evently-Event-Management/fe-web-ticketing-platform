@@ -1,5 +1,5 @@
 // --- Online Configuration View ---
-import {CreateEventFormData, Seat, SessionSeatingMap} from "@/lib/validators/event";
+import {CreateEventFormData, Seat, SessionSeatingMapRequest} from "@/lib/validators/event";
 import {useFormContext} from "react-hook-form";
 import * as React from "react";
 import {useState} from "react";
@@ -10,7 +10,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Button} from "@/components/ui/button";
 
 export function OnlineConfigView({onSave}: {
-    onSave: (layout: SessionSeatingMap) => void;
+    onSave: (layout: SessionSeatingMapRequest) => void;
 }) {
     const {watch, getValues} = useFormContext<CreateEventFormData>();
     const tiers = watch('tiers');
@@ -31,7 +31,7 @@ export function OnlineConfigView({onSave}: {
             status: 'AVAILABLE',
         }));
 
-        const layoutData: SessionSeatingMap = {
+        const layoutData: SessionSeatingMapRequest = {
             name: "Online Event Capacity",
             layout: {
                 blocks: [{

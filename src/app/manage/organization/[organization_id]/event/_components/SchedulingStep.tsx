@@ -8,7 +8,6 @@ import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {PlusCircle, Repeat, Trash2,} from 'lucide-react';
 import {toast} from 'sonner';
-import {SessionConfigDialog} from "@/app/manage/organization/[organization_id]/event/_components/SessionConfigDialog";
 import {
     RecurringSessionsDialog
 } from "@/app/manage/organization/[organization_id]/event/_components/RecurringSessionsDialog";
@@ -19,7 +18,6 @@ import {useLimits} from "@/providers/LimitProvider";
 // --- Main Scheduling Step Component ---
 export function SchedulingStep() {
     const {control, formState: {errors}} = useFormContext<CreateEventFormData>();
-    const [configuringIndex, setConfiguringIndex] = useState<number | null>(null);
     const [isRecurringDialogOpen, setIsRecurringDialogOpen] = useState(false);
     const [isSingleSessionDialogOpen, setIsSingleSessionDialogOpen] = useState(false);
     const {myLimits} = useLimits();
@@ -114,14 +112,6 @@ export function SchedulingStep() {
 
                 {errors.sessions?.root && (
                     <p className="text-sm font-medium text-destructive">{errors.sessions.root.message}</p>
-                )}
-
-                {configuringIndex !== null && (
-                    <SessionConfigDialog
-                        index={configuringIndex}
-                        open={true}
-                        setOpen={() => setConfiguringIndex(null)}
-                    />
                 )}
 
                 <RecurringSessionsDialog
