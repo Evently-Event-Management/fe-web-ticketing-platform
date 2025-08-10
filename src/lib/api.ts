@@ -36,7 +36,7 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
 
     headers['Authorization'] = `Bearer ${keycloak.token}`;
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8088/api';
     const response = await fetch(`${baseUrl}${endpoint}`, {...options, headers});
 
     if (!response.ok) {
