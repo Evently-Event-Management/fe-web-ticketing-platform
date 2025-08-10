@@ -217,7 +217,13 @@ const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline, sessio
     // For physical events with coordinates, prepare Google Map
     const {isLoaded} = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!googleMapsApiKey) {
+        throw new Error('Google Maps API key is missing. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your environment.');
+    }
+    const {isLoaded} = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey,
     });
 
     const mapCenter = venueDetails?.latitude && venueDetails?.longitude
