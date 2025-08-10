@@ -4,10 +4,10 @@ import * as React from 'react';
 import {useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {useOrganization} from '@/providers/OrganizationProvider';
-import {ReviewEventHero} from './review/ReviewEventHero';
-import {ReviewEventDetails} from './review/ReviewEventDetails';
-import {ReviewTicketTiers} from './review/ReviewTicketTiers';
-import {ReviewSessions} from './review/ReviewSessions';
+import {ReviewEventHero} from '@/app/manage/_components/review/ReviewEventHero';
+import {ReviewEventDetails} from '@/app/manage/_components/review/ReviewEventDetails';
+import {ReviewTicketTiers} from '@/app/manage/_components/review/ReviewTicketTiers';
+import {ReviewSessions} from '@/app/manage/_components/review/ReviewSessions';
 import {JSX} from "react";
 
 interface ReviewStepProps {

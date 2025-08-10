@@ -1,42 +1,54 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import {useState, useEffect} from 'react';
-import {useParams} from 'next/navigation';
-import {toast} from 'sonner';
-import {getEventById} from '@/lib/actions/eventActions';
-import {EventDetailDTO} from '@/lib/validators/event';
-import {Skeleton} from '@/components/ui/skeleton';
-import {EventStatusTracker} from '../_components/EventStatusTracker';
-import {useOrganization} from '@/providers/OrganizationProvider';
-
-// Import review components to reuse them
-import {ReviewEventHero} from '../_components/review/ReviewEventHero';
-import {ReviewEventDetails} from '../_components/review/ReviewEventDetails';
-import {ReviewTicketTiers} from '../_components/review/ReviewTicketTiers';
-import {ReviewSessions} from '../_components/review/ReviewSessions';
-
-// Import UI components
-import {Card} from '@/components/ui/card';
-import {Separator} from '@/components/ui/separator';
+import * as React from "react";
+import {useState, useEffect} from "react";
+import {useParams} from "next/navigation";
+import {toast} from "sonner";
+import {getEventById} from "@/lib/actions/eventActions";
+import {EventDetailDTO} from "@/lib/validators/event";
+import {Skeleton} from "@/components/ui/skeleton";
+import {EventStatusTracker} from "../_components/EventStatusTracker";
+import {EventPreview} from "@/app/manage/_components/review/EventPreview";
+import {Separator} from "@/components/ui/separator";
+import {getOrganizationById} from "@/lib/actions/organizationActions";
+import {OrganizationResponse} from "@/types/oraganizations";
 
 export default function EventDetailsPage() {
     const params = useParams();
     const eventId = params.eventId as string;
-    const {organization} = useOrganization();
 
     const [event, setEvent] = useState<EventDetailDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [organization, setOrganization] = useState<OrganizationResponse | null>(null);
 
+    // Load event data
     useEffect(() => {
+        console.log("Fetching event data for ID:", eventId);
         if (eventId) {
             setIsLoading(true);
             getEventById(eventId)
-                .then(setEvent)
-                .catch(() => toast.error("Failed to load event details."))
-                .finally(() => setIsLoading(false));
+                .then((eventData) => {
+                    setEvent(eventData);
+                    // After we have event data, fetch organization details
+                    if (eventData && eventData.organizationId) {
+                        return getOrganizationById(eventData.organizationId);
+                    }
+                    return null;
+                })
+                .then((orgData) => {
+                    if (orgData) {
+                        setOrganization(orgData);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching data:", error);
+                    toast.error(error.message || "Failed to load event details.");
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
         }
-    }, [eventId]);
+    }, [eventId]); // Only depend on eventId, not the event state itself
 
     if (isLoading) {
         return (
@@ -48,34 +60,21 @@ export default function EventDetailsPage() {
         );
     }
 
-    if (!event) {
-        return <div className="p-8 text-center">Event not found.</div>;
+    if (!organization || !event) {
+        return (
+            <>
+                <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8">
+                    <h1 className="text-2xl font-semibold">Event Not Found</h1>
+                </div>
+            </>
+        );
     }
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto p-4 md:p-8">
             <EventStatusTracker status={event.status} rejectionReason={event.rejectionReason}/>
             <Separator className="my-6"/>
-
-            {/* Hero Section with Cover Photos and Title */}
-            <ReviewEventHero
-                title={event.title}
-                categoryName={event.categoryName}
-                organization={organization}
-                coverFiles={event.coverPhotos}
-            />
-
-            {/* Event Details Section with Description and Overview */}
-            <ReviewEventDetails
-                description={event.description}
-                overview={event.overview}
-            />
-
-            {/* Ticket Tiers Section */}
-            <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Ticket Tiers</h2>
-                <ReviewTicketTiers tiers={event.tiers}/>
-            </Card>
+            <EventPreview event={event} organization={organization}/>
 
             {/* Sales Summary Section */}
             {/*<Card className="p-6">*/}
@@ -97,10 +96,6 @@ export default function EventDetailsPage() {
             {/*</Card>*/}
 
             {/* Sessions Schedule Section */}
-            <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Sessions Schedule</h2>
-                <ReviewSessions sessions={event.sessions} tiers={event.tiers}/>
-            </Card>
 
             {/* Analytics Section */}
             {/*<Card className="p-6">*/}
