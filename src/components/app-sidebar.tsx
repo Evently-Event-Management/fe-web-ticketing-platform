@@ -6,6 +6,9 @@ import {
     CalendarRange,
     RockingChair,
     Ticket,
+    LayoutDashboard,
+    CalendarDays,
+    Building,
 } from "lucide-react"
 import Link from "next/link";
 import {useSidebar} from "@/components/ui/sidebar"
@@ -86,6 +89,78 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 {/* ✅ Pass the dynamic data to the components */}
                 <NavMain items={navData.navMain}/>
                 <NavOrg links={navData.navOrg}/>
+            </SidebarContent>
+            <SidebarFooter>
+                <NavUser user={{
+                    name: keycloak.tokenParsed?.name || "Guest",
+                    email: keycloak.tokenParsed?.email || "",
+                    avatar: keycloak.tokenParsed?.picture || "",
+                }}/>
+            </SidebarFooter>
+            <SidebarRail/>
+        </Sidebar>
+    )
+}
+
+/**
+ * Admin Sidebar component with simplified structure.
+ * Does not include organization switcher, just logo and admin links.
+ */
+export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>) {
+    const {isAuthenticated, keycloak} = useAuth();
+    const {open} = useSidebar();
+
+    if (!isAuthenticated || !keycloak) {
+        return null;
+    }
+
+    // Admin navigation data with just Events and Organizations links
+    const adminNavData = {
+        navMain: [
+            {
+                title: "Dashboard",
+                url: "/manage/admin",
+                icon: LayoutDashboard,
+                isActive: true,
+            },
+            {
+                title: "Events",
+                url: "/manage/admin/events",
+                icon: CalendarDays
+            },
+            {
+                title: "Organizations",
+                url: "/manage/admin/organizations",
+                icon: Building
+            },
+        ]
+    };
+
+    return (
+        <Sidebar collapsible="icon" {...props}>
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            size={'lg'}
+                            asChild
+                            className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
+                        >
+                            <Link className="flex items-center space-x-2" href="/manage/admin">
+                                <Ticket className="!size-6 text-sidebar-primary"/>
+                                {open && (
+                                    <div className="flex flex-col">
+                                        <span className="text-xl font-bold text-sidebar-primary">Ticketly</span>
+                                        <span className="text-xs text-muted-foreground -mt-1">Admin Console</span>
+                                    </div>
+                                )}
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+            <SidebarContent>
+                <NavMain items={adminNavData.navMain}/>
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={{

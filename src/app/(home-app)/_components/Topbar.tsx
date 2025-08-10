@@ -2,21 +2,23 @@
 
 import Link from 'next/link'
 import {useAuth} from '@/providers/AuthProvider'
-import {Ticket} from 'lucide-react'
+import {Ticket, ShieldCheck} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import {Avatar, AvatarFallback} from '@/components/ui/avatar'
 import {ModeToggle} from "@/components/ModeToggle";
 import * as React from "react";
 
 export default function Topbar() {
-    const {isAuthenticated, keycloak} = useAuth()
+    const {isAuthenticated, keycloak, isAdmin} = useAuth()
     const username = keycloak.tokenParsed?.name || 'User'
+    const userIsAdmin = isAdmin()
 
     return (
         <header
@@ -41,6 +43,17 @@ export default function Topbar() {
                                     Create Events
                                 </Button>
                             </Link>
+                            
+                            {userIsAdmin && (
+                                <Link href={`/manage/admin`} className="hidden lg:inline-flex">
+                                    <Button variant="ghost"
+                                            className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                        <ShieldCheck className="size-4 mr-1" />
+                                        Admin Console
+                                    </Button>
+                                </Link>
+                            )}
+                            
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="flex items-center gap-2">
@@ -51,6 +64,17 @@ export default function Topbar() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    {userIsAdmin && (
+                                        <>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/manage/admin" className="flex items-center gap-2">
+                                                    <ShieldCheck className="size-4" />
+                                                    Admin Console
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                        </>
+                                    )}
                                     <DropdownMenuItem onClick={() => keycloak.logout()}>
                                         Logout
                                     </DropdownMenuItem>
