@@ -10,12 +10,14 @@ import {Badge} from '@/components/ui/badge';
 import {Skeleton} from '@/components/ui/skeleton';
 import {OrganizationResponse} from "@/types/oraganizations";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import Link from "next/link";
 
 interface OrganizationHistoryCardProps {
     organization: OrganizationResponse;
+    currentEventId?: string;
 }
 
-export function OrganizationHistoryCard({organization}: OrganizationHistoryCardProps) {
+export function OrganizationHistoryCard({organization, currentEventId}: OrganizationHistoryCardProps) {
     const [history, setHistory] = useState<EventSummaryDTO[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -44,7 +46,7 @@ export function OrganizationHistoryCard({organization}: OrganizationHistoryCardP
             <CardHeader className="space-y-4">
                 <div className="flex items-center space-x-4">
                     <Avatar className="h-12 w-12">
-                        <AvatarImage src={organization.logoUrl || ''} alt={organization.name} />
+                        <AvatarImage src={organization.logoUrl || ''} alt={organization.name}/>
                         <AvatarFallback>
                             {getInitials(organization.name)}
                         </AvatarFallback>
@@ -65,17 +67,20 @@ export function OrganizationHistoryCard({organization}: OrganizationHistoryCardP
                 ) : (
                     <ul className="space-y-3">
                         {history.map(event => (
-                            <li key={event.id} className="flex justify-between items-center text-sm">
-                                <div>
-                                    <p className="font-medium">{event.title}</p>
-                                    <p className="text-muted-foreground">
-                                        Created on {format(parseISO(event.createdAt), 'MMM d, yyyy')}
-                                    </p>
-                                </div>
-                                <Badge variant={event.status === 'APPROVED' ? 'default' : 'secondary'}>
-                                    {event.status}
-                                </Badge>
-                            </li>
+                            <Link href={`/manage/admin/events/${event.id}`} key={event.id} className="block">
+                                <li key={event.id}
+                                    className={`flex justify-between items-center text-sm p-2 rounded-md hover:bg-muted transition-colors ${currentEventId === event.id ? 'bg-muted' : ''}`}>
+                                    <div>
+                                        <p className="font-medium">{event.title}</p>
+                                        <p className="text-muted-foreground">
+                                            Created on {format(parseISO(event.createdAt), 'MMM d, yyyy')}
+                                        </p>
+                                    </div>
+                                    <Badge variant={event.status === 'APPROVED' ? 'default' : 'secondary'}>
+                                        {event.status}
+                                    </Badge>
+                                </li>
+                            </Link>
                         ))}
                     </ul>
                 )}

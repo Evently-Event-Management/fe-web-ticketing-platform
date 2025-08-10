@@ -9,7 +9,7 @@ import {ReviewSessions} from "@/app/manage/_components/review/ReviewSessions";
 
 export const EventPreview = ({event, organization}: { event: EventDetailDTO, organization: OrganizationResponse }) => {
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 w-full">
             <ReviewEventHero
                 title={event.title}
                 categoryName={event.categoryName}

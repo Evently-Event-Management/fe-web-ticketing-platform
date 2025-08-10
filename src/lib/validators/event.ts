@@ -147,7 +147,8 @@ export const stepValidationFields = {
 export enum EventStatus {
     PENDING = 'PENDING',
     APPROVED = 'APPROVED',
-    REJECTED = 'REJECTED'
+    REJECTED = 'REJECTED',
+    COMPLETED = 'COMPLETED',
 }
 
 export const eventSummarySchema = z.object({

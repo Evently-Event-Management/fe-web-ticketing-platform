@@ -71,10 +71,6 @@ export default function AdminEventDetailsPage() {
         return <div className="p-8 text-center">Event not found.</div>;
     }
 
-    // Note: You'll need a way to pass the File[] objects for the preview.
-    // For a view-only page, you'd convert the event.coverPhotos (URLs) to a format the preview can use.
-    // For simplicity, we'll pass the URLs directly and assume the preview component can handle them.
-
     return (
         <div className="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Main Content - The Event Preview */}
@@ -88,9 +84,14 @@ export default function AdminEventDetailsPage() {
             {/* Admin Sidebar - Now fixed on scroll */}
             <div
                 className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 lg:self-start max-h-[calc(100vh-120px)] overflow-y-auto">
-                <AdminActionCard eventId={event.id} onActionComplete={fetchEventData}/>
+                <AdminActionCard
+                    eventId={event.id}
+                    status={event.status}
+                    rejectionReason={event.rejectionReason}
+                    onActionComplete={fetchEventData}
+                />
                 <Separator/>
-                <OrganizationHistoryCard organization={organization}/>
+                <OrganizationHistoryCard organization={organization} currentEventId={event.id}/>
             </div>
         </div>
     );

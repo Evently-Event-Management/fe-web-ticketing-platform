@@ -55,9 +55,19 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
         throw new Error(errorMessage);
     }
 
-    if (response.status === 204) {
+    // Handle empty responses or 204 No Content responses
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
         return null as T;
     }
 
-    return await response.json() as T;
+    // Check if there's actual content to parse
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        // Only parse as JSON if there's actual content
+        return text ? JSON.parse(text) as T : null as T;
+    }
+
+    // If not JSON content-type, return null
+    return null as T;
 }
