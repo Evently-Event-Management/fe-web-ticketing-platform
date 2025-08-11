@@ -1,3 +1,6 @@
+'use client';
+
+
 import {AppSidebarAdmin} from "@/components/app-sidebar"
 import {Separator} from "@/components/ui/separator"
 import {
@@ -29,6 +32,12 @@ export default function Layout({children}: Readonly<{ children: React.ReactNode 
                                         <Button variant="ghost"
                                                 className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
                                             Browse Events
+                                        </Button>
+                                    </Link>
+                                    <Link href={`/manage/organization`} className="hidden lg:inline-flex">
+                                        <Button variant="ghost"
+                                                className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                            Create Events
                                         </Button>
                                     </Link>
                                     <ModeToggle/>

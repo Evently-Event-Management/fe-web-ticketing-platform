@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import {
     ChevronsUpDown,
     LogOut, UserRoundPen,
@@ -25,17 +26,25 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar"
+import {User} from "lucide-react"
+import {Badge} from "@/components/ui/badge"
 import {useAuth} from "@/providers/AuthProvider";
+
+interface User {
+    name: string
+    email: string
+    avatar: string
+}
+
+interface NavUserProps {
+    user: User
+    tierName?: string  // Added tierName prop
+}
 
 export function NavUser({
                             user,
-                        }: {
-    user: {
-        name: string
-        email: string
-        avatar: string
-    }
-}) {
+                            tierName,
+                        }: NavUserProps) {
     const {isMobile} = useSidebar()
     const {keycloak} = useAuth();
 
@@ -54,7 +63,14 @@ export function NavUser({
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">{user.name}</span>
-                                <span className="truncate text-xs">{user.email}</span>
+                                <div className="flex items-center gap-1">
+                                    <span className="truncate text-xs">{user.email}</span>
+                                    {tierName && (
+                                        <Badge variant="outline" className="text-xs py-0 h-4 px-1">
+                                            {tierName}
+                                        </Badge>
+                                    )}
+                                </div>
                             </div>
                             <ChevronsUpDown className="ml-auto size-4"/>
                         </SidebarMenuButton>
@@ -77,6 +93,15 @@ export function NavUser({
                                 </div>
                             </div>
                         </DropdownMenuLabel>
+                        {tierName && (
+                            <>
+                                <div className="px-2 py-1.5 text-sm font-medium flex items-center justify-between">
+                                    <span className="text-muted-foreground">Account Tier</span>
+                                    <Badge variant="outline">{tierName}</Badge>
+                                </div>
+                                <DropdownMenuSeparator />
+                            </>
+                        )}
                         <DropdownMenuGroup>
                             <DropdownMenuItem onClick={() => keycloak.accountManagement()}>
                                 <UserRoundPen/>

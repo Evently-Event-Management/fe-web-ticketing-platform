@@ -22,16 +22,18 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuButton,
     SidebarRail,
 } from "@/components/ui/sidebar"
 import {useAuth} from "@/providers/AuthProvider";
-import {useOrganization} from "@/providers/OrganizationProvider"; // ✅ Import the hook
+import {useOrganization} from "@/providers/OrganizationProvider";
+import {useLimits} from "@/providers/LimitProvider"; // Import the limits hook
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     const {isAuthenticated, keycloak} = useAuth();
     const {organization} = useOrganization();
+    const {myLimits} = useLimits(); // Get current user limits
     const {open} = useSidebar();
 
     if (!isAuthenticated || !keycloak) {
@@ -91,11 +93,14 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 <NavOrg links={navData.navOrg}/>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={{
-                    name: keycloak.tokenParsed?.name || "Guest",
-                    email: keycloak.tokenParsed?.email || "",
-                    avatar: keycloak.tokenParsed?.picture || "",
-                }}/>
+                <NavUser
+                    user={{
+                        name: keycloak.tokenParsed?.name || "Guest",
+                        email: keycloak.tokenParsed?.email || "",
+                        avatar: keycloak.tokenParsed?.picture || "",
+                    }}
+                    tierName={myLimits?.currentTier}
+                />
             </SidebarFooter>
             <SidebarRail/>
         </Sidebar>
@@ -108,6 +113,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
  */
 export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>) {
     const {isAuthenticated, keycloak} = useAuth();
+    const {myLimits} = useLimits(); // Get current user limits
     const {open} = useSidebar();
 
     if (!isAuthenticated || !keycloak) {
@@ -163,11 +169,14 @@ export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>
                 <NavMain items={adminNavData.navMain}/>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={{
-                    name: keycloak.tokenParsed?.name || "Guest",
-                    email: keycloak.tokenParsed?.email || "",
-                    avatar: keycloak.tokenParsed?.picture || "",
-                }}/>
+                <NavUser
+                    user={{
+                        name: keycloak.tokenParsed?.name || "Guest",
+                        email: keycloak.tokenParsed?.email || "",
+                        avatar: keycloak.tokenParsed?.picture || "",
+                    }}
+                    tierName={myLimits?.currentTier}
+                />
             </SidebarFooter>
             <SidebarRail/>
         </Sidebar>
