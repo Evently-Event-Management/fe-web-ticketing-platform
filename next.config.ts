@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type {NextConfig} from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    /* config options here */
     images: {
         remotePatterns: [
             {
@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
                 hostname: 'localhost',
                 port: '4566',
                 pathname: '/event-seating-uploads/**',
-            }
+            },
         ],
     },
     crossOrigin: 'use-credentials'
