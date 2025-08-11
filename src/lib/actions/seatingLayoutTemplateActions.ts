@@ -1,9 +1,9 @@
 import { apiFetch } from '@/lib/api';
 import {
-    PaginatedResponse,
     SeatingLayoutTemplateRequest,
     SeatingLayoutTemplateResponse
-} from '@/types/seating-layout';
+} from '@/types/seatingLayout';
+import {PaginatedResponse} from "@/types/paginatedResponse";
 
 const API_BASE_PATH = '/event-seating/v1/seating-templates';
 

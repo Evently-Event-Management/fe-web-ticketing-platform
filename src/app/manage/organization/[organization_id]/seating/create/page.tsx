@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createSeatingLayoutTemplate } from '@/lib/actions/seatingLayoutTemplateActions';
-import { LayoutData } from '@/types/seating-layout';
+import { LayoutData } from '@/types/seatingLayout';
 import { LayoutEditor } from '../_components/LayoutEditor';
 
 export default function CreateSeatingLayoutPage() {

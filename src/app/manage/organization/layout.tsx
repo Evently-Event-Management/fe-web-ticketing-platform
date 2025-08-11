@@ -1,3 +1,5 @@
+'use client'
+
 import {AppSidebar} from "@/components/app-sidebar"
 import {Separator} from "@/components/ui/separator"
 import {
@@ -8,16 +10,20 @@ import {
 import React from "react";
 import {ModeToggle} from "@/components/ModeToggle";
 import {Button} from "@/components/ui/button";
-import {Bell} from "lucide-react";
+import {Bell, ShieldCheck} from "lucide-react";
 import {OrganizationProvider} from "@/providers/OrganizationProvider";
 import Link from "next/link";
+import {useAuth} from "@/providers/AuthProvider";
 
 export default function Layout({children}: Readonly<{ children: React.ReactNode }>) {
+    const {isAdmin} = useAuth();
+    const userIsAdmin = isAdmin();
+
     return (
         <OrganizationProvider>
             <SidebarProvider>
                 <AppSidebar/>
-                <SidebarInset>
+                <SidebarInset >
                     <header
                         className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-sm bg-background border-b border-border">
                         <div className="flex justify-between w-full items-center gap-2 px-4">
@@ -29,6 +35,17 @@ export default function Layout({children}: Readonly<{ children: React.ReactNode 
                                         Browse Events
                                     </Button>
                                 </Link>
+
+                                {userIsAdmin && (
+                                    <Link href={`/manage/admin`} className="hidden lg:inline-flex">
+                                        <Button variant="ghost"
+                                                className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                            <ShieldCheck className="size-4 mr-1" />
+                                            Admin Console
+                                        </Button>
+                                    </Link>
+                                )}
+
                                 <ModeToggle/>
                                 <Separator
                                     orientation="vertical"

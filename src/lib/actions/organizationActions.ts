@@ -1,85 +1,94 @@
-import { apiFetch } from '@/lib/api';
-import { OrganizationRequest, OrganizationResponse } from '@/types/oraganizations';
+import {apiFetch} from '@/lib/api';
+import {OrganizationRequest, OrganizationResponse} from '@/types/oraganizations';
+
+const API_BASE_PATH = '/event-seating/v1/organizations';
+
+// ================================================================================
+// General User & Organizer Actions
+// ================================================================================
 
 /**
- * Fetches all organizations for the current user.
- * @returns A promise that resolves to an array of OrganizationResponse.
+ * Fetches all organizations owned by the currently authenticated user.
  */
-export const getOrganizations = (): Promise<OrganizationResponse[]> => {
-    return apiFetch<OrganizationResponse[]>('/event-seating/v1/organizations');
+export const getMyOrganizations = (): Promise<OrganizationResponse[]> => {
+    return apiFetch<OrganizationResponse[]>(`${API_BASE_PATH}/my`);
 };
 
 /**
- * Fetches a single organization by its ID.
- * @param orgId - The ID of the organization to fetch.
- * @returns A promise that resolves to an OrganizationResponse.
+ * Fetches details for a single organization the current user OWNS.
  */
-export const getOrganizationById = (orgId: string): Promise<OrganizationResponse> => {
-    return apiFetch<OrganizationResponse>(`/event-seating/v1/organizations/${orgId}`);
+export const getMyOrganizationById = (orgId: string): Promise<OrganizationResponse> => {
+    return apiFetch<OrganizationResponse>(`${API_BASE_PATH}/${orgId}`);
 };
 
 /**
- * Creates a new organization.
- * @param newOrgRequest - The data for the new organization.
- * @returns A promise that resolves to the newly created OrganizationResponse.
+ * Creates a new organization for the current user.
  */
 export const createNewOrganization = (newOrgRequest: OrganizationRequest): Promise<OrganizationResponse> => {
-    return apiFetch<OrganizationResponse>('/event-seating/v1/organizations', {
+    return apiFetch<OrganizationResponse>(API_BASE_PATH, {
         method: 'POST',
         body: JSON.stringify(newOrgRequest),
     });
 };
 
 /**
- * Updates an existing organization.
- * @param orgId - The ID of the organization to update.
- * @param orgUpdateRequest - The updated data for the organization.
- * @returns A promise that resolves to the updated OrganizationResponse.
+ * Updates an organization the current user OWNS.
  */
 export const updateOrganizationById = (orgId: string, orgUpdateRequest: OrganizationRequest): Promise<OrganizationResponse> => {
-    return apiFetch<OrganizationResponse>(`/event-seating/v1/organizations/${orgId}`, {
+    return apiFetch<OrganizationResponse>(`${API_BASE_PATH}/${orgId}`, {
         method: 'PUT',
         body: JSON.stringify(orgUpdateRequest),
     });
 };
 
 /**
- * Uploads a logo for a specific organization.
- * @param orgId - The ID of the organization.
- * @param file - The logo file to upload.
- * @returns A promise that resolves to the updated OrganizationResponse.
+ * Uploads a logo for an organization the current user OWNS.
  */
 export const uploadOrganizationLogo = (orgId: string, file: File): Promise<OrganizationResponse> => {
     const formData = new FormData();
     formData.append('file', file);
-
-    // Note: When using FormData, we do not set the 'Content-Type' header.
-    // The browser will automatically set it to 'multipart/form-data' with the correct boundary.
-    return apiFetch<OrganizationResponse>(`/event-seating/v1/organizations/${orgId}/logo`, {
+    return apiFetch<OrganizationResponse>(`${API_BASE_PATH}/${orgId}/logo`, {
         method: 'POST',
         body: formData,
     });
 };
 
 /**
- * Removes the logo for a specific organization.
- * @param orgId - The ID of the organization.
- * @returns A promise that resolves when the operation is complete.
+ * Removes the logo for an organization the current user OWNS.
  */
 export const removeOrganizationLogo = (orgId: string): Promise<void> => {
-    return apiFetch<void>(`/event-seating/v1/organizations/${orgId}/logo`, {
+    return apiFetch<void>(`${API_BASE_PATH}/${orgId}/logo`, {
         method: 'DELETE',
     });
 };
-
 
 /**
- * Deletes an organization by its ID.
- * @param orgId - The ID of the organization to delete.
- * @returns A promise that resolves when the operation is complete.
+ * Deletes an organization the current user OWNS.
  */
 export const deleteOrganizationById = (orgId: string): Promise<void> => {
-    return apiFetch<void>(`/event-seating/v1/organizations/${orgId}`, {
+    return apiFetch<void>(`${API_BASE_PATH}/${orgId}`, {
         method: 'DELETE',
     });
 };
+
+
+// ================================================================================
+// Administrator-Only Actions
+// ================================================================================
+
+/**
+ * [ADMIN] Fetches details for ANY organization by its ID.
+ */
+export const getAnyOrganizationById_Admin = (orgId: string): Promise<OrganizationResponse> => {
+    return apiFetch<OrganizationResponse>(`${API_BASE_PATH}/admin/${orgId}`);
+};
+
+/**
+ * [ADMIN] Fetches all organizations for a SPECIFIC user by their ID.
+ */
+export const getOrganizationsForUser_Admin = (userId: string): Promise<OrganizationResponse[]> => {
+    return apiFetch<OrganizationResponse[]>(`${API_BASE_PATH}/admin/user/${userId}`);
+};
+
+// You might also want an admin action to get ALL organizations in the system (paginated)
+// if you add that endpoint to your controller in the future.

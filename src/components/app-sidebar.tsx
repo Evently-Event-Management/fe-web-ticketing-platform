@@ -6,30 +6,35 @@ import {
     CalendarRange,
     RockingChair,
     Ticket,
+    LayoutDashboard,
+    CalendarDays,
+    Building,
 } from "lucide-react"
 import Link from "next/link";
-import { useSidebar } from "@/components/ui/sidebar"
-import { NavMain } from "@/components/nav-main"
-import { NavOrg } from "@/components/nav-org"
-import { NavUser } from "@/components/nav-user"
-import { OrganizationSwitcher } from "@/components/OrganizationSwitcher"
+import {useSidebar} from "@/components/ui/sidebar"
+import {NavMain} from "@/components/nav-main"
+import {NavOrg} from "@/components/nav-org"
+import {NavUser} from "@/components/nav-user"
+import {OrganizationSwitcher} from "@/components/OrganizationSwitcher"
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuButton,
     SidebarRail,
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/providers/AuthProvider";
-import { useOrganization } from "@/providers/OrganizationProvider"; // ✅ Import the hook
+import {useAuth} from "@/providers/AuthProvider";
+import {useOrganization} from "@/providers/OrganizationProvider";
+import {useLimits} from "@/providers/LimitProvider"; // Import the limits hook
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { isAuthenticated, keycloak } = useAuth();
-    const { organization } = useOrganization();
-    const { open } = useSidebar();
+export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+    const {isAuthenticated, keycloak} = useAuth();
+    const {organization} = useOrganization();
+    const {myLimits} = useLimits(); // Get current user limits
+    const {open} = useSidebar();
 
     if (!isAuthenticated || !keycloak) {
         return null;
@@ -44,8 +49,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 icon: CalendarRange,
                 isActive: true,
                 items: [
-                    { title: "Create an Event", url: "#" },
-                    { title: "All Events", url: "#" }
+                    {
+                        title: "Create an Event",
+                        url: organization ? `/manage/organization/${organization.id}/event/create` : "#"
+                    },
+                    {title: "My Events", url: organization ? `/manage/organization/${organization.id}/event` : "#"},
                 ],
             },
             {
@@ -53,10 +61,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 // ✅ Use the active organization ID to build the URL
                 url: organization ? `/manage/organization/${organization.id}/seating` : "#",
                 icon: RockingChair
-            }
+            },
         ],
         navOrg: [
-            { name: "My Organizations", url: "/manage/organization/my-organizations", icon: Building2 }
+            {name: "My Organizations", url: "/manage/organization/my-organizations", icon: Building2}
         ],
     }
 
@@ -70,27 +78,107 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
                         >
                             <Link className="flex items-center space-x-2 " href="/manage/organization">
-                                <Ticket className="!size-6 text-sidebar-primary" />
-                                {open && <span className="text-xl font-bold text-sidebar-primary mb-0.5">Ticketly</span>}
+                                <Ticket className="!size-6 text-sidebar-primary"/>
+                                {open &&
+                                    <span className="text-xl font-bold text-sidebar-primary mb-0.5">Ticketly</span>}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <OrganizationSwitcher />
+                <OrganizationSwitcher/>
             </SidebarHeader>
             <SidebarContent>
                 {/* ✅ Pass the dynamic data to the components */}
-                <NavMain items={navData.navMain} />
-                <NavOrg links={navData.navOrg} />
+                <NavMain items={navData.navMain}/>
+                <NavOrg links={navData.navOrg}/>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={{
-                    name: keycloak.tokenParsed?.name || "Guest",
-                    email: keycloak.tokenParsed?.email || "",
-                    avatar: keycloak.tokenParsed?.picture || "",
-                }} />
+                <NavUser
+                    user={{
+                        name: keycloak.tokenParsed?.name || "Guest",
+                        email: keycloak.tokenParsed?.email || "",
+                        avatar: keycloak.tokenParsed?.picture || "",
+                    }}
+                    tierName={myLimits?.currentTier}
+                />
             </SidebarFooter>
-            <SidebarRail />
+            <SidebarRail/>
+        </Sidebar>
+    )
+}
+
+/**
+ * Admin Sidebar component with simplified structure.
+ * Does not include organization switcher, just logo and admin links.
+ */
+export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>) {
+    const {isAuthenticated, keycloak} = useAuth();
+    const {myLimits} = useLimits(); // Get current user limits
+    const {open} = useSidebar();
+
+    if (!isAuthenticated || !keycloak) {
+        return null;
+    }
+
+    // Admin navigation data with just Events and Organizations links
+    const adminNavData = {
+        navMain: [
+            {
+                title: "Dashboard",
+                url: "/manage/admin",
+                icon: LayoutDashboard,
+                isActive: true,
+            },
+            {
+                title: "Events",
+                url: "/manage/admin/events",
+                icon: CalendarDays
+            },
+            {
+                title: "Organizations",
+                url: "/manage/admin/organizations",
+                icon: Building
+            },
+        ]
+    };
+
+    return (
+        <Sidebar collapsible="icon" {...props}>
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            size={'lg'}
+                            asChild
+                            className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
+                        >
+                            <Link className="flex items-center space-x-2" href="/manage/admin">
+                                <Ticket className="!size-6 text-sidebar-primary"/>
+                                {open && (
+                                    <div className="flex flex-col">
+                                        <span className="text-xl font-bold text-sidebar-primary">Ticketly</span>
+                                        <span className="text-xs text-muted-foreground -mt-1">Admin Console</span>
+                                    </div>
+                                )}
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+            <SidebarContent>
+                <NavMain items={adminNavData.navMain}/>
+            </SidebarContent>
+            <SidebarFooter>
+                <NavUser
+                    user={{
+                        name: keycloak.tokenParsed?.name || "Guest",
+                        email: keycloak.tokenParsed?.email || "",
+                        avatar: keycloak.tokenParsed?.picture || "",
+                    }}
+                    tierName={myLimits?.currentTier}
+                />
+            </SidebarFooter>
+            <SidebarRail/>
         </Sidebar>
     )
 }
