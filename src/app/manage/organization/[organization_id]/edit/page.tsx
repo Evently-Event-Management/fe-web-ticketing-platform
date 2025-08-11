@@ -3,7 +3,7 @@
 import {OrganizationResponse} from "@/types/oraganizations";
 import {useParams, useRouter} from "next/navigation";
 import {useCallback, useEffect, useState} from "react";
-import {getOrganizationById} from "@/lib/actions/organizationActions";
+import {getMyOrganizationById} from "@/lib/actions/organizationActions";
 import {toast} from "sonner";
 import {Skeleton} from "@/components/ui/skeleton";
 import {LogoManagementCard} from "@/app/manage/organization/[organization_id]/edit/_components/LogoManagementCard";
@@ -20,7 +20,8 @@ export default function OrganizationSettingsPage() {
 
     const fetchOrgData = useCallback(async () => {
         try {
-            const data = await getOrganizationById(organization_id);
+            const data = await getMyOrganizationById(organization_id);
+            console.log("Fetched organization data:", data);
             setOrganization(data);
         } catch (error) {
             toast.error("Failed to fetch organization details.");

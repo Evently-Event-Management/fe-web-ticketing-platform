@@ -7,7 +7,7 @@ import {
     getSeatingLayoutTemplateById,
     updateSeatingLayoutTemplate,
 } from '@/lib/actions/seatingLayoutTemplateActions';
-import {LayoutData} from '@/types/seating-layout';
+import {LayoutData} from '@/types/seatingLayout';
 import {LayoutEditor} from '../_components/LayoutEditor';
 import {Skeleton} from '@/components/ui/skeleton';
 

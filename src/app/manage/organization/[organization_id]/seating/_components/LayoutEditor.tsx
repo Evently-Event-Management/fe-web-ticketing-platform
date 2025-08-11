@@ -6,7 +6,7 @@ import {DndContext, DragEndEvent, useDroppable} from '@dnd-kit/core';
 import {restrictToParentElement} from '@dnd-kit/modifiers';
 import 'react-resizable/css/styles.css';
 
-import {LayoutBlock, BlockType, LayoutData} from '@/types/seating-layout';
+import {LayoutBlock, BlockType, LayoutData} from '@/types/seatingLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -138,26 +138,26 @@ export function LayoutEditor({initialData, onSave, isLoading = false}: LayoutEdi
                                 />
                             </div>
                             <h2 className="text-lg font-semibold pt-4 border-t">Toolbox</h2>
-                            <Button className="w-full justify-start" variant="ghost"
+                            <Button type={'button'} className="w-full justify-start" variant="ghost"
                                     onClick={() => addNewBlock('seated_grid')}>
                                 <Plus className="mr-2 h-4 w-4"/> Seated Block
                             </Button>
-                            <Button className="w-full justify-start" variant="ghost"
+                            <Button type={'button'} className="w-full justify-start" variant="ghost"
                                     onClick={() => addNewBlock('standing_capacity')}>
                                 <Plus className="mr-2 h-4 w-4"/> Capacity Block
                             </Button>
-                            <Button className="w-full justify-start" variant="ghost"
+                            <Button type={'button'} className="w-full justify-start" variant="ghost"
                                     onClick={() => addNewBlock('non_sellable')}>
                                 <Plus className="mr-2 h-4 w-4"/> Non-Sellable
                             </Button>
                         </div>
                         <div className="mt-auto">
-                            <Button className="w-full mb-2" variant="outline" onClick={() => setBlocks([])}
+                            <Button type={'button'} className="w-full mb-2" variant="outline" onClick={() => setBlocks([])}
                                     disabled={isLoading}>
                                 <BrushCleaning className="mr-2 h-4 w-4"/>
                                 Clear Layout
                             </Button>
-                            <Button className="w-full" onClick={handleSaveLayout} disabled={isLoading}>
+                            <Button type={'button'} className="w-full" onClick={handleSaveLayout} disabled={isLoading}>
                                 <Save className="mr-2 h-4 w-4"/>
                                 {isLoading ? 'Saving...' : 'Save Layout'}
                             </Button>

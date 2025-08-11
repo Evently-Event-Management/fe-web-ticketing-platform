@@ -1,8 +1,8 @@
 'use client'
 
 import {deleteSeatingLayoutTemplate, getSeatingLayoutTemplatesByOrg} from '@/lib/actions/seatingLayoutTemplateActions';
-import {PaginatedResponse, SeatingLayoutTemplateResponse} from '@/types/seating-layout';
-import {useParams} from 'next/navigation';
+import {SeatingLayoutTemplateResponse} from '@/types/seatingLayout';
+import {useParams, useRouter} from 'next/navigation';
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {toast} from 'sonner';
@@ -18,6 +18,7 @@ import {
     PaginationPrevious
 } from "@/components/ui/pagination";
 import LayoutPreviewCard from "@/app/manage/organization/[organization_id]/seating/_components/LayoutPreviewCard";
+import {PaginatedResponse} from "@/types/paginatedResponse";
 
 export default function SeatingLayoutsPage() {
     const params = useParams();
@@ -26,6 +27,7 @@ export default function SeatingLayoutsPage() {
     const [data, setData] = useState<PaginatedResponse<SeatingLayoutTemplateResponse> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(0);
+    const router = useRouter();
     const pageSize = 6;
 
     const fetchLayouts = useCallback(async () => {
@@ -85,7 +87,8 @@ export default function SeatingLayoutsPage() {
             {!isLoading && data && data.content.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {data.content.map(layout => (
-                        <LayoutPreviewCard key={layout.id} layout={layout} onDelete={handleDelete}/>
+                        <LayoutPreviewCard key={layout.id} layout={layout} onDelete={handleDelete}
+                                           onEdit={(layout) => router.push(`/manage/organization/${layout.organizationId}/seating/${layout.id}`)}/>
                     ))}
                 </div>
             )}

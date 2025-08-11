@@ -3,7 +3,7 @@ import {CSS} from '@dnd-kit/utilities';
 import {Button} from "@/components/ui/button";
 import {GripVertical, MoveDiagonal2, Settings} from "lucide-react";
 import {ResizableBox} from "react-resizable";
-import {LayoutBlock} from "@/types/seating-layout";
+import {LayoutBlock} from "@/types/seatingLayout";
 
 
 export function ResizableDraggableBlock({ block, onSelect, onResize }: { block: LayoutBlock; onSelect: (block: LayoutBlock) => void; onResize: (blockId: string, size: { width: number; height: number }) => void; }) {
@@ -35,7 +35,7 @@ export function ResizableDraggableBlock({ block, onSelect, onResize }: { block: 
                             {block.type === 'standing_capacity' ? `${block.capacity} capacity` : null}
                         </span>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onSelect(block)}>
+                    <Button type={'button'} variant="ghost" size="icon" className="h-6 w-6" onClick={() => onSelect(block)}>
                         <Settings className="h-4 w-4" />
                     </Button>
                 </div>

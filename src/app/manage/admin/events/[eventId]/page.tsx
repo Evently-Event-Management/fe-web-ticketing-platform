@@ -1,0 +1,98 @@
+'use client';
+
+import * as React from 'react';
+import {useState, useEffect, useCallback} from 'react';
+import {useParams} from 'next/navigation';
+import {toast} from 'sonner';
+import {getAnyEventById_Admin} from '@/lib/actions/eventActions';
+import {EventDetailDTO} from '@/lib/validators/event';
+import {Skeleton} from '@/components/ui/skeleton';
+import {Separator} from '@/components/ui/separator';
+import {getAnyOrganizationById_Admin} from "@/lib/actions/organizationActions";
+import {OrganizationResponse} from "@/types/oraganizations";
+import EventPreview from "@/app/manage/_components/review/EventPreview";
+import {AdminActionCard} from "@/app/manage/admin/events/_components/AdminActionCard";
+import {OrganizationHistoryCard} from "@/app/manage/admin/events/_components/OrganizationHistoryCard";
+
+export default function AdminEventDetailsPage() {
+    const params = useParams();
+    const eventId = params.eventId as string;
+
+    const [event, setEvent] = useState<EventDetailDTO | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [organization, setOrganization] = useState<OrganizationResponse | null>(null);
+
+    const fetchEventData = useCallback(() => {
+        if (eventId) {
+            setIsLoading(true);
+            getAnyEventById_Admin(eventId)
+                .then(setEvent)
+                .catch(() => toast.error("Failed to load event details."))
+                .finally(() => setIsLoading(false));
+        }
+    }, [eventId]);
+
+    const fetchOrganizationData = useCallback((orgId: string) => {
+        if (orgId) {
+            getAnyOrganizationById_Admin(orgId)
+                .then(setOrganization)
+                .catch(() => toast.error("Failed to load organization details."));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (eventId) {
+            fetchEventData();
+        }
+    }, [eventId, fetchEventData]);
+
+    useEffect(() => {
+        if (event && event.organizationId) {
+            fetchOrganizationData(event.organizationId);
+        }
+    }, [event, fetchOrganizationData]);
+
+    if (isLoading) {
+        return (
+            <div className="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <Skeleton className="h-64 w-full"/>
+                    <Skeleton className="h-48 w-full"/>
+                </div>
+                <div className="lg:col-span-1 space-y-8">
+                    <Skeleton className="h-48 w-full"/>
+                    <Skeleton className="h-64 w-full"/>
+                </div>
+            </div>
+        );
+    }
+
+    if (!organization || !event) {
+        return <div className="p-8 text-center">Event not found.</div>;
+    }
+
+    return (
+        <div className="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Main Content - The Event Preview */}
+            <div className="lg:col-span-2">
+                <EventPreview
+                    event={event}
+                    organization={organization}
+                />
+            </div>
+
+            {/* Admin Sidebar - Now fixed on scroll */}
+            <div
+                className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 lg:self-start max-h-[calc(100vh-120px)] overflow-y-auto">
+                <AdminActionCard
+                    eventId={event.id}
+                    status={event.status}
+                    rejectionReason={event.rejectionReason}
+                    onActionComplete={fetchEventData}
+                />
+                <Separator/>
+                <OrganizationHistoryCard organization={organization} currentEventId={event.id}/>
+            </div>
+        </div>
+    );
+}
