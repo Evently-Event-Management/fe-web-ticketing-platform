@@ -14,9 +14,12 @@ import {
 import {Avatar, AvatarFallback} from '@/components/ui/avatar'
 import {ModeToggle} from "@/components/ModeToggle";
 import * as React from "react";
+import {useLimits} from '@/providers/LimitProvider';
+import {Badge} from '@/components/ui/badge'
 
 export default function Topbar() {
     const {isAuthenticated, keycloak, isAdmin} = useAuth()
+    const {myLimits} = useLimits();
     const username = keycloak.tokenParsed?.name || 'User'
     const userIsAdmin = isAdmin()
 
@@ -43,7 +46,7 @@ export default function Topbar() {
                                     Create Events
                                 </Button>
                             </Link>
-                            
+
                             {userIsAdmin && (
                                 <Link href={`/manage/admin`} className="hidden lg:inline-flex">
                                     <Button variant="ghost"
@@ -53,7 +56,7 @@ export default function Topbar() {
                                     </Button>
                                 </Link>
                             )}
-                            
+
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="flex items-center gap-2">
@@ -61,9 +64,24 @@ export default function Topbar() {
                                             <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <span className="hidden lg:inline">{username}</span>
+                                        {myLimits?.currentTier && (
+                                            <Badge
+                                                variant="outline"
+                                                className="hidden lg:inline-flex text-xs py-0 h-5 ml-1"
+                                            >
+                                                {myLimits.currentTier}
+                                            </Badge>
+                                        )}
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    {myLimits?.currentTier && (
+                                        <div className="px-2 py-1.5 text-sm font-medium flex items-center justify-between">
+                                            <span className="text-muted-foreground">Account Tier</span>
+                                            <Badge variant="outline">{myLimits.currentTier}</Badge>
+                                        </div>
+                                    )}
+                                    <DropdownMenuSeparator />
                                     {userIsAdmin && (
                                         <>
                                             <DropdownMenuItem asChild>
