@@ -21,7 +21,7 @@ const getSalesRuleDescription = (session: SessionFormData): string => {
         case SalesStartRuleType.FIXED:
             // Check if the date is valid before formatting
             return session.salesStartFixedDatetime
-                ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy')}`
+                ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy h:mm a')}`
                 : "Fixed date not set";
         case SalesStartRuleType.ROLLING:
             if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore === null || session.salesStartHoursBefore < 0) {
