@@ -31,6 +31,7 @@ interface RecurringSessionFormValues {
     salesStartRuleType: SalesStartRuleType;
     salesStartHoursBefore: number;
     salesStartFixedDatetime: Date;
+    salesStartFixedTime: string; // Added field for fixed time
     isDaysNotHours: boolean;
 }
 
@@ -52,6 +53,7 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
             salesStartRuleType: SalesStartRuleType.ROLLING,
             salesStartHoursBefore: 168,
             salesStartFixedDatetime: new Date(),
+            salesStartFixedTime: '12:00', // Default fixed time
             isDaysNotHours: true,
         }
     });
@@ -84,6 +86,19 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
             parseInt(data.startTime.split(':')[1])
         );
 
+        // Handle fixed sales start time if applicable
+        let salesStartFixedDatetime;
+        if (data.salesStartRuleType === 'FIXED') {
+            const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
+            salesStartFixedDatetime = setMinutes(setHours(data.salesStartFixedDatetime, hours), minutes);
+
+            // Validate that sales start time is before the first event start time
+            if (salesStartFixedDatetime >= currentStartTime) {
+                toast.error("Sales start time must be before the first event start time");
+                return;
+            }
+        }
+
         for (let i = 0; i < data.count; i++) {
             const endTime = new Date(currentStartTime.getTime() + data.durationHours * 60 * 60 * 1000);
             newSessions.push({
@@ -91,8 +106,12 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
                 sessionType: SessionType.PHYSICAL,
                 endTime: endTime.toISOString(),
                 salesStartRuleType: data.salesStartRuleType,
-                salesStartHoursBefore: data.salesStartHoursBefore,
-                salesStartFixedDatetime: data.salesStartFixedDatetime?.toISOString(),
+                ...(data.salesStartRuleType === SalesStartRuleType.ROLLING && {
+                    salesStartHoursBefore: data.salesStartHoursBefore,
+                }),
+                ...(data.salesStartRuleType === 'FIXED' && {
+                    salesStartFixedDatetime: salesStartFixedDatetime?.toISOString(),
+                }),
                 layoutData: {name: null, layout: {blocks: []}},
             });
 
@@ -232,28 +251,38 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
                         )}
 
                         {watch('salesStartRuleType') === 'FIXED' && (
-                            <Controller name="salesStartFixedDatetime" control={control} render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>Sales Start Date</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" className="w-full justify-start font-normal">
-                                                <CalendarIcon className="mr-2 h-4 w-4"/>
-                                                {field.value ? format(field.value, 'PPP p') :
-                                                    <span>Pick a datetime</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                autoFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </FormItem>
-                            )}/>
+                            <>
+                                <Controller name="salesStartFixedDatetime" control={control} render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel>Sales Start Date</FormLabel>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="outline" className="w-full justify-start font-normal">
+                                                    <CalendarIcon className="mr-2 h-4 w-4"/>
+                                                    {field.value ? format(field.value, 'PPP') :
+                                                        <span>Pick a date</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    autoFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </FormItem>
+                                )}/>
+                                <Controller name="salesStartFixedTime" control={control} render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel>Sales Start Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}/>
+                            </>
                         )}
                     </div>
 

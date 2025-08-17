@@ -267,6 +267,7 @@ export function PhysicalConfigView({onSave, initialConfig}: {
                 await loadTemplates();
             } else {
                 // Creating a new template from scratch
+                console.log("Creating new seating layout template", request);
                 const data = await createSeatingLayoutTemplate(request);
                 toast.success(`Layout "${data.name}" saved successfully!`);
 

@@ -28,6 +28,7 @@ interface SingleSessionFormValues {
     salesStartRuleType: SalesStartRuleType;
     salesStartHoursBefore: number;
     salesStartFixedDatetime: Date;
+    salesStartFixedTime: string; // Added field for fixed time
     isDaysNotHours: boolean;
 }
 
@@ -46,6 +47,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             salesStartRuleType: SalesStartRuleType.ROLLING,
             salesStartHoursBefore: 168,
             salesStartFixedDatetime: new Date(),
+            salesStartFixedTime: '12:00', // Default fixed time
             isDaysNotHours: true, // Field to track if user is entering days or hours
         }
     });
@@ -67,6 +69,8 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
 
     const onSubmit = (data: SingleSessionFormValues) => {
         // Check if adding this session would exceed the limit
+        console.log("Current session count:", currentSessionCount);
+        console.log("Submitted data:", data);
         if (currentSessionCount >= maxSessions) {
             toast.error(`Cannot add more sessions. You have reached the limit of ${maxSessions} sessions.`);
             return;
@@ -84,6 +88,19 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
         // Calculate end time based on duration
         const endTime = new Date(startTime.getTime() + data.durationHours * 60 * 60 * 1000);
 
+        // Handle fixed sales start time
+        let salesStartFixedDatetime;
+        if (data.salesStartRuleType === 'FIXED') {
+            const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
+            salesStartFixedDatetime = setMinutes(setHours(data.salesStartFixedDatetime, hours), minutes);
+
+            // Validate that sales start time is before event start time
+            if (salesStartFixedDatetime >= startTime) {
+                toast.error("Sales start time must be before the event start time");
+                return;
+            }
+        }
+
         // Create the session object
         const newSession: SessionFormData = {
             startTime: startTime.toISOString(),
@@ -94,7 +111,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
                 salesStartHoursBefore: data.salesStartHoursBefore,
             }),
             ...(data.salesStartRuleType === 'FIXED' && {
-                salesStartFixedDatetime: data.salesStartFixedDatetime.toISOString(),
+                salesStartFixedDatetime: salesStartFixedDatetime?.toISOString(),
             }),
             layoutData: {name: null, layout: {blocks: []}}
         };
@@ -236,28 +253,38 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
                         )}
 
                         {watch('salesStartRuleType') === 'FIXED' && (
-                            <Controller name="salesStartFixedDatetime" control={control} render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>Sales Start Date</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" className="w-full justify-start font-normal">
-                                                <CalendarIcon className="mr-2 h-4 w-4"/>
-                                                {field.value ? format(field.value, 'PPP p') :
-                                                    <span>Pick a datetime</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                autoFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </FormItem>
-                            )}/>
+                            <>
+                                <Controller name="salesStartFixedDatetime" control={control} render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel>Sales Start Date</FormLabel>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="outline" className="w-full justify-start font-normal">
+                                                    <CalendarIcon className="mr-2 h-4 w-4"/>
+                                                    {field.value ? format(field.value, 'PPP') :
+                                                        <span>Pick a date</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    autoFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </FormItem>
+                                )}/>
+                                <Controller name="salesStartFixedTime" control={control} render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel>Sales Start Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}/>
+                            </>
                         )}
                     </div>
 
