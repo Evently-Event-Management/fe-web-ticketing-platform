@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
                 port: '4566',
                 pathname: '/event-seating-uploads/**',
             },
+            {
+                protocol: 'http',
+                hostname: 'event-seating-localstack'
+            }
         ],
     },
     crossOrigin: 'use-credentials'
