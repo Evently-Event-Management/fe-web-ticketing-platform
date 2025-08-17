@@ -3,7 +3,8 @@
 import * as React from 'react';
 import {useOrganization} from '@/providers/OrganizationProvider';
 import {ColumnDef} from '@tanstack/react-table';
-import {MoreHorizontal, PlusCircle} from 'lucide-react';
+import {MoreHorizontal, PlusCircle, Globe, Calendar, Clock} from 'lucide-react';
+import {format} from 'date-fns';
 
 import {OrganizationResponse} from '@/types/oraganizations';
 import {Button} from '@/components/ui/button';
@@ -34,7 +35,6 @@ export default function OrganizationsPage() {
                 const org = row.original;
                 return (
                     <div className="flex items-center gap-3">
-                        {/* Placeholder for a logo */}
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={org.logoUrl || '/default-logo.png'} alt={org.name}/>
                             <AvatarFallback>{org.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -45,11 +45,49 @@ export default function OrganizationsPage() {
             },
         },
         {
-            accessorKey: 'events', // Dummy accessor key
-            header: 'Events',
-            cell: () => {
-                // Dummy data for event count
-                return <span>{Math.floor(Math.random() * 25)}</span>;
+            accessorKey: 'website',
+            header: 'Website',
+            cell: ({row}) => {
+                const org = row.original;
+                return org.website ? (
+                    <a
+                        href={org.website.startsWith('http') ? org.website : `https://${org.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center text-blue-600 hover:underline"
+                    >
+                        <Globe className="h-4 w-4 mr-1" />
+                        {org.website.replace(/^https?:\/\//, '')}
+                    </a>
+                ) : (
+                    <span className="text-muted-foreground italic">No website</span>
+                );
+            },
+        },
+        {
+            accessorKey: 'createdAt',
+            header: 'Created',
+            cell: ({row}) => {
+                const org = row.original;
+                return (
+                    <div className="flex items-center text-muted-foreground">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        {format(new Date(org.createdAt), 'MMM d, yyyy')}
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'updatedAt',
+            header: 'Last Updated',
+            cell: ({row}) => {
+                const org = row.original;
+                return (
+                    <div className="flex items-center text-muted-foreground">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {format(new Date(org.updatedAt), 'MMM d, yyyy')}
+                    </div>
+                );
             },
         },
         {
