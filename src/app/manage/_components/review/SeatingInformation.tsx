@@ -1,9 +1,13 @@
+"use client";
+
 import {Seat, SessionFormData, Tier} from "@/lib/validators/event";
 import * as React from "react";
-import {GoogleMap, Libraries, Marker, useLoadScript} from "@react-google-maps/api";
+import {MapContainer, TileLayer, Marker, Popup} from "react-leaflet";
 import {Armchair, Users} from "lucide-react";
 import {getTierColor, getTierName} from "@/lib/utils";
 import {SeatingLayout} from "@/app/manage/_components/review/SeatingLayout";
+import "leaflet/dist/leaflet.css";
+import L, {LatLngTuple} from "leaflet";
 
 interface SeatingInformationProps {
     isOnline: boolean;
@@ -11,54 +15,58 @@ interface SeatingInformationProps {
     tiers: Tier[];
 }
 
-const mapLibraries: Libraries = ["places", "maps"];
+// Fix default marker icons (Leaflet requires this in React/Next.js setups)
+const defaultIcon = new L.Icon({
+    iconUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    iconRetinaUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+    shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+});
+L.Marker.prototype.options.icon = defaultIcon;
 
-
-export const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline, session, tiers}) => {
+export const SeatingInformation: React.FC<SeatingInformationProps> = ({
+                                                                          isOnline,
+                                                                          session,
+                                                                          tiers,
+                                                                      }) => {
     const {layoutData} = session;
     const {venueDetails} = session;
 
-    // For physical events with coordinates, prepare Google Map
-    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
-    const {isLoaded} = useLoadScript({
-        googleMapsApiKey,
-        libraries: mapLibraries,
-    });
-
-    const mapCenter = venueDetails?.latitude && venueDetails?.longitude
-        ? {lat: venueDetails.latitude, lng: venueDetails.longitude}
-        : {lat: 6.9271, lng: 79.8612}; // Default: Colombo, Sri Lanka
+    const mapCenter: LatLngTuple =
+        venueDetails?.latitude && venueDetails?.longitude
+            ? [venueDetails.latitude, venueDetails.longitude]
+            : [6.9271, 79.8612]; // Colombo
 
     // Function to count seats by tier
     const getSeatCountByTier = () => {
         const tierCounts: Record<string, number> = {};
 
-        layoutData.layout.blocks.forEach(block => {
+        layoutData.layout.blocks.forEach((block) => {
             if (block.rows) {
-                // For seated blocks with rows
-                block.rows.forEach(row => {
-                    row.seats.forEach(seat => {
-                        if (seat.status !== 'RESERVED') {
-                            const tierId = seat.tierId || 'unassigned';
+                block.rows.forEach((row) => {
+                    row.seats.forEach((seat) => {
+                        if (seat.status !== "RESERVED") {
+                            const tierId = seat.tierId || "unassigned";
                             tierCounts[tierId] = (tierCounts[tierId] || 0) + 1;
                         }
                     });
                 });
             } else if (block.seats) {
-                // For blocks with direct seats array
-                block.seats.forEach(seat => {
-                    if (seat.status !== 'RESERVED') {
-                        const tierId = seat.tierId || 'unassigned';
+                block.seats.forEach((seat) => {
+                    if (seat.status !== "RESERVED") {
+                        const tierId = seat.tierId || "unassigned";
                         tierCounts[tierId] = (tierCounts[tierId] || 0) + 1;
                     }
                 });
-            } else if (block.capacity && block.type === 'standing_capacity') {
-                // For standing blocks
-                // Fix the TypeScript error by explicitly typing the block.seats access
+            } else if (block.capacity && block.type === "standing_capacity") {
                 const blockSeats = block.seats as Seat[] | undefined;
-                const tierId = blockSeats?.[0]?.tierId || 'unassigned';
-                tierCounts[tierId] = (tierCounts[tierId] || 0) + (block.capacity || 0);
+                const tierId = blockSeats?.[0]?.tierId || "unassigned";
+                tierCounts[tierId] =
+                    (tierCounts[tierId] || 0) + (block.capacity || 0);
             }
         });
 
@@ -66,7 +74,10 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline,
     };
 
     const seatCountByTier = getSeatCountByTier();
-    const totalSeats = Object.values(seatCountByTier).reduce((sum, count) => sum + count, 0);
+    const totalSeats = Object.values(seatCountByTier).reduce(
+        (sum, count) => sum + count,
+        0
+    );
 
     // Display for online events
     if (isOnline) {
@@ -80,16 +91,17 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline,
                     <p>Total capacity: {totalSeats}</p>
                     {Object.entries(seatCountByTier).map(([tierId, count]) => (
                         <div key={tierId} className="flex items-center gap-2 mt-1">
-                            {tierId !== 'unassigned' && (
+                            {tierId !== "unassigned" && (
                                 <div
                                     className="h-3 w-3 rounded-full"
                                     style={{
-                                        backgroundColor: getTierColor(tierId, session, tiers)
+                                        backgroundColor: getTierColor(tierId, session, tiers),
                                     }}
                                 />
                             )}
                             <span>
-                                {getTierName(tierId, session, tiers)}: {count} {count === 1 ? 'seat' : 'seats'}
+                                {getTierName(tierId, session, tiers)}: {count}{" "}
+                                {count === 1 ? "seat" : "seats"}
                             </span>
                         </div>
                     ))}
@@ -104,24 +116,23 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline,
             <h3 className="font-semibold">Venue & Seating Information</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Left side: Google Map */}
+                {/* Left side: Leaflet Map */}
                 <div className="h-[300px] rounded-md overflow-hidden border">
-                    {isLoaded ? (
-                        <GoogleMap
-                            mapContainerStyle={{
-                                width: '100%',
-                                height: '100%',
-                            }}
-                            center={mapCenter}
-                            zoom={15}
-                        >
-                            <Marker position={mapCenter}/>
-                        </GoogleMap>
-                    ) : (
-                        <div className="h-full w-full bg-muted flex items-center justify-center">
-                            <p className="text-sm text-muted-foreground">Loading map...</p>
-                        </div>
-                    )}
+                    <MapContainer
+                        center={mapCenter}
+                        zoom={15}
+                        style={{width: "100%", height: "100%"}}
+                    >
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        />
+                        <Marker position={mapCenter}>
+                            <Popup>
+                                {venueDetails?.name || "Event Venue"}
+                            </Popup>
+                        </Marker>
+                    </MapContainer>
                 </div>
 
                 {/* Right side: Seating summary */}
@@ -135,16 +146,17 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline,
                             <p>Total capacity: {totalSeats}</p>
                             {Object.entries(seatCountByTier).map(([tierId, count]) => (
                                 <div key={tierId} className="flex items-center gap-2 mt-1">
-                                    {tierId !== 'unassigned' && (
+                                    {tierId !== "unassigned" && (
                                         <div
                                             className="h-3 w-3 rounded-full"
                                             style={{
-                                                backgroundColor: getTierColor(tierId, session, tiers)
+                                                backgroundColor: getTierColor(tierId, session, tiers),
                                             }}
                                         />
                                     )}
                                     <span>
-                                        {getTierName(tierId, session, tiers)}: {count} {count === 1 ? 'seat' : 'seats'}
+                                        {getTierName(tierId, session, tiers)}: {count}{" "}
+                                        {count === 1 ? "seat" : "seats"}
                                     </span>
                                 </div>
                             ))}
@@ -154,9 +166,7 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({isOnline,
             </div>
 
             {/* Seating Layout below the map and summary */}
-            {layoutData && (
-                <SeatingLayout session={session} tiers={tiers}/>
-            )}
+            {layoutData && <SeatingLayout session={session} tiers={tiers}/>}
         </div>
     );
 };
