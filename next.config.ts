@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
             {
                 protocol: 'http',
                 hostname: 'event-seating-localstack'
+            },
+            {
+                protocol: 'https',
+                hostname: 'ticketly-storage.s3.amazonaws.com'
             }
         ],
     },
