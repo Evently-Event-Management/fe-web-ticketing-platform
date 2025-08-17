@@ -1,22 +1,21 @@
-'use client';
-
 import * as React from 'react';
 import {format, parseISO} from 'date-fns';
 import {Calendar, Clock, LinkIcon, MapPin, Tag} from 'lucide-react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from "@/components/ui/accordion";
 import {Badge} from '@/components/ui/badge';
 import {SessionFormData, Tier} from '@/lib/validators/event';
-import {Libraries} from '@react-google-maps/api';
 import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
-import {SeatingInformation} from "@/app/manage/_components/review/SeatingInformation";
+import dynamic from "next/dynamic";
+
+const SeatingInformation = dynamic(
+    () => import("./SeatingInformation").then(mod => mod.SeatingInformation),
+    {ssr: false}
+);
 
 interface ReviewSessionsProps {
     sessions: SessionFormData[];
     tiers: Tier[];
 }
-
-// Shared libraries configuration for Google Maps
-const mapLibraries: Libraries = ["places", "maps"];
 
 export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions, tiers}) => {
     if (sessions.length === 0) return null;

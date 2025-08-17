@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import {useState} from 'react';
 import {useFormContext} from 'react-hook-form';
@@ -8,9 +6,14 @@ import {Button} from '@/components/ui/button';
 import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
 import {TimeConfigDialog} from './TimeConfigDialog'; // Assuming this component exists
-import {LocationConfigDialog} from './LocationConfigDialog';
 import {LinkIcon, MapPin, Settings, Trash2, Edit, Tag} from 'lucide-react';
 import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import dynamic from "next/dynamic";
+
+const LocationConfigDialog = dynamic(
+    () => import("./LocationConfigDialog").then(mod => mod.LocationConfigDialog),
+    {ssr: false}
+);
 
 // Helper function to create a descriptive string for the sales rule
 const getSalesRuleDescription = (session: SessionFormData): string => {
