@@ -1,5 +1,5 @@
 import * as React from "react";
-import {SessionType} from "@/lib/validators/salesStartRuleType";
+import {SessionType} from "@/lib/validators/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";

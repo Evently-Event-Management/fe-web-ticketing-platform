@@ -4,7 +4,7 @@ export enum SessionType {
     ONLINE = 'ONLINE',
 }
 
-export enum SalesStartRuleType {
+export enum Enums {
     IMMEDIATE = 'IMMEDIATE',
     ROLLING = 'ROLLING',
     FIXED = 'FIXED',
@@ -16,4 +16,11 @@ export enum SessionStatus {
     ON_SALE = 'ON_SALE',
     SOLD_OUT = 'SOLD_OUT',
     CANCELED = 'CANCELED',
+}
+
+export enum ReadModelSeatStatus {
+    AVAILABLE = 'AVAILABLE',
+    RESERVED = 'RESERVED',
+    BOOKED = 'BOOKED',
+    LOCKED = 'LOCKED',
 }

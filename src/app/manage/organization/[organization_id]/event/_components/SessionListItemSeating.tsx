@@ -12,7 +12,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {SessionType} from "@/lib/validators/salesStartRuleType";
+import {SessionType} from "@/lib/validators/enums";
 
 export function SessionListItemSeating({field, index, onConfigure}: {
     field: SessionFormData;

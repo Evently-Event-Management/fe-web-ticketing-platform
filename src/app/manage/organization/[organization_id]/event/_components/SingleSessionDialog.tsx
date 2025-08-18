@@ -19,13 +19,13 @@ import * as React from "react";
 import {SessionFormData} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
-import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import {Enums, SessionType} from "@/lib/validators/enums";
 
 interface SingleSessionFormValues {
     startDate: Date;
     startTime: string;
     durationHours: number;
-    salesStartRuleType: SalesStartRuleType;
+    salesStartRuleType: Enums;
     salesStartHoursBefore: number;
     salesStartFixedDatetime: Date;
     salesStartFixedTime: string; // Added field for fixed time
@@ -44,7 +44,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             startDate: new Date(),
             startTime: '19:00',
             durationHours: 2,
-            salesStartRuleType: SalesStartRuleType.ROLLING,
+            salesStartRuleType: Enums.ROLLING,
             salesStartHoursBefore: 168,
             salesStartFixedDatetime: new Date(),
             salesStartFixedTime: '12:00', // Default fixed time
@@ -107,7 +107,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             endTime: endTime.toISOString(),
             sessionType: SessionType.PHYSICAL,
             salesStartRuleType: data.salesStartRuleType,
-            ...(data.salesStartRuleType === SalesStartRuleType.ROLLING && {
+            ...(data.salesStartRuleType === Enums.ROLLING && {
                 salesStartHoursBefore: data.salesStartHoursBefore,
             }),
             ...(data.salesStartRuleType === 'FIXED' && {

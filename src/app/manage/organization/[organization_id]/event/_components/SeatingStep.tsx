@@ -15,7 +15,7 @@ import {Checkbox} from "@/components/ui/checkbox";
 import {Label} from "@/components/ui/label";
 import {toast} from "sonner";
 import {ArrowLeft} from "lucide-react";
-import {SessionType} from "@/lib/validators/salesStartRuleType";
+import {SessionType} from "@/lib/validators/enums";
 
 interface SeatingStepProps {
     onConfigModeChange?: (isInConfigMode: boolean) => void;

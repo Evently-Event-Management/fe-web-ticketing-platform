@@ -7,7 +7,7 @@ import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
 import {TimeConfigDialog} from './TimeConfigDialog'; // Assuming this component exists
 import {LinkIcon, MapPin, Settings, Trash2, Edit, Tag} from 'lucide-react';
-import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import {Enums, SessionType} from "@/lib/validators/enums";
 import dynamic from "next/dynamic";
 
 const LocationConfigDialog = dynamic(
@@ -19,14 +19,14 @@ const LocationConfigDialog = dynamic(
 const getSalesRuleDescription = (session: SessionFormData): string => {
     if (!session) return "Sales rule not set";
     switch (session.salesStartRuleType) {
-        case SalesStartRuleType.IMMEDIATE:
+        case Enums.IMMEDIATE:
             return "On sale immediately";
-        case SalesStartRuleType.FIXED:
+        case Enums.FIXED:
             // Check if the date is valid before formatting
             return session.salesStartFixedDatetime
                 ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy h:mm a')}`
                 : "Fixed date not set";
-        case SalesStartRuleType.ROLLING:
+        case Enums.ROLLING:
             if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore === null || session.salesStartHoursBefore < 0) {
                 return "Rolling days not set or invalid";
             } else if (session.salesStartHoursBefore < 24) {
