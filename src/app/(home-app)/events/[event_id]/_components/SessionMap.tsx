@@ -36,7 +36,7 @@ export const SessionMap = ({ location }: { location: { coordinates: [number, num
     const position: [number, number] = [location.coordinates[1], location.coordinates[0]];
 
     return (
-        <div className="h-64 w-full rounded-md overflow-hidden z-0">
+        <div className="h-full w-full rounded-md overflow-hidden z-0">
             <MapContainer
                 center={position}
                 zoom={13}
