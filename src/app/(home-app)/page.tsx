@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import EventCard from "@/app/(home-app)/_components/EventCard";
+import CategorySection from "@/app/(home-app)/_components/CategorySection";
 import type { Event } from "@/app/(home-app)/_utils/types";
 import Image from "next/image";
 
@@ -88,6 +89,9 @@ export default function page() {
                     <p className="mt-2">Discover and book your next event effortlessly</p>
                 </div>
             </section>
+
+            {/* Category Section */}
+            <CategorySection />
 
             <div className="h-16"></div>
 
