@@ -9,3 +9,11 @@ export enum SalesStartRuleType {
     ROLLING = 'ROLLING',
     FIXED = 'FIXED',
 }
+
+export enum SessionStatus {
+    PENDING = 'PENDING',
+    SCHEDULED = 'SCHEDULED',
+    ON_SALE = 'ON_SALE',
+    SOLD_OUT = 'SOLD_OUT',
+    CANCELED = 'CANCELED',
+}

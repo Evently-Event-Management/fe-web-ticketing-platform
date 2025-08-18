@@ -9,7 +9,7 @@ export function Footer() {
                     <div className="col-span-full md:col-span-1 lg:col-span-2 mb-4 md:mb-0">
                         <Link href="/" className="flex items-center gap-2 mb-4">
                             <Ticket className="h-8 w-8 text-primary" />
-                            <span className="text-xl font-bold">TicketingPlatform</span>
+                            <span className="text-xl font-bold">Ticketly</span>
                         </Link>
                         <p className="text-muted-foreground text-sm max-w-xs">
                             The premier platform for seamless event ticketing and management.
