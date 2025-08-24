@@ -150,6 +150,7 @@ export interface SessionInfoBasicDTO {
 // }
 
 
+
 export interface SeatingBlockDTO {
     id: string;
     name: string;
