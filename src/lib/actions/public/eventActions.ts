@@ -93,5 +93,37 @@ export async function getEventSessions({
     return await res.json();
 }
 
+/**
+ * Fetches event sessions for a specific event
+ */
+export async function getEventSessionsInRange({
+                                                  eventId,
+                                                  fromDate,
+                                                  toDate,
+                                              }: {
+    eventId: string;
+    fromDate: string;
+    toDate: string;
+}): Promise<SessionInfoBasicDTO[]> {
+    const params = new URLSearchParams();
+    params.append("fromDate", fromDate);
+    params.append("toDate", toDate);
+
+    const url = `${API_BASE_PATH}/${eventId}/sessions/sessions-in-range?${params.toString()}`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        cache: "no-store",
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch event sessions in range: ${res.status}`);
+    }
+
+    return await res.json();
+}
+
 export type EventSearchResult = Awaited<ReturnType<typeof searchEvents>>;
 export type EventSessionsResult = Awaited<ReturnType<typeof getEventSessions>>;
