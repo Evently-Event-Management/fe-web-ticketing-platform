@@ -43,6 +43,7 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
         [SessionStatus.SOLD_OUT]: "border-red-500/50 bg-red-500/10 text-red-600",
         [SessionStatus.CANCELED]: "border-slate-500/50 bg-slate-500/10 text-slate-600",
         [SessionStatus.SCHEDULED]: "border-blue-500/50 bg-blue-500/10 text-blue-600",
+        [SessionStatus.CLOSED]: "border-gray-500/50 bg-gray-500/10 text-gray-600",
         [SessionStatus.PENDING]: "border-yellow-500/50 bg-yellow-500/10 text-yellow-600",
     };
 

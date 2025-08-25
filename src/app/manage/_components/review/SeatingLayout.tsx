@@ -119,7 +119,7 @@ export const SeatingLayout: React.FC<SeatingLayoutProps> = ({session, tiers}) =>
                         )}
 
                         {block.type === 'standing_capacity' && (
-                            <div className="flex items-center justify-center h-full">
+                            <div className="flex flex-col items-center justify-center h-full">
                                 <p className="text-sm text-center">
                                     <span className="block font-medium">Standing Area</span>
                                     <span className="text-muted-foreground">

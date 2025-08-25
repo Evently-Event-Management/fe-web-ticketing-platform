@@ -1,6 +1,6 @@
 "use client";
 
-import {Seat, SessionFormData, Tier} from "@/lib/validators/event";
+import { SessionFormData, Tier} from "@/lib/validators/event";
 import * as React from "react";
 import {MapContainer, TileLayer, Marker, Popup} from "react-leaflet";
 import {Armchair, Users} from "lucide-react";
@@ -64,6 +64,17 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({
                         tierCounts[tierId] = (tierCounts[tierId] || 0) + 1;
                     }
                 });
+            } else if (block.type === "standing_capacity" && block.capacity) {
+                // Get tier for standing capacity blocks
+                let tierId = "unassigned";
+
+                // Check if block has seats array with tier information
+                if (block.seats && block.seats.length > 0 && block.seats[0].tierId) {
+                    tierId = block.seats[0].tierId;
+                }
+
+                // Add the capacity to the tier count
+                tierCounts[tierId] = (tierCounts[tierId] || 0) + (block.capacity || 0);
             }
         });
 

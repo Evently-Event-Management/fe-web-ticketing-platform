@@ -5,6 +5,29 @@ import {Badge} from "@/components/ui/badge";
 
 // A dedicated component for rendering different types of seating blocks.
 const SeatingBlock = ({block}: { block: SeatingBlockDTO }) => {
+    // Calculate availability percentage for standing capacity blocks
+    const getAvailabilityPercentage = (block: SeatingBlockDTO) => {
+        if (block.type !== 'standing_capacity' || !block.capacity) return 100;
+
+        // Count reserved/booked/locked seats if available
+        const reservedCount = block.seats?.filter(seat =>
+            seat.status === 'RESERVED' ||
+            seat.status === 'BOOKED' ||
+            seat.status === 'LOCKED'
+        ).length || 0;
+
+        // Calculate available percentage
+        return Math.max(0, Math.min(100, ((block.capacity - reservedCount) / block.capacity) * 100));
+    };
+
+    // Get the tier color for standing capacity blocks
+    const getStandingAreaTierColor = (block: SeatingBlockDTO) => {
+        if (block.type !== 'standing_capacity') return undefined;
+
+        // Find first seat with tier info or return undefined
+        return block.seats?.[0]?.tier?.color;
+    };
+
     const blockContent = () => {
         switch (block.type) {
             case 'seated_grid':
@@ -74,10 +97,30 @@ const SeatingBlock = ({block}: { block: SeatingBlockDTO }) => {
                 );
 
             case 'standing_capacity':
+                const availabilityPercentage = getAvailabilityPercentage(block);
+                const tierColor = getStandingAreaTierColor(block);
+
                 return (
                     <div className="flex flex-col items-center justify-center h-full text-center">
                         <p className="font-medium text-foreground">{block.name}</p>
-                        <p className="text-sm text-muted-foreground">Capacity: {block.capacity || 0}</p>
+                        <p className="text-sm text-muted-foreground">
+                            Capacity: {block.capacity || 0}
+                        </p>
+
+                        {/* Availability indicator */}
+                        <div className="w-full mt-2 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                            <div
+                                className="h-2.5 rounded-full transition-all"
+                                style={{
+                                    width: `${availabilityPercentage}%`,
+                                    backgroundColor: tierColor || 'hsl(var(--primary))'
+                                }}
+                            ></div>
+                        </div>
+
+                        <p className="text-xs mt-1 text-muted-foreground">
+                            {availabilityPercentage.toFixed(0)}% Available
+                        </p>
                     </div>
                 );
 
@@ -93,6 +136,15 @@ const SeatingBlock = ({block}: { block: SeatingBlockDTO }) => {
         }
     };
 
+    // Get background color based on block type
+    const getBlockBackgroundColor = (block: SeatingBlockDTO) => {
+        if (block.type === 'standing_capacity') {
+            const tierColor = getStandingAreaTierColor(block);
+            return tierColor ? `${tierColor}40` : undefined; // Light opacity for background
+        }
+        return undefined;
+    };
+
     return (
         <div
             className="absolute bg-card/80 backdrop-blur-sm border rounded-lg p-3 shadow-md"
@@ -101,8 +153,8 @@ const SeatingBlock = ({block}: { block: SeatingBlockDTO }) => {
                 top: block.position.y,
                 width: block.width ? `${block.width}px` : 'auto',
                 height: block.height ? `${block.height}px` : 'auto',
-                // Add a dashed border for non-sellable areas for better visual distinction
-                borderStyle: block.type === 'non_sellable' ? 'dashed' : 'solid'
+                borderStyle: block.type === 'non_sellable' ? 'dashed' : 'solid',
+                backgroundColor: getBlockBackgroundColor(block)
             }}
         >
             {blockContent()}
