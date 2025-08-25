@@ -22,7 +22,7 @@ export const SeatStatusSummary = ({seatingMap}: { seatingMap: SessionSeatingMapD
         let totalSeats = 0;
 
         seatingMap.layout.blocks.forEach(block => {
-            if (block.type === 'seated_grid' && block.rows) {
+            if (block.rows && block.rows.length > 0) {
                 block.rows.forEach(row => {
                     row.seats.forEach(seat => {
                         totalSeats++;
@@ -31,6 +31,14 @@ export const SeatStatusSummary = ({seatingMap}: { seatingMap: SessionSeatingMapD
                             counts[status]++;
                         }
                     });
+                });
+            } else if (block.seats && block.seats.length > 0) {
+                block.seats.forEach(seat => {
+                    totalSeats++;
+                    const status = seat.status || ReadModelSeatStatus.AVAILABLE;
+                    if (counts[status] !== undefined) {
+                        counts[status]++;
+                    }
                 });
             }
         });
