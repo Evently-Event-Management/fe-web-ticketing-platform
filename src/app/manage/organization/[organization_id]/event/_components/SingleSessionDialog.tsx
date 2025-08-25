@@ -79,7 +79,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
         // Create the session start time by combining date and time
         const startTime = setMinutes(
             setHours(
-                data.startDate,
+                new Date(data.startDate), // Ensure we have a fresh Date object
                 parseInt(data.startTime.split(':')[0])
             ),
             parseInt(data.startTime.split(':')[1])
@@ -92,7 +92,14 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
         let salesStartFixedDatetime;
         if (data.salesStartRuleType === 'FIXED') {
             const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
-            salesStartFixedDatetime = setMinutes(setHours(data.salesStartFixedDatetime, hours), minutes);
+            // Ensure we have a valid date object before setting hours and minutes
+            salesStartFixedDatetime = setMinutes(
+                setHours(
+                    new Date(data.salesStartFixedDatetime), // Create a new Date object
+                    hours
+                ),
+                minutes
+            );
 
             // Validate that sales start time is before event start time
             if (salesStartFixedDatetime >= startTime) {
@@ -116,6 +123,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             layoutData: {name: null, layout: {blocks: []}}
         };
 
+        console.log("New session:", newSession);
         onAdd(newSession);
         setOpen(false);
     };
