@@ -2,7 +2,7 @@ import React, {Suspense} from 'react';
 import {ReviewEventHero, ReviewEventHeroSkeleton} from "@/app/(home-app)/events/[event_id]/_components/ReviewEventHero";
 import {eventServerActions} from "@/lib/actions/public/eventServerActions";
 import {Separator} from "@/components/ui/separator";
-import Sessions from "@/app/(home-app)/events/[event_id]/_components/Sessions";
+import SessionsNoPagination from "@/app/(home-app)/events/[event_id]/_components/Sessions";
 
 
 const Page = async ({params}: { params: Promise<{ event_id: string }> }) => {
@@ -17,7 +17,7 @@ const Page = async ({params}: { params: Promise<{ event_id: string }> }) => {
                         <ReviewEventHero event={eventSummery}/>
                     </Suspense>
                     <Separator/>
-                    <Sessions eventId={eventSummery.id}/>
+                    <SessionsNoPagination eventId={eventSummery.id}/>
                 </div>
             </div>
         </div>

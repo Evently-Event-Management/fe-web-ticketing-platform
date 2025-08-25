@@ -1,31 +1,57 @@
+'use client';
+
 import {EventBasicInfoDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {Ticket} from "lucide-react";
+import {toast} from "sonner";
 
-
-const TierPill = ({tier}: { tier: EventBasicInfoDTO['tiers'][0]; }) => {
+// A single tier item, redesigned for a vertical list
+const TierItem = ({tier}: { tier: EventBasicInfoDTO['tiers'][0]; }) => {
     return (
         <div
-            className="flex items-center gap-3 px-4 py-2 rounded-full shadow-sm cursor-pointer transform hover:scale-105 transition-transform duration-200"
-            style={{ backgroundColor: tier.color }}
+            className="flex items-center justify-between p-4 rounded-lg border transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
         >
-            <span className="font-bold text-white text-sm">{tier.name}</span>
-            <span className="text-xs font-semibold text-white/90 bg-black/20 px-2 py-0.5 rounded-full">${tier.price.toFixed(2)}</span>
+            <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full" style={{backgroundColor: tier.color}}></div>
+                <span className="font-semibold text-gray-800 dark:text-white">{tier.name}</span>
+            </div>
+            <span className="font-bold text-gray-900 dark:text-white">${tier.price.toFixed(2)}</span>
         </div>
     )
 }
 
-
+// The main section now organizes TierItems vertically and includes the CTA button
 const TiersSection = ({tiers}: { tiers: EventBasicInfoDTO['tiers'] }) => {
+    const handleBuyTickets = () => {
+        // Show toast notification
+        toast.info("Please select a session below to continue", {
+            description: "Choose an available session for this event",
+            duration: 3000,
+        });
+
+        // Scroll to sessions section
+        const sessionsSection = document.getElementById('sessions-section');
+        if (sessionsSection) {
+            sessionsSection.scrollIntoView({behavior: 'smooth'});
+        }
+    };
+
     return (
-        <div className="max-w-7xl">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
-                <Ticket className="w-6 h-6" />
-                Tickets
+        <div className="w-full space-y-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Ticket className="w-6 h-6"/>
+                Available Ticket Tiers
             </h2>
-            <div className="flex flex-wrap gap-3">
-                {tiers.map(tier => <TierPill key={tier.id} tier={tier} />)}
+            <div className="flex flex-col gap-3">
+                {tiers.map(tier => <TierItem key={tier.id} tier={tier}/>)}
             </div>
+            <Button
+                size="lg"
+                className="w-full mt-4 font-bold"
+                onClick={handleBuyTickets}
+            >
+                Buy Tickets
+            </Button>
         </div>
     )
 }
