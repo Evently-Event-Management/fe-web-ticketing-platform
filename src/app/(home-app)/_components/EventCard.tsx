@@ -1,48 +1,139 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
-import { Heart, Share2 } from "lucide-react";
-import type { Event} from "@/app/(home-app)/_utils/types"
-import Image from "next/image";
+'use client';
 
-export default function EventCard({ event }: { event: Event }) {
+import React from 'react';
+import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {AspectRatio} from "@/components/ui/aspect-ratio";
+import {Building, Calendar, MapPin, Heart, Share2, Tag} from 'lucide-react';
+import Image from "next/image";
+import Link from "next/link";
+
+// --- Mocking types for demonstration ---
+interface EventThumbnailDTO {
+    id: string;
+    title: string;
+    coverPhotoUrl: string;
+    organizationName: string;
+    categoryName: string;
+    earliestSession: {
+        startTime: string;
+        venueName: string;
+        city: string;
+    };
+    startingPrice: number | null;
+}
+
+
+// --- Helper Functions ---
+/**
+ * Formats an ISO 8601 date string into a more readable format.
+ * @param {string} isoString - The date string to format.
+ * @returns {{day: string, month: string, fullDate: string}}
+ */
+const formatDate = (isoString: string) => {
+    try {
+        const date = new Date(isoString);
+        if (isNaN(date.getTime())) {
+            throw new Error("Invalid date");
+        }
+        const day = date.toLocaleDateString('en-US', {day: '2-digit'});
+        const month = date.toLocaleDateString('en-US', {month: 'short'}).toUpperCase();
+        const fullDate = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        }).replace(' at', ' -');
+        return {day, month, fullDate};
+    } catch (error) {
+        console.error("Error formatting date:", error);
+        return {day: '??', month: '???', fullDate: 'Date not available'};
+    }
+};
+
+
+export function EventCard({event}: { event: EventThumbnailDTO }) {
+    const {
+        title,
+        coverPhotoUrl,
+        organizationName,
+        categoryName,
+        earliestSession,
+        startingPrice,
+    } = event;
+
+    const {day, month, fullDate} = formatDate(earliestSession?.startTime);
+
     return (
-        <Card className="w-full max-w-sm overflow-hidden group pt-0">
-            <div className="relative w-full h-60 overflow-hidden">
-                <Image
-                    src={event.image}
-                    alt={event.title}
-                    width={500}
-                    height={300}
-                    className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute top-2 left-2">
-                    {event.price ? (
-                        <span className="rounded-sm bg-white px-3 py-1 text-xs font-bold text-black">${event.price}</span>
-                    ) : (
-                        <span className="rounded-sm bg-white px-3 py-1 text-xs font-bold text-black">FREE</span>
-                    )}
+        <Card
+            className="py-0 w-full max-w-sm rounded-xl overflow-hidden transform hover:scale-101 transition-transform duration-300 ease-in-out font-sans shadow-lg gap-3">
+            <CardHeader className="p-0 relative">
+                <AspectRatio ratio={16 / 9}>
+                    <Image
+                        fill
+                        src={coverPhotoUrl}
+                        alt={title}
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/6366f1/ffffff?text=Event+Image';
+                        }}
+                    />
+                </AspectRatio>
+
+                {/* Date Badge */}
+                <div className="absolute top-4 left-4 bg-card rounded-lg p-2 text-center shadow-md">
+                    <p className="text-xl font-bold text-primary">{day}</p>
+                    <p className="text-xs font-semibold">{month}</p>
                 </div>
-                <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="secondary" className="rounded-full h-8 w-8 bg-white/20 backdrop-blur-sm hover:bg-white/30">
-                        <Share2 className="h-4 w-4 text-white" />
+
+                {/* Action Icons */}
+                <div className="absolute top-4 right-4 flex space-x-2">
+                    <Button variant="ghost" size="icon"
+                            className="bg-card/80 backdrop-blur-sm rounded-full h-10 w-10 hover:bg-white">
+                        <Heart className="h-5 w-5 text-red-500"/>
                     </Button>
-                    <Button size="icon" variant="secondary" className="rounded-full h-8 w-8 bg-white/20 backdrop-blur-sm hover:bg-white/30">
-                        <Heart className="h-4 w-4 text-white" />
+                    <Button variant="ghost" size="icon"
+                            className="bg-card/80 backdrop-blur-sm rounded-full h-10 w-10 hover:bg-white">
+                        <Share2 className="h-5 w-5 text-blue-700 dark:text-blue-300"/>
                     </Button>
                 </div>
-            </div>
-            <CardContent className="p-4">
-                <div className="flex items-start space-x-4">
-                    <div className="text-center">
-                        <p className="text-sm font-bold text-primary">{event.date.month}</p>
-                        <p className="text-xl font-bold">{event.date.day}</p>
+
+                {/* Starting Price Badge */}
+                <div className="absolute bottom-4 right-4 bg-card rounded-lg p-2 text-center shadow-md">
+                    <span className="text-sm font-bold">
+                        {startingPrice ? `$${startingPrice.toFixed(2)}` : 'Free'}
+                    </span>
+                </div>
+            </CardHeader>
+            <CardContent className="px-4 py-0">
+                <h3 className="text-xl font-bold leading-tight text-gray-900 dark:text-white">{title}</h3>
+                <div className="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center">
+                        <Tag className="h-4 w-4 mr-2 flex-shrink-0"/>
+                        <span>{categoryName}</span>
                     </div>
-                    <div>
-                        <CardTitle className="text-base font-bold leading-tight">{event.title}</CardTitle>
-                        <CardDescription className="text-xs mt-1">{event.location}</CardDescription>
+                    <div className="flex items-start">
+                        <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0"/>
+                        <span>{earliestSession?.venueName}, {earliestSession?.city}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0"/>
+                        <span>{fullDate}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <Building className="h-4 w-4 mr-2 flex-shrink-0"/>
+                        <span>By {organizationName}</span>
                     </div>
                 </div>
             </CardContent>
+            <CardFooter className="p-4 gap-3 flex">
+                <Link href={`/events/${event.id}`} className="w-full">
+                    <Button className={'w-full'}>Buy Tickets</Button>
+                </Link>
+            </CardFooter>
         </Card>
     );
 }
