@@ -82,7 +82,10 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
 
         const newSessions: SessionFormData[] = [];
         let currentStartTime = setMinutes(
-            setHours(data.startDate, parseInt(data.startTime.split(':')[0])),
+            setHours(
+                new Date(data.startDate), // Ensure we have a fresh Date object
+                parseInt(data.startTime.split(':')[0])
+            ),
             parseInt(data.startTime.split(':')[1])
         );
 
@@ -90,7 +93,14 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
         let salesStartFixedDatetime;
         if (data.salesStartRuleType === 'FIXED') {
             const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
-            salesStartFixedDatetime = setMinutes(setHours(data.salesStartFixedDatetime, hours), minutes);
+            // Ensure we have a valid date object before setting hours and minutes
+            salesStartFixedDatetime = setMinutes(
+                setHours(
+                    new Date(data.salesStartFixedDatetime), // Create a new Date object
+                    hours
+                ),
+                minutes
+            );
 
             // Validate that sales start time is before the first event start time
             if (salesStartFixedDatetime >= currentStartTime) {
@@ -121,6 +131,8 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
                 currentStartTime = addWeeks(currentStartTime, data.interval);
             }
         }
+
+        console.log("Generated sessions:", newSessions);
         onGenerate(newSessions);
         setOpen(false);
     };

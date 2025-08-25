@@ -20,6 +20,7 @@ import {Skeleton} from '@/components/ui/skeleton';
 import {DeleteOrganizationDialog, CreateOrganizationDialog} from "@/components/OrganizationDialog";
 import {useRouter} from "next/navigation";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import Link from "next/link";
 
 
 export default function OrganizationsPage() {
@@ -50,15 +51,15 @@ export default function OrganizationsPage() {
             cell: ({row}) => {
                 const org = row.original;
                 return org.website ? (
-                    <a
+                    <Link
                         href={org.website.startsWith('http') ? org.website : `https://${org.website}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center text-blue-600 hover:underline"
                     >
-                        <Globe className="h-4 w-4 mr-1" />
+                        <Globe className="h-4 w-4 mr-1"/>
                         {org.website.replace(/^https?:\/\//, '')}
-                    </a>
+                    </Link>
                 ) : (
                     <span className="text-muted-foreground italic">No website</span>
                 );
@@ -71,7 +72,7 @@ export default function OrganizationsPage() {
                 const org = row.original;
                 return (
                     <div className="flex items-center text-muted-foreground">
-                        <Calendar className="h-4 w-4 mr-1" />
+                        <Calendar className="h-4 w-4 mr-1"/>
                         {format(new Date(org.createdAt), 'MMM d, yyyy')}
                     </div>
                 );
@@ -84,7 +85,7 @@ export default function OrganizationsPage() {
                 const org = row.original;
                 return (
                     <div className="flex items-center text-muted-foreground">
-                        <Clock className="h-4 w-4 mr-1" />
+                        <Clock className="h-4 w-4 mr-1"/>
                         {format(new Date(org.updatedAt), 'MMM d, yyyy')}
                     </div>
                 );
