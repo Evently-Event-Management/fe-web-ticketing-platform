@@ -41,12 +41,13 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({
             ? [venueDetails.latitude, venueDetails.longitude]
             : [6.9271, 79.8612]; // Colombo
 
-    // Function to count seats by tier
+    // Function to count seats by tier - updated to include seated blocks
     const getSeatCountByTier = () => {
         const tierCounts: Record<string, number> = {};
 
         layoutData.layout.blocks.forEach((block) => {
-            if (block.rows) {
+            if (block.rows && block.rows.length > 0) {
+                // Count seats in rows for seated_grid blocks
                 block.rows.forEach((row) => {
                     row.seats.forEach((seat) => {
                         if (seat.status !== "RESERVED") {
@@ -55,18 +56,14 @@ export const SeatingInformation: React.FC<SeatingInformationProps> = ({
                         }
                     });
                 });
-            } else if (block.seats) {
+            } else if (block.seats && block.seats.length > 0) {
+                // Count direct seats array (for seated blocks without rows)
                 block.seats.forEach((seat) => {
                     if (seat.status !== "RESERVED") {
                         const tierId = seat.tierId || "unassigned";
                         tierCounts[tierId] = (tierCounts[tierId] || 0) + 1;
                     }
                 });
-            } else if (block.capacity && block.type === "standing_capacity") {
-                const blockSeats = block.seats as Seat[] | undefined;
-                const tierId = blockSeats?.[0]?.tierId || "unassigned";
-                tierCounts[tierId] =
-                    (tierCounts[tierId] || 0) + (block.capacity || 0);
             }
         });
 

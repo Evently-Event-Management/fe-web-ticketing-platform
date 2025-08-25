@@ -12,47 +12,37 @@ interface SeatingLayoutProps {
 }
 
 export const SeatingLayout: React.FC<SeatingLayoutProps> = ({session, tiers}) => {
-    // const [selectedSeat, setSelectedSeat] = useState<{
-    //     seat: Seat;
-    //     rowLabel?: string;
-    //     blockName: string;
-    //     tier?: string;
-    // } | null>(null);
-
     const {layoutData} = session;
 
     // Only render for physical events with layout data
     if (!layoutData || session.sessionType !== SessionType.PHYSICAL) return null;
 
-    // const handleSeatClick = (
-    //     seat: Seat,
-    //     blockName: string,
-    //     rowLabel?: string
-    // ) => {
-    //     setSelectedSeat({
-    //         seat,
-    //         rowLabel,
-    //         blockName,
-    //         tier: seat.tierId ? getTierName(seat.tierId, session, tiers) : undefined
-    //     });
-    // };
-
     return (
         <div className="border rounded-lg p-4">
             <h3 className="font-semibold mb-4">Seating Layout</h3>
             <div className="relative bg-muted/30 min-h-[300px] p-4 rounded-lg overflow-auto">
-                {layoutData.layout.blocks.map(block => (
+                {layoutData.layout.blocks.map(block => {
+                    // Get tier color for the block based on first seat's tier
+                    const firstSeatTierId = block.seats?.[0]?.tierId;
+                    const blockTierColor = firstSeatTierId ?
+                        `${getTierColor(firstSeatTierId, session, tiers)}80` : // 50% opacity
+                        undefined;
+
+                    return (
                     <div
                         key={block.id}
-                        className="absolute bg-card border rounded-lg p-3 shadow-sm"
+                        className={`absolute border rounded-lg p-3 shadow-sm ${block.type === 'non_sellable' ? 'flex items-center justify-center' : 'bg-card'}`}
                         style={{
                             left: block.position.x,
                             top: block.position.y,
                             width: block.width ? `${block.width}px` : 'auto',
-                            height: block.height ? `${block.height}px` : 'auto'
+                            height: block.height ? `${block.height}px` : 'auto',
+                            backgroundColor: blockTierColor || undefined
                         }}
                     >
-                        <div className="text-sm font-medium mb-1">{block.name}</div>
+                        {block.type !== 'non_sellable' && (
+                            <div className="text-sm font-medium mb-1">{block.name}</div>
+                        )}
 
                         {block.type === 'seated_grid' && block.rows && (
                             <div
@@ -140,14 +130,12 @@ export const SeatingLayout: React.FC<SeatingLayoutProps> = ({session, tiers}) =>
                         )}
 
                         {block.type === 'non_sellable' && (
-                            <div className="flex items-center justify-center h-full">
-                                <p className="text-sm text-muted-foreground">
-                                    Non-sellable area
-                                </p>
+                            <div className="text-sm text-muted-foreground w-full h-full flex items-center justify-center">
+                                {block.name}
                             </div>
                         )}
                     </div>
-                ))}
+                )})}
             </div>
         </div>
     );
