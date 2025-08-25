@@ -3,7 +3,7 @@
 import {useEffect, useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {EventSearchResult, searchEvents} from '@/lib/actions/public/eventActions'; // Correct path
-import {EventCard} from './EventCard';
+import {EventCard} from '../../_components/EventCard';
 import {
     Pagination,
     PaginationContent,

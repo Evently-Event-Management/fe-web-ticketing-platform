@@ -15,6 +15,7 @@ import {
     Heart, // Example for Dating
     Gamepad2, // Example for Hobbies
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // --- Enhanced CATEGORY_CONFIG to better match the visual style ---
 // I've added more icons to demonstrate flexibility.
@@ -49,6 +50,7 @@ export default function CategorySection() {
     const [categories, setCategories] = useState<CategoryResponseWithParentName[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -69,8 +71,7 @@ export default function CategorySection() {
     }, []);
 
     const handleCategoryClick = (categoryId: string) => {
-        console.log("Category clicked:", categoryId);
-        // This can be extended later to navigate to category page or filter events
+        router.push(`/events?categoryId=${categoryId}`);
     };
 
     if (isLoading) {

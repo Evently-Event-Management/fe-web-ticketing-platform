@@ -9,7 +9,7 @@ import {Label} from "@/components/ui/label";
 import {Card} from "@/components/ui/card";
 import {Separator} from "@/components/ui/separator";
 import {CategoryResponseWithParentName} from '@/types/category';
-import {sriLankaLocations} from './locations';
+import {sriLankaLocations} from '../../_utils/locations';
 import {Search, MapPin, Tag, X} from 'lucide-react';
 
 interface EventFiltersProps {
