@@ -6,6 +6,7 @@ import {ThemeProvider} from "next-themes";
 import {Toaster} from "@/components/ui/sonner";
 import {LimitProvider} from "@/providers/LimitProvider";
 import React from "react";
+import {TooltipProvider} from "@/components/ui/tooltip";
 
 
 const geistSans = Geist({
@@ -41,7 +42,9 @@ export default function RootLayout({
                 disableTransitionOnChange
             >
                 <LimitProvider>
-                    {children}
+                    <TooltipProvider delayDuration={500}>
+                        {children}
+                    </TooltipProvider>
                 </LimitProvider>
                 <Toaster/>
             </ThemeProvider>
