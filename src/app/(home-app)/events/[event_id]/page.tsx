@@ -1,13 +1,13 @@
 import React, {Suspense} from 'react';
 import {ReviewEventHero, ReviewEventHeroSkeleton} from "@/app/(home-app)/events/[event_id]/_components/ReviewEventHero";
-import {eventServerActions} from "@/lib/actions/public/eventServerActions";
 import {Separator} from "@/components/ui/separator";
 import SessionsNoPagination from "@/app/(home-app)/events/[event_id]/_components/Sessions";
+import {getEventSummery} from "@/lib/actions/public/server/eventActions";
 
 
 const Page = async ({params}: { params: Promise<{ event_id: string }> }) => {
     const {event_id} = await params;
-    const eventSummery = await eventServerActions(event_id);
+    const eventSummery = await getEventSummery(event_id);
 
     return (
         <div>
