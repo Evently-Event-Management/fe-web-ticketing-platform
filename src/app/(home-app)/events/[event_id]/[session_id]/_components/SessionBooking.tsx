@@ -7,7 +7,9 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {ReadModelSeatStatus, SessionType} from "@/lib/validators/enums";
 import {SelectionSummary} from "./SelectionSummery";
 import {SeatingLayout} from "./SeatingLayout";
-import {OnlineTicketSelection} from "./OnlineTicketSelection"; // Import the new component
+import {OnlineTicketSelection} from "./OnlineTicketSelection";
+import {SeatStatusUpdateDTO} from "@/types/sse";
+import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions"; // <--- 1. IMPORT THE NEW DTO
 
 // A detailed type for a seat that has been selected by the user
 export type SelectedSeat = SeatDTO & {
@@ -33,6 +35,43 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
                 .finally(() => setIsLoading(false));
         }
     }, [session.id]);
+
+    // --- 2. ADD THIS NEW useEffect FOR SSE ---
+    useEffect(() => {
+        // Ensure we have a session ID before trying to connect
+        if (!session.id) return;
+
+        // Use the new API function to subscribe to seat status updates
+        const eventSource = subscribeToSeatStatusUpdates(session.id);
+
+        // Add event listeners for specific event types (like LOCKED)
+        const handleSeatStatusUpdate = (event: MessageEvent) => {
+            const data: SeatStatusUpdateDTO = JSON.parse(event.data);
+            console.log("SSE Received:", data);
+            // You will later update your state here, e.g.,
+            // updateSeatStatuses(data.seatIds, data.status);
+        };
+
+        // Listen for specific event types from ReadModelSeatStatus enum
+        eventSource.addEventListener(ReadModelSeatStatus.LOCKED, handleSeatStatusUpdate);
+        eventSource.addEventListener(ReadModelSeatStatus.AVAILABLE, handleSeatStatusUpdate);
+        eventSource.addEventListener(ReadModelSeatStatus.BOOKED, handleSeatStatusUpdate);
+
+        eventSource.onerror = (error) => {
+            console.error("SSE Error:", error);
+            eventSource.close();
+        };
+
+        return () => {
+            // Clean up by removing event listeners
+            eventSource.removeEventListener(ReadModelSeatStatus.LOCKED, handleSeatStatusUpdate);
+            eventSource.removeEventListener(ReadModelSeatStatus.AVAILABLE, handleSeatStatusUpdate);
+            eventSource.removeEventListener(ReadModelSeatStatus.BOOKED, handleSeatStatusUpdate);
+            eventSource.close();
+        };
+
+    }, [session.id]); // Re-run this effect if the session ID changes
+
 
     // --- Handler for PHYSICAL seat selection ---
     const handleSeatSelect = (
@@ -64,14 +103,13 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
 
         if (quantity > availableSeats.length) {
             console.error("Not enough tickets available to meet the request.");
-            // Optionally, add user-facing feedback here (e.g., a toast notification)
             return;
         }
 
         const seatsToSelect = availableSeats.slice(0, quantity);
         const formattedSeats: SelectedSeat[] = seatsToSelect.map(seat => ({
             ...seat,
-            tier: seat.tier!, // Assume online tickets always have a tier
+            tier: seat.tier!,
             blockName: onlineBlock.name,
         }));
         setSelectedSeats(formattedSeats);
@@ -90,7 +128,6 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
         <div className="flex flex-col">
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2">
-                    {/* --- CONDITIONAL RENDERING --- */}
                     {session.sessionType === SessionType.PHYSICAL ? (
                         <SeatingLayout
                             seatingMap={seatingMap}
@@ -120,7 +157,6 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
 }
 
 const BookingPageSkeleton = () => (
-    // Skeleton remains the same, it works for both layouts during loading
     <div className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2">

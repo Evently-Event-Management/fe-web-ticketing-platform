@@ -20,7 +20,10 @@ const defaultIcon = new L.Icon({
 });
 L.Marker.prototype.options.icon = defaultIcon;
 
-export const SessionMap = ({location}: { location: { coordinates: [number, number] } }) => {
+export const SessionMap = ({location, scrollWheelZoom}: {
+    location: { coordinates: [number, number] },
+    scrollWheelZoom?: boolean
+}) => {
     const [isMounted, setIsMounted] = React.useState(false);
     const {resolvedTheme} = useTheme();
     const isDarkMode = resolvedTheme === "dark";
@@ -48,7 +51,7 @@ export const SessionMap = ({location}: { location: { coordinates: [number, numbe
             <MapContainer
                 center={position}
                 zoom={13}
-                scrollWheelZoom={true}
+                scrollWheelZoom={scrollWheelZoom || false}
                 style={{height: '100%', width: '100%'}}
             >
                 <TileLayer
