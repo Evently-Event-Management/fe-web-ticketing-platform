@@ -2,6 +2,7 @@ import {SessionInfoBasicDTO} from '@/types/event';
 import {Calendar, Clock, MapPin, ArrowLeft} from 'lucide-react';
 import Link from 'next/link';
 import {Button} from '@/components/ui/button';
+import {SessionMap} from '@/app/(home-app)/events/[event_id]/_components/SessionMap';
 
 export const SessionDetailsHeader = ({session, eventId}: { session: SessionInfoBasicDTO, eventId?: string }) => {
 
@@ -36,6 +37,13 @@ export const SessionDetailsHeader = ({session, eventId}: { session: SessionInfoB
                         className="h-4 w-4"/><span>{session.venueDetails.name}</span></div>
                 }
             </div>
+
+            {/* Add map for physical events */}
+            {session.sessionType === 'PHYSICAL' && session.venueDetails.location && (
+                <div className="mt-4 h-64 rounded-md overflow-hidden border">
+                    <SessionMap location={session.venueDetails.location} />
+                </div>
+            )}
         </div>
     );
 };

@@ -37,7 +37,7 @@ export const TicketTierCard: React.FC<TicketTierCardProps> = ({tier}) => {
             <CardContent className="p-6">
                 <CardTitle className="mb-2">{tier.name}</CardTitle>
                 <div className="flex justify-between items-center mt-4">
-                    <span className="text-2xl font-bold">${tier.price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold">LKR {tier.price.toFixed(2)}</span>
                     {/*<Button variant="secondary" size="sm" disabled>Select</Button>*/}
                 </div>
             </CardContent>

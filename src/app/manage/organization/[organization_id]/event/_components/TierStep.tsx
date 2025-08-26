@@ -145,7 +145,7 @@ export function TiersStep() {
                     )}
                   </div>
                   <div className="mt-4">
-                    <span className="text-2xl font-bold">${field.price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold"> LKR {field.price.toFixed(2)}</span>
                   </div>
                 </CardContent>
               </Card>

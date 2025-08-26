@@ -7,6 +7,7 @@ import {useOrganization} from '@/providers/OrganizationProvider';
 import {useLimits} from '@/providers/LimitProvider';
 import {CategoryResponse} from '@/types/category';
 import {getAllCategories} from '@/lib/actions/categoryActions';
+import {compressImage} from '@/lib/imageUtils';
 
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -49,14 +50,44 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
         getAllCategories().then(setCategories);
     }, [organization]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const files = Array.from(e.target.files);
-            if ((coverFiles.length + files.length) > maxPhotos) {
+            const selectedFiles = Array.from(e.target.files);
+            
+            // Check if adding these files would exceed the maximum allowed
+            if ((coverFiles.length + selectedFiles.length) > maxPhotos) {
                 toast.error(`You can only upload a maximum of ${maxPhotos} photos.`);
                 return;
             }
-            setCoverFilesAction(prev => [...prev, ...files]);
+            
+            // Define compression options for cover photos
+            const coverPhotoCompressionOptions = {
+                maxSizeMB: 1.5,            // Slightly larger than logos to maintain quality
+                maxWidthOrHeight: 1920,    // HD resolution is good for cover photos
+                useWebWorker: true,
+                fileType: 'image/jpeg'     // JPEG works well for cover photos
+            };
+            
+            // Show loading toast for long operations
+            toast.loading('Processing images...');
+            
+            try {
+                // Process files one by one with compression
+                const processedFiles = await Promise.all(
+                    selectedFiles.map(async (file) => {
+                        return await compressImage(file, coverPhotoCompressionOptions);
+                    })
+                );
+                
+                // Add the compressed files to the state
+                setCoverFilesAction(prev => [...prev, ...processedFiles]);
+                toast.dismiss();
+                toast.success(`${processedFiles.length} image(s) added successfully`);
+            } catch (error) {
+                console.error('Error processing images:', error);
+                toast.dismiss();
+                toast.error('Error processing images');
+            }
         }
     };
 
