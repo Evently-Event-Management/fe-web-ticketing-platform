@@ -1,10 +1,9 @@
+import {SeatingBlockDTO} from "@/types/event";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {SessionSeatingMapDTO, SeatingBlockDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 
-// A dedicated component for rendering different types of seating blocks.
-const SeatingBlock = ({block}: { block: SeatingBlockDTO }) => {
+const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
     // Calculate availability percentage for standing capacity blocks
     const getAvailabilityPercentage = (block: SeatingBlockDTO) => {
         if (block.type !== 'standing_capacity' || !block.capacity) return 100;
@@ -162,23 +161,4 @@ const SeatingBlock = ({block}: { block: SeatingBlockDTO }) => {
     );
 };
 
-
-export const SeatingLayout = ({seatingMap}: { seatingMap: SessionSeatingMapDTO }) => {
-    return (
-        <div className="border rounded-lg p-4 bg-card">
-            <h3 className="font-semibold mb-4 text-foreground">Seating Layout: {seatingMap.name}</h3>
-            <div
-                className="relative min-h-[400px] p-4 rounded-lg overflow-auto"
-                // Elegant dot-grid background
-                style={{
-                    backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)',
-                    backgroundSize: '20px 20px'
-                }}
-            >
-                {seatingMap.layout.blocks.map(block => (
-                    <SeatingBlock key={block.id} block={block}/>
-                ))}
-            </div>
-        </div>
-    );
-};
+export default SeatingBlockPreview;

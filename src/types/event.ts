@@ -27,33 +27,6 @@ export interface EventThumbnailDTO {
     startingPrice: number | null; // Use number for price, can be null if not available
 }
 
-// {
-//     "id": "string",
-//     "title": "string",
-//     "description": "string",
-//     "overview": "string",
-//     "coverPhotos": [
-//     "string"
-// ],
-//     "organization": {
-//     "id": "string",
-//         "name": "string",
-//         "logoUrl": "string"
-// },
-//     "category": {
-//     "id": "string",
-//         "name": "string",
-//         "parentName": "string"
-// },
-//     "tiers": [
-//     {
-//         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-//         "name": "string",
-//         "price": 0,
-//         "color": "string"
-//     }
-// ]
-
 
 export interface EventBasicInfoDTO {
     id: string;
@@ -98,58 +71,6 @@ export interface SessionInfoBasicDTO {
     };
 }
 
-// {
-//     "name": "string",
-//     "layout": {
-//     "blocks": [
-//         {
-//             "id": "string",
-//             "name": "string",
-//             "type": "string",
-//             "position": {
-//                 "x": 0.1,
-//                 "y": 0.1
-//             },
-//             "rows": [
-//                 {
-//                     "id": "string",
-//                     "label": "string",
-//                     "seats": [
-//                         {
-//                             "id": "string",
-//                             "label": "string",
-//                             "status": "AVAILABLE",
-//                             "tier": {
-//                                 "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-//                                 "name": "string",
-//                                 "price": 0,
-//                                 "color": "string"
-//                             }
-//                         }
-//                     ]
-//                 }
-//             ],
-//             "seats": [
-//                 {
-//                     "id": "string",
-//                     "label": "string",
-//                     "status": "AVAILABLE",
-//                     "tier": {
-//                         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-//                         "name": "string",
-//                         "price": 0,
-//                         "color": "string"
-//                     }
-//                 }
-//             ],
-//             "capacity": 0,
-//             "width": 0,
-//             "height": 0
-//         }
-//     ]
-// }
-// }
-
 
 export interface SeatingBlockDTO {
     id: string;
@@ -162,32 +83,24 @@ export interface SeatingBlockDTO {
     rows?: {
         id: string;
         label: string;
-        seats: {
-            id: string;
-            label: string;
-            status?: ReadModelSeatStatus;
-            tier?: {
-                id: string;
-                name: string;
-                price: number;
-                color: string;
-            }
-        }[];
+        seats: SeatDTO[];
     }[];
-    seats?: {
-        id: string;
-        label: string;
-        status?: ReadModelSeatStatus;
-        tier?: {
-            id: string;
-            name: string;
-            price: number;
-            color: string;
-        };
-    }[];
+    seats?: SeatDTO[];
     capacity?: number | null; // Nullable, can be null if not set
     width?: number | null; // Nullable, can be null if not set
     height?: number | null; // Nullable, can be null if not set
+}
+
+export interface SeatDTO {
+    id: string;
+    label: string;
+    status?: ReadModelSeatStatus;
+    tier?: {
+        id: string;
+        name: string;
+        price: number;
+        color: string;
+    };
 }
 
 export interface SessionSeatingMapDTO {

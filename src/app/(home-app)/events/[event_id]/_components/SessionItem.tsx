@@ -9,16 +9,17 @@ import {SessionMap} from "@/app/(home-app)/events/[event_id]/_components/Session
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Skeleton} from "@/components/ui/skeleton";
-import {SeatingLayout} from "@/app/(home-app)/events/[event_id]/_components/SeatingLayout";
+import {SeatingLayoutPreview} from "@/app/(home-app)/events/[event_id]/_components/SeatingLayoutPreview";
 import {useState} from "react";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {SeatStatusSummary} from "@/app/(home-app)/events/[event_id]/_components/SeatStatusSummery";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import Link from "next/link"; // <-- Import Resizable components
+import {useRouter} from "next/navigation";
 
 export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isMapLoading, setIsMapLoading] = useState(false);
+    const router = useRouter();
 
     console.log("Rendering SessionItem for session:", session);
 
@@ -81,9 +82,14 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                     </div>
                     <div>
                         {session.status === SessionStatus.ON_SALE &&
-                            <Link href={`/events/sessions/${session.id}`}>
-                                <Button>Buy Tickets</Button>
-                            </Link>
+                            <Button
+                                onClick={() => {
+                                    // Navigate to a path with the session ID as a path parameter
+                                    router.push(`${window.location.pathname}/${session.id}`);
+                                }}
+                            >
+                                Buy Tickets
+                            </Button>
                         }
                         {session.status === SessionStatus.SCHEDULED && session.salesStartTime && (
                             <span className="text-sm text-muted-foreground italic">
@@ -151,7 +157,7 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                                             {isMapLoading ? (
                                                 <Skeleton className="h-full w-full"/>
                                             ) : seatingMap ? (
-                                                <SeatingLayout seatingMap={seatingMap}/>
+                                                <SeatingLayoutPreview seatingMap={seatingMap}/>
                                             ) : null}
                                         </div>
                                     </ResizablePanel>
