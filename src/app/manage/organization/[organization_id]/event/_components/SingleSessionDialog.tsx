@@ -1,5 +1,5 @@
 import {Controller, useForm} from "react-hook-form";
-import {format, setHours, setMinutes} from "date-fns";
+import {format, setHours, setMinutes, subDays, subHours} from "date-fns";
 import {
     Dialog,
     DialogContent,
@@ -88,24 +88,33 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
         // Calculate end time based on duration
         const endTime = new Date(startTime.getTime() + data.durationHours * 60 * 60 * 1000);
 
-        // Handle fixed sales start time
-        let salesStartFixedDatetime;
-        if (data.salesStartRuleType === 'FIXED') {
+        // Calculate sales start time based on the rule type
+        let salesStartTime = new Date(subDays(startTime, 7)).toISOString();
+
+        if (data.salesStartRuleType === Enums.IMMEDIATE) {
+            // For immediate sales, use current time
+            salesStartTime = new Date().toISOString();
+        } else if (data.salesStartRuleType === Enums.ROLLING) {
+            // For rolling sales, subtract the specified hours from the event start time
+            salesStartTime = subHours(startTime, data.salesStartHoursBefore).toISOString();
+        } else if (data.salesStartRuleType === Enums.FIXED) {
+            // For fixed datetime, combine the selected date with the time
             const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
-            // Ensure we have a valid date object before setting hours and minutes
-            salesStartFixedDatetime = setMinutes(
+            const fixedSalesStartTime = setMinutes(
                 setHours(
-                    new Date(data.salesStartFixedDatetime), // Create a new Date object
+                    new Date(data.salesStartFixedDatetime),
                     hours
                 ),
                 minutes
             );
 
             // Validate that sales start time is before event start time
-            if (salesStartFixedDatetime >= startTime) {
+            if (fixedSalesStartTime >= startTime) {
                 toast.error("Sales start time must be before the event start time");
                 return;
             }
+
+            salesStartTime = fixedSalesStartTime.toISOString();
         }
 
         // Create the session object
@@ -113,13 +122,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
             sessionType: SessionType.PHYSICAL,
-            salesStartRuleType: data.salesStartRuleType,
-            ...(data.salesStartRuleType === Enums.ROLLING && {
-                salesStartHoursBefore: data.salesStartHoursBefore,
-            }),
-            ...(data.salesStartRuleType === 'FIXED' && {
-                salesStartFixedDatetime: salesStartFixedDatetime?.toISOString(),
-            }),
+            salesStartTime: salesStartTime, // Use the calculated sales start time
             layoutData: {name: null, layout: {blocks: []}}
         };
 
@@ -297,7 +300,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit">Add Session</Button>
+                        <Button type="button" onClick={handleSubmit(onSubmit)}>Add Session</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

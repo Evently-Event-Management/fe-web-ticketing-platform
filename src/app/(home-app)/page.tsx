@@ -1,6 +1,5 @@
 import {EventCard} from "@/app/(home-app)/_components/EventCard";
 import CategorySection from "@/app/(home-app)/_components/CategorySection";
-import {Search} from "lucide-react";
 import {EventThumbnailDTO} from "@/types/event";
 import {sriLankaLocations} from "@/app/(home-app)/_utils/locations";
 import Image from "next/image";
