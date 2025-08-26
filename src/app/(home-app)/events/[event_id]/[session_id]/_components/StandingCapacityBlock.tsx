@@ -1,7 +1,6 @@
 import {SeatingBlockDTO, SeatDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {PlusIcon} from "lucide-react";
-import {SelectedSeat} from "./SessionBooking";
 import {ReadModelSeatStatus} from "@/lib/validators/enums";
 
 function getAvailabilityPercentage(block: SeatingBlockDTO) {
@@ -21,14 +20,14 @@ function getStandingAreaTierColor(block: SeatingBlockDTO) {
 
 export const StandingCapacityBlock = ({block, selectedSeats, onSeatSelect}: {
     block: SeatingBlockDTO;
-    selectedSeats?: SelectedSeat[];
+    selectedSeats?: string[];
     onSeatSelect?: (seat: SeatDTO, blockName: string) => void;
 }) => {
     const availabilityPercentage = getAvailabilityPercentage(block);
     const tierColor = getStandingAreaTierColor(block);
     const availableSeats = block.seats?.filter(seat =>
         (!seat.status || seat.status === ReadModelSeatStatus.AVAILABLE) &&
-        !selectedSeats?.some(s => s.id === seat.id)
+        !selectedSeats?.some(s => s === seat.id)
     ) || [];
     const isDisabled = availableSeats.length === 0 || !onSeatSelect;
     const handleQuickPick = () => {

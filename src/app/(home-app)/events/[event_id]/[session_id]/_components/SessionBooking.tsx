@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {SeatDTO, SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {Skeleton} from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ import {SeatStatusUpdateDTO} from "@/types/sse";
 import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions";
 import {toast} from "sonner";
 
-// A detailed type for a seat that has been selected by the user
+// This type definition remains the same as it's used for props
 export type SelectedSeat = SeatDTO & {
     tier: {
         id: string;
@@ -26,8 +26,12 @@ export type SelectedSeat = SeatDTO & {
 export default function SessionBooking({session}: { session: SessionInfoBasicDTO }) {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
 
+    // --- CHANGE #1: Store only the IDs of selected seats ---
+    // This creates a single source of truth for all seat data: the `seatingMap`.
+    const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
+
+    // Effect for fetching the initial seating map data
     useEffect(() => {
         if (session.id) {
             getSessionSeatingMap(session.id)
@@ -37,80 +41,56 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
         }
     }, [session.id]);
 
-    // Function to update seating map and remove affected seats from selection
+    // --- CHANGE #2: A stable, efficient callback for handling SSE updates ---
+    // This uses functional updates, so it doesn't need dependencies on `seatingMap` or `selectedSeatIds`,
+    // which makes its reference stable.
     const updateSeatStatuses = useCallback((seatIds: string[], status: ReadModelSeatStatus) => {
-        if (!seatingMap) return;
+        // Update the master seatingMap state
+        setSeatingMap(prevMap => {
+            if (!prevMap) return prevMap;
+            const updatedSeatingMap = JSON.parse(JSON.stringify(prevMap)) as SessionSeatingMapDTO;
+            let seatsUpdated = false;
 
-        // Create a deep copy of the seating map to update
-        const updatedSeatingMap = JSON.parse(JSON.stringify(seatingMap)) as SessionSeatingMapDTO;
-
-        // Update the seat statuses in the map
-        let seatsUpdated = false;
-        updatedSeatingMap.layout.blocks.forEach(block => {
-            // Update seats in rows (for seated_grid blocks)
-            if (block.rows) {
-                block.rows.forEach(row => {
-                    row.seats.forEach(seat => {
-                        if (seatIds.includes(seat.id)) {
-                            seat.status = status;
-                            seatsUpdated = true;
-                        }
-                    });
-                });
-            }
-
-            // Update standalone seats (for standing_capacity blocks)
-            if (block.seats) {
-                block.seats.forEach(seat => {
+            updatedSeatingMap.layout.blocks.forEach(block => {
+                const allSeats = block.rows ? block.rows.flatMap(r => r.seats) : block.seats || [];
+                allSeats.forEach(seat => {
                     if (seatIds.includes(seat.id)) {
                         seat.status = status;
                         seatsUpdated = true;
                     }
                 });
-            }
+            });
+            return seatsUpdated ? updatedSeatingMap : prevMap;
         });
 
-        if (seatsUpdated) {
-            setSeatingMap(updatedSeatingMap);
-        }
-
-        // Remove locked/booked seats from selection
+        // If seats were locked or booked by someone else, remove them from our selection
         if (status === ReadModelSeatStatus.LOCKED || status === ReadModelSeatStatus.BOOKED) {
-            const affectedSelectedSeats = selectedSeats.filter(seat => seatIds.includes(seat.id));
-
-            if (affectedSelectedSeats.length > 0) {
-                // Remove the affected seats from selection
-                setSelectedSeats(prev => prev.filter(seat => !seatIds.includes(seat.id)));
-
-                // Show toast notification
-                const seatLabels = affectedSelectedSeats.map(seat => seat.label).join(', ');
-                const statusText = status === ReadModelSeatStatus.LOCKED ? "locked by another user" : "booked";
-                toast.warning(`Seat(s) ${seatLabels} ${statusText}`, {
-                    description: "These seats have been removed from your selection.",
-                    duration: 5000,
-                });
-            }
+            setSelectedSeatIds(prevIds => {
+                const idsToRemove = new Set(prevIds.filter(id => seatIds.includes(id)));
+                if (idsToRemove.size > 0) {
+                    toast.warning(`Some selected seats are no longer available`, {
+                        description: "They have been removed from your selection.",
+                        duration: 5000,
+                    });
+                    return prevIds.filter(id => !idsToRemove.has(id));
+                }
+                return prevIds;
+            });
         }
-    }, [seatingMap, selectedSeats]);
+    }, []); // Empty dependency array makes this function stable
 
-    // --- 2. ADD THIS NEW useEffect FOR SSE ---
+    // --- CHANGE #3: Corrected useEffect for a stable SSE connection ---
     useEffect(() => {
-        // Ensure we have a session ID before trying to connect
         if (!session.id) return;
 
-        // Use the new API function to subscribe to seat status updates
         const eventSource = subscribeToSeatStatusUpdates(session.id);
 
-        // Add event listeners for specific event types (like LOCKED)
         const handleSeatStatusUpdate = (event: MessageEvent) => {
             const data: SeatStatusUpdateDTO = JSON.parse(event.data);
             console.log("SSE Received:", data);
-
-            // Update the seating map and handle affected selected seats
             updateSeatStatuses(data.seatIds, data.status);
         };
 
-        // Listen for specific event types from ReadModelSeatStatus enum
         eventSource.addEventListener(ReadModelSeatStatus.LOCKED, handleSeatStatusUpdate);
         eventSource.addEventListener(ReadModelSeatStatus.AVAILABLE, handleSeatStatusUpdate);
         eventSource.addEventListener(ReadModelSeatStatus.BOOKED, handleSeatStatusUpdate);
@@ -118,42 +98,56 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
 
         eventSource.onerror = (error) => {
             console.error("SSE Error:", error);
-            eventSource.close();
+            // The browser will automatically attempt to reconnect on error.
+            // You may want to close it definitively under certain conditions.
         };
 
+        // Cleanup function to close the connection when the component unmounts
         return () => {
-            // Clean up by removing event listeners
             eventSource.removeEventListener(ReadModelSeatStatus.LOCKED, handleSeatStatusUpdate);
             eventSource.removeEventListener(ReadModelSeatStatus.AVAILABLE, handleSeatStatusUpdate);
             eventSource.removeEventListener(ReadModelSeatStatus.BOOKED, handleSeatStatusUpdate);
             eventSource.removeEventListener(ReadModelSeatStatus.RESERVED, handleSeatStatusUpdate);
             eventSource.close();
+            console.log('SSE connection closed.');
         };
+        // This hook now only re-runs if the session ID changes, which is correct.
+    }, [session.id, updateSeatStatuses]);
 
-    }, [session.id, selectedSeats, updateSeatStatuses]); // Include selectedSeats in dependencies
 
+    // --- CHANGE #4: Derive the full selected seat data from the single source of truth ---
+    // `useMemo` prevents recalculating this on every render unless the source data changes.
+    const selectedSeatsData = useMemo((): SelectedSeat[] => {
+        if (!seatingMap) return [];
+        const seatMap = new Map<string, SelectedSeat>();
 
-    // --- Handler for PHYSICAL seat selection ---
-    const handleSeatSelect = (
-        seat: SeatDTO,
-        blockName: string,
-    ) => {
-        if ((seat.status && seat.status !== ReadModelSeatStatus.AVAILABLE) || !seat.tier) {
-            return;
-        }
-        const fullSeatInfo: SelectedSeat = {...seat, tier: seat.tier, blockName};
-        setSelectedSeats(prev => {
-            const isSelected = prev.some(s => s.id === seat.id);
-            return isSelected
-                ? prev.filter(s => s.id !== seat.id)
-                : [...prev, fullSeatInfo];
+        seatingMap.layout.blocks.forEach(block => {
+            const allSeats = block.rows ? block.rows.flatMap(r => r.seats) : block.seats || [];
+            allSeats.forEach(seat => {
+                if (seat.tier) {
+                    seatMap.set(seat.id, {...seat, tier: seat.tier, blockName: block.name});
+                }
+            });
         });
-    };
+        return selectedSeatIds.map(id => seatMap.get(id)).filter((s): s is SelectedSeat => s !== undefined);
+    }, [selectedSeatIds, seatingMap]);
 
-    // --- New Handler for ONLINE quantity selection ---
-    const handleQuantitySelect = (quantity: number) => {
+
+    // --- CHANGE #5: Update handlers to work with seat IDs ---
+    const handleSeatSelect = useCallback((seat: SeatDTO) => {
+        if (seat.status && seat.status !== ReadModelSeatStatus.AVAILABLE) return;
+
+        setSelectedSeatIds(prev => {
+            const isSelected = prev.includes(seat.id);
+            return isSelected
+                ? prev.filter(id => id !== seat.id)
+                : [...prev, seat.id];
+        });
+
+    }, []);
+
+    const handleQuantitySelect = useCallback((quantity: number) => {
         if (!seatingMap) return;
-
         const onlineBlock = seatingMap.layout.blocks.find(b => b.type === 'standing_capacity');
         if (!onlineBlock?.seats) return;
 
@@ -162,18 +156,14 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
         );
 
         if (quantity > availableSeats.length) {
-            console.error("Not enough tickets available to meet the request.");
+            toast.error("Not enough tickets available.");
             return;
         }
 
-        const seatsToSelect = availableSeats.slice(0, quantity);
-        const formattedSeats: SelectedSeat[] = seatsToSelect.map(seat => ({
-            ...seat,
-            tier: seat.tier!,
-            blockName: onlineBlock.name,
-        }));
-        setSelectedSeats(formattedSeats);
-    };
+        const seatIdsToSelect = availableSeats.slice(0, quantity).map(seat => seat.id);
+        setSelectedSeatIds(seatIdsToSelect);
+    }, [seatingMap]);
+
 
     if (isLoading) {
         return <BookingPageSkeleton/>;
@@ -190,14 +180,14 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
                     {session.sessionType === SessionType.PHYSICAL ? (
                         <SeatingLayout
                             seatingMap={seatingMap}
-                            selectedSeats={selectedSeats}
+                            selectedSeats={selectedSeatsData.map(s => s.id)}
                             onSeatSelect={handleSeatSelect}
                         />
                     ) : (
                         <OnlineTicketSelection
                             seatingMap={seatingMap}
                             onSelectQuantityAction={handleQuantitySelect}
-                            selectedQuantity={selectedSeats.length}
+                            selectedQuantity={selectedSeatIds.length}
                         />
                     )}
                 </div>
@@ -205,8 +195,8 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
                 <div className="lg:col-span-1">
                     <div className="sticky top-24">
                         <SelectionSummary
-                            selectedSeats={selectedSeats}
-                            onSeatRemove={(seatId) => setSelectedSeats(prev => prev.filter(s => s.id !== seatId))}
+                            selectedSeats={selectedSeatsData}
+                            onSeatRemove={(seatId) => setSelectedSeatIds(prev => prev.filter(id => id !== seatId))}
                         />
                     </div>
                 </div>

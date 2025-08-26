@@ -1,7 +1,6 @@
 'use client'
 
 import {SeatDTO, SeatingBlockDTO,} from "@/types/event";
-import {SelectedSeat} from "@/app/(home-app)/events/[event_id]/[session_id]/_components/SessionBooking";
 import {SeatedGridBlock} from "./SeatedGridBlock";
 import {StandingCapacityBlock} from "./StandingCapacityBlock";
 import {NonSellableBlock} from "./NonSellableBlock";
@@ -12,7 +11,7 @@ const SeatingBlock = ({
                           onSeatSelect,
                       }: {
     block: SeatingBlockDTO;
-    selectedSeats?: SelectedSeat[];
+    selectedSeats?: string[];
     onSeatSelect?: (seat: SeatDTO, blockName: string) => void;
 }) => {
     const getStandingAreaTierColor = (block: SeatingBlockDTO) => {
@@ -25,11 +24,11 @@ const SeatingBlock = ({
     const blockContent = () => {
         switch (block.type) {
             case 'seated_grid':
-                return <SeatedGridBlock block={block} selectedSeats={selectedSeats} onSeatSelect={onSeatSelect} />;
+                return <SeatedGridBlock block={block} selectedSeats={selectedSeats} onSeatSelect={onSeatSelect}/>;
             case 'standing_capacity':
-                return <StandingCapacityBlock block={block} selectedSeats={selectedSeats} onSeatSelect={onSeatSelect} />;
+                return <StandingCapacityBlock block={block} selectedSeats={selectedSeats} onSeatSelect={onSeatSelect}/>;
             case 'non_sellable':
-                return <NonSellableBlock block={block} />;
+                return <NonSellableBlock block={block}/>;
             default:
                 return null;
         }
