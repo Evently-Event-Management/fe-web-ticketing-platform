@@ -84,9 +84,6 @@ export default function CreateEventPage() {
         const loadingToast = toast.loading("Submitting your event...");
 
         try {
-            console.log("Submitting event data:", data);
-            console.log("Cover files:", coverFiles);
-
             // Call the API to create the event
             const response = await createEvent(data, coverFiles);
 

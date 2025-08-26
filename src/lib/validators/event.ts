@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {Enums, SessionType} from "@/lib/validators/enums";
+import {SessionType} from "@/lib/validators/enums";
 
 
 // --- Seating Layout Schemas ---
@@ -161,11 +161,9 @@ export const sessionDetailSchema = z.object({
     id: z.uuid(),
     startTime: z.iso.datetime(),
     endTime: z.iso.datetime(),
+    salesStartTime: z.iso.datetime(),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
     venueDetails: venueDetailsSchema,
-    salesStartRuleType: z.enum(Object.values(Enums)),
-    salesStartHoursBefore: z.number().nullable(),
-    salesStartFixedDatetime: z.iso.datetime().nullable(),
     status: z.string(), // Corresponds to SessionStatus enum
     layoutData: sessionSeatingMapRequestSchema, // Assuming this is the correct shape
 });
