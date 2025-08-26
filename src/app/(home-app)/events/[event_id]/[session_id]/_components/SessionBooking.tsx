@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {SeatDTO, SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {Skeleton} from "@/components/ui/skeleton";
@@ -9,7 +9,8 @@ import {SelectionSummary} from "./SelectionSummery";
 import {SeatingLayout} from "./SeatingLayout";
 import {OnlineTicketSelection} from "./OnlineTicketSelection";
 import {SeatStatusUpdateDTO} from "@/types/sse";
-import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions"; // <--- 1. IMPORT THE NEW DTO
+import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions";
+import {toast} from "sonner";
 
 // A detailed type for a seat that has been selected by the user
 export type SelectedSeat = SeatDTO & {
@@ -36,6 +37,62 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
         }
     }, [session.id]);
 
+    // Function to update seating map and remove affected seats from selection
+    const updateSeatStatuses = useCallback((seatIds: string[], status: ReadModelSeatStatus) => {
+        if (!seatingMap) return;
+
+        // Create a deep copy of the seating map to update
+        const updatedSeatingMap = JSON.parse(JSON.stringify(seatingMap)) as SessionSeatingMapDTO;
+
+        // Update the seat statuses in the map
+        let seatsUpdated = false;
+        updatedSeatingMap.layout.blocks.forEach(block => {
+            // Update seats in rows (for seated_grid blocks)
+            if (block.rows) {
+                block.rows.forEach(row => {
+                    row.seats.forEach(seat => {
+                        if (seatIds.includes(seat.id)) {
+                            seat.status = status;
+                            seatsUpdated = true;
+                        }
+                    });
+                });
+            }
+
+            // Update standalone seats (for standing_capacity blocks)
+            if (block.seats) {
+                block.seats.forEach(seat => {
+                    if (seatIds.includes(seat.id)) {
+                        seat.status = status;
+                        seatsUpdated = true;
+                    }
+                });
+            }
+        });
+
+        if (seatsUpdated) {
+            setSeatingMap(updatedSeatingMap);
+        }
+
+        // Remove locked/booked seats from selection
+        if (status === ReadModelSeatStatus.LOCKED || status === ReadModelSeatStatus.BOOKED) {
+            const affectedSelectedSeats = selectedSeats.filter(seat => seatIds.includes(seat.id));
+
+            if (affectedSelectedSeats.length > 0) {
+                // Remove the affected seats from selection
+                setSelectedSeats(prev => prev.filter(seat => !seatIds.includes(seat.id)));
+
+                // Show toast notification
+                const seatLabels = affectedSelectedSeats.map(seat => seat.label).join(', ');
+                const statusText = status === ReadModelSeatStatus.LOCKED ? "locked by another user" : "booked";
+                toast.warning(`Seat(s) ${seatLabels} ${statusText}`, {
+                    description: "These seats have been removed from your selection.",
+                    duration: 5000,
+                });
+            }
+        }
+    }, [seatingMap, selectedSeats]);
+
     // --- 2. ADD THIS NEW useEffect FOR SSE ---
     useEffect(() => {
         // Ensure we have a session ID before trying to connect
@@ -48,14 +105,16 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
         const handleSeatStatusUpdate = (event: MessageEvent) => {
             const data: SeatStatusUpdateDTO = JSON.parse(event.data);
             console.log("SSE Received:", data);
-            // You will later update your state here, e.g.,
-            // updateSeatStatuses(data.seatIds, data.status);
+
+            // Update the seating map and handle affected selected seats
+            updateSeatStatuses(data.seatIds, data.status);
         };
 
         // Listen for specific event types from ReadModelSeatStatus enum
         eventSource.addEventListener(ReadModelSeatStatus.LOCKED, handleSeatStatusUpdate);
         eventSource.addEventListener(ReadModelSeatStatus.AVAILABLE, handleSeatStatusUpdate);
         eventSource.addEventListener(ReadModelSeatStatus.BOOKED, handleSeatStatusUpdate);
+        eventSource.addEventListener(ReadModelSeatStatus.RESERVED, handleSeatStatusUpdate);
 
         eventSource.onerror = (error) => {
             console.error("SSE Error:", error);
@@ -67,10 +126,11 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
             eventSource.removeEventListener(ReadModelSeatStatus.LOCKED, handleSeatStatusUpdate);
             eventSource.removeEventListener(ReadModelSeatStatus.AVAILABLE, handleSeatStatusUpdate);
             eventSource.removeEventListener(ReadModelSeatStatus.BOOKED, handleSeatStatusUpdate);
+            eventSource.removeEventListener(ReadModelSeatStatus.RESERVED, handleSeatStatusUpdate);
             eventSource.close();
         };
 
-    }, [session.id]); // Re-run this effect if the session ID changes
+    }, [session.id, selectedSeats, updateSeatStatuses]); // Include selectedSeats in dependencies
 
 
     // --- Handler for PHYSICAL seat selection ---
@@ -114,7 +174,6 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
         }));
         setSelectedSeats(formattedSeats);
     };
-
 
     if (isLoading) {
         return <BookingPageSkeleton/>;
