@@ -68,15 +68,7 @@ const tierSchema = z.object({
 const sessionSchema = z.object({
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
-    salesStartRuleType: z.enum([
-        Enums.IMMEDIATE,
-        Enums.ROLLING,
-        Enums.FIXED
-    ]),
-    salesStartHoursBefore: z.number().optional().nullable(),
-    salesStartFixedDatetime: z.iso.datetime({message: "Invalid date format."}).optional().nullable(),
-
-    // ✅ UPDATED: Use the new SessionType enum
+    salesStartTime: z.iso.datetime({message: "Invalid sales start date format."}),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
     venueDetails: venueDetailsSchema.optional(),
     layoutData: sessionSeatingMapRequestSchema,

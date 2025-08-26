@@ -4,7 +4,7 @@ import {Calendar, Clock, LinkIcon, MapPin, Tag} from 'lucide-react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from "@/components/ui/accordion";
 import {Badge} from '@/components/ui/badge';
 import {SessionFormData, Tier} from '@/lib/validators/event';
-import {Enums, SessionType} from "@/lib/validators/enums";
+import {SessionType} from "@/lib/validators/enums";
 import dynamic from "next/dynamic";
 
 const SeatingInformation = dynamic(
@@ -112,27 +112,18 @@ const SessionDetails: React.FC<SessionDetailsProps> = ({session}) => {
         }
     };
 
-    // Sales rule description
-    const getSalesRuleDescription = (): string => {
-        switch (session.salesStartRuleType) {
-            case Enums.IMMEDIATE:
-                return "On sale immediately";
-            case Enums.FIXED:
-                return session.salesStartFixedDatetime
-                    ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy h:mm a')}`
-                    : "Fixed date not set";
-            case Enums.ROLLING:
-                if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore === null || session.salesStartHoursBefore < 0) {
-                    return "Rolling hours not set or invalid";
-                } else if (session.salesStartHoursBefore < 24) {
-                    return `Sales start ${session.salesStartHoursBefore} hour(s) before the session`;
-                } else {
-                    const days = Math.floor(session.salesStartHoursBefore / 24);
-                    const hours = session.salesStartHoursBefore % 24;
-                    return `Sales start ${days} day(s)${hours > 0 ? ` and ${hours} hour(s)` : ''} before the session`;
-                }
-            default:
-                return "Not set";
+    // Display sales start time
+    const getSalesStartTimeDisplay = (): string => {
+        if (!session.salesStartTime) {
+            return "Sales start time not set";
+        }
+
+        try {
+            const salesStartDate = parseISO(session.salesStartTime);
+            return `Sales start on ${format(salesStartDate, 'MMM d, yyyy h:mm a')}`;
+        } catch (e) {
+            console.error("Error parsing sales start time:", e);
+            return "Invalid sales start time";
         }
     };
 
@@ -185,9 +176,8 @@ const SessionDetails: React.FC<SessionDetailsProps> = ({session}) => {
 
             <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-muted-foreground"/>
-                <span>{getSalesRuleDescription()}</span>
+                <span>{getSalesStartTimeDisplay()}</span>
             </div>
         </div>
     );
 };
-

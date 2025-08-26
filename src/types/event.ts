@@ -84,6 +84,7 @@ export interface SessionInfoBasicDTO {
     id: string;
     startTime: string; // ISO 8601 format
     endTime: string; // ISO 8601 format
+    salesStartTime: string;
     status: SessionStatus;
     sessionType: SessionType; // Assuming this is a string, adjust if it's an enum or another type
     venueDetails: {
@@ -148,7 +149,6 @@ export interface SessionInfoBasicDTO {
 //     ]
 // }
 // }
-
 
 
 export interface SeatingBlockDTO {

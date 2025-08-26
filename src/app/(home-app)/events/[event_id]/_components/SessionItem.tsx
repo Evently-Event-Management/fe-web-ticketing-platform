@@ -19,6 +19,8 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isMapLoading, setIsMapLoading] = useState(false);
 
+    console.log("Rendering SessionItem for session:", session);
+
     const onOpen = (isOpen: boolean) => {
         if (isOpen && !seatingMap && session.sessionType === SessionType.PHYSICAL) {
             setIsMapLoading(true);
@@ -37,6 +39,25 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const formatTime = (iso: string) => new Date(iso).toLocaleTimeString("en-LK", { // Using a specific locale for consistency
         hour: '2-digit', minute: '2-digit', hour12: true
     });
+
+    // Function to format the sales start time
+    const formatSalesStartTime = (iso: string) => {
+        const salesStartDate = new Date(iso);
+        const now = new Date();
+
+        // If sales start is today, show only time
+        if (salesStartDate.toDateString() === now.toDateString()) {
+            return `Sales start today at ${formatTime(iso)}`;
+        }
+        // If sales start is tomorrow, show "Tomorrow at time"
+        else if (salesStartDate.toDateString() === new Date(now.setDate(now.getDate() + 1)).toDateString()) {
+            return `Sales start tomorrow at ${formatTime(iso)}`;
+        }
+        // Otherwise show full date and time
+        else {
+            return `Sales start on ${formatDate(iso)} at ${formatTime(iso)}`;
+        }
+    };
 
     const statusBadge: { [key in SessionStatus]: string } = {
         [SessionStatus.ON_SALE]: "border-green-500/50 bg-green-500/10 text-green-600",
@@ -59,6 +80,11 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                     </div>
                     <div>
                         {session.status === SessionStatus.ON_SALE && <Button>Buy Tickets</Button>}
+                        {session.status === SessionStatus.SCHEDULED && session.salesStartTime && (
+                            <span className="text-sm text-muted-foreground italic">
+                                {formatSalesStartTime(session.salesStartTime)}
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
