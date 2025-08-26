@@ -13,8 +13,7 @@ import {SeatingLayout} from "@/app/(home-app)/events/[event_id]/_components/Seat
 import {useState} from "react";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {SeatStatusSummary} from "@/app/(home-app)/events/[event_id]/_components/SeatStatusSummery";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import Link from "next/link"; // <-- Import Resizable components
+import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable"; // <-- Import Resizable components
 
 export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
@@ -80,11 +79,7 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                                className={`ml-2 ${statusBadge[session.status]}`}>{session.status.replace('_', ' ')}</Badge>
                     </div>
                     <div>
-                        {session.status === SessionStatus.ON_SALE &&
-                            <Link href={`/events/sessions/${session.id}`}>
-                                <Button>Buy Tickets</Button>
-                            </Link>
-                        }
+                        {session.status === SessionStatus.ON_SALE && <Button>Buy Tickets</Button>}
                         {session.status === SessionStatus.SCHEDULED && session.salesStartTime && (
                             <span className="text-sm text-muted-foreground italic">
                                 {formatSalesStartTime(session.salesStartTime)}
