@@ -9,8 +9,6 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
     onSeatRemove: (seatId: string) => void
 }) => {
     const totalPrice = selectedSeats.reduce((total, seat) => total + seat.tier.price, 0);
-
-    console.log("Rendering SelectionSummary with seats:", selectedSeats);
     return (
         <Card className="flex flex-col flex-grow overflow-hidden shadow-lg">
             <CardHeader className="flex-row items-center justify-between">

@@ -42,8 +42,7 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
     }, [session.id]);
 
     // --- CHANGE #2: A stable, efficient callback for handling SSE updates ---
-    // This uses functional updates, so it doesn't need dependencies on `seatingMap` or `selectedSeatIds`,
-    // which makes its reference stable.
+    // Updated to handle seats both in rows and directly under blocks
     const updateSeatStatuses = useCallback((seatIds: string[], status: ReadModelSeatStatus) => {
         // Update the master seatingMap state
         setSeatingMap(prevMap => {
@@ -52,13 +51,27 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
             let seatsUpdated = false;
 
             updatedSeatingMap.layout.blocks.forEach(block => {
-                const allSeats = block.rows ? block.rows.flatMap(r => r.seats) : block.seats || [];
-                allSeats.forEach(seat => {
-                    if (seatIds.includes(seat.id)) {
-                        seat.status = status;
-                        seatsUpdated = true;
-                    }
-                });
+                // Handle seats in rows
+                if (block.rows) {
+                    block.rows.forEach(row => {
+                        row.seats.forEach(seat => {
+                            if (seatIds.includes(seat.id)) {
+                                seat.status = status;
+                                seatsUpdated = true;
+                            }
+                        });
+                    });
+                }
+
+                // Handle seats directly under block
+                if (block.seats) {
+                    block.seats.forEach(seat => {
+                        if (seatIds.includes(seat.id)) {
+                            seat.status = status;
+                            seatsUpdated = true;
+                        }
+                    });
+                }
             });
             return seatsUpdated ? updatedSeatingMap : prevMap;
         });
@@ -116,18 +129,31 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
 
 
     // --- CHANGE #4: Derive the full selected seat data from the single source of truth ---
-    // `useMemo` prevents recalculating this on every render unless the source data changes.
+    // Updated to include seats both in rows and directly under blocks
     const selectedSeatsData = useMemo((): SelectedSeat[] => {
         if (!seatingMap) return [];
         const seatMap = new Map<string, SelectedSeat>();
 
         seatingMap.layout.blocks.forEach(block => {
-            const allSeats = block.rows ? block.rows.flatMap(r => r.seats) : block.seats || [];
-            allSeats.forEach(seat => {
-                if (seat.tier) {
-                    seatMap.set(seat.id, {...seat, tier: seat.tier, blockName: block.name});
-                }
-            });
+            // Process seats in rows
+            if (block.rows) {
+                block.rows.forEach(row => {
+                    row.seats.forEach(seat => {
+                        if (seat.tier) {
+                            seatMap.set(seat.id, {...seat, tier: seat.tier, blockName: block.name});
+                        }
+                    });
+                });
+            }
+
+            // Process seats directly under the block
+            if (block.seats) {
+                block.seats.forEach(seat => {
+                    if (seat.tier) {
+                        seatMap.set(seat.id, {...seat, tier: seat.tier, blockName: block.name});
+                    }
+                });
+            }
         });
         return selectedSeatIds.map(id => seatMap.get(id)).filter((s): s is SelectedSeat => s !== undefined);
     }, [selectedSeatIds, seatingMap]);
@@ -143,15 +169,23 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
                 ? prev.filter(id => id !== seat.id)
                 : [...prev, seat.id];
         });
-
     }, []);
 
     const handleQuantitySelect = useCallback((quantity: number) => {
         if (!seatingMap) return;
         const onlineBlock = seatingMap.layout.blocks.find(b => b.type === 'standing_capacity');
-        if (!onlineBlock?.seats) return;
+        if (!onlineBlock) return;
 
-        const availableSeats = onlineBlock.seats.filter(
+        // Get all seats from the online block (both in rows and direct)
+        const allSeats = [];
+        if (onlineBlock.rows) {
+            allSeats.push(...onlineBlock.rows.flatMap(r => r.seats || []));
+        }
+        if (onlineBlock.seats) {
+            allSeats.push(...onlineBlock.seats);
+        }
+
+        const availableSeats = allSeats.filter(
             seat => !seat.status || seat.status === ReadModelSeatStatus.AVAILABLE
         );
 
