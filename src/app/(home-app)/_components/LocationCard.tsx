@@ -11,7 +11,8 @@ export function LocationCard({location}: { location: Location }) {
     return (
         <a href={`/events?location=${location.name}&latitude=${location.latitude}&longitude=${location.longitude}&radiusKm=50`}>
             <div className="relative rounded-lg overflow-hidden h-64 group">
-                <Image src={location.imageUrl} alt={location.name} fill
+                <Image src={location.imageUrl || '/default-location.jpg'}
+                       alt={location.name} fill
                        className="absolute inset-0 object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 p-4">

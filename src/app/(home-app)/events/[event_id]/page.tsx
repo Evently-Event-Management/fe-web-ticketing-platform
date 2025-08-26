@@ -4,7 +4,6 @@ import SessionsNoPagination from "@/app/(home-app)/events/[event_id]/_components
 
 const Page = async ({params}: {
     params: Promise<{ event_id: string }>
-    children: React.ReactNode;
 }) => {
     const {event_id} = await params;
 

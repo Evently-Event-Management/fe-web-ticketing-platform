@@ -1,6 +1,5 @@
 import {SeatDTO, SessionSeatingMapDTO} from "@/types/event";
 import {SeatingBlock} from "@/app/(home-app)/events/[event_id]/[session_id]/_components/SeatingBlock";
-import {SelectedSeat} from "@/app/(home-app)/events/[event_id]/[session_id]/_components/SessionBooking";
 
 
 export const SeatingLayout = ({
@@ -9,7 +8,7 @@ export const SeatingLayout = ({
                                   onSeatSelect,
                               }: {
     seatingMap: SessionSeatingMapDTO;
-    selectedSeats?: SelectedSeat[]; // Make optional for reuse
+    selectedSeats?: string[]; // Make optional for reuse
     onSeatSelect?: (seat: SeatDTO, blockName: string) => void; // Make optional for reuse
 }) => {
     // Find the furthest y coordinate plus the height of the block to determine the container height

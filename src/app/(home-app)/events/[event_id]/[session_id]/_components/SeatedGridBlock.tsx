@@ -3,12 +3,11 @@ import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {cn} from "@/lib/utils";
 import {ReadModelSeatStatus} from "@/lib/validators/enums";
-import {SelectedSeat} from "./SessionBooking";
 import {TooltipContent, TooltipTrigger, Tooltip} from "@/components/ui/tooltip";
 
 export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
     block: SeatingBlockDTO;
-    selectedSeats?: SelectedSeat[];
+    selectedSeats?: string[];
     onSeatSelect?: (seat: SeatDTO, blockName: string) => void;
 }) => (
     <>
@@ -21,7 +20,7 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                 row.seats.map(seat => {
                     const seatStatus = seat.status || ReadModelSeatStatus.AVAILABLE;
                     const isDisabled = seatStatus !== ReadModelSeatStatus.AVAILABLE;
-                    const isSelected = !!selectedSeats?.some(s => s.id === seat.id);
+                    const isSelected = !!selectedSeats?.some(s => s === seat.id);
 
                     return (
                         <Tooltip key={seat.id}>
