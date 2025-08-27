@@ -17,6 +17,7 @@ import {createOrder} from '@/lib/actions/orderActions';
 import {useState} from 'react';
 import {Loader2} from 'lucide-react';
 import {toast} from "sonner";
+import TicketItemView from '@/components/ui/TicketItemView';
 
 interface OrderConfirmationDialogProps {
     isOpen: boolean;
@@ -84,19 +85,11 @@ const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
                         <ScrollArea className="h-[200px] rounded-md border">
                             <div className="p-4 space-y-2">
                                 {selectedSeats.map((seat) => (
-                                    <div key={seat.id} className="flex justify-between items-center border-b pb-2">
-                                        <div>
-                                            <p className="font-medium">{seat.label}</p>
-                                            <p className="text-xs text-muted-foreground">{seat.tier.name} - {seat.blockName}</p>
-                                        </div>
-                                        <p className="font-mono">
-                                            {new Intl.NumberFormat('en-LK', {
-                                                style: 'currency',
-                                                currency: 'LKR',
-                                                minimumFractionDigits: 0
-                                            }).format(seat.tier.price)}
-                                        </p>
-                                    </div>
+                                    <TicketItemView
+                                        key={seat.id}
+                                        seat={seat}
+                                        variant="list"
+                                    />
                                 ))}
                             </div>
                         </ScrollArea>

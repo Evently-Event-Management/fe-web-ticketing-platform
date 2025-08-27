@@ -1,12 +1,13 @@
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {ShoppingCart, X, Ticket, Armchair} from 'lucide-react';
+import {ShoppingCart, Armchair} from 'lucide-react';
 import {SelectedSeat} from './SessionBooking';
 import {useState} from 'react';
 import OrderConfirmationDialog from '@/components/ui/OrderConfirmationDialog';
 import {useRouter, useParams} from 'next/navigation';
 import {toast} from 'sonner';
+import TicketItemView from '@/components/ui/TicketItemView';
 
 export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
     selectedSeats: SelectedSeat[],
@@ -53,42 +54,13 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
                         <ScrollArea className="h-[300px] pr-3">
                             <ul className="space-y-3">
                                 {selectedSeats.map(seat => (
-                                    <li key={seat.id}
-                                        className="bg-muted/40 border rounded-lg flex overflow-hidden transition-all hover:shadow-md">
-                                        {/* Left "Stub" with Ticket Icon and Tier Color */}
-                                        <div className="relative flex items-center justify-center p-4"
-                                             style={{backgroundColor: `${seat.tier.color}20`}}>
-                                            <Ticket className="h-7 w-7" style={{color: seat.tier.color}}/>
-                                        </div>
-
-                                        {/* Dashed Separator */}
-                                        <div className="border-l-2 border-dashed border-muted"/>
-
-                                        {/* Right "Details" section */}
-                                        <div className="flex-grow p-3 flex justify-between items-center">
-                                            <div>
-                                                <p className="font-bold text-foreground">Seat {seat.label}</p>
-                                                <p className="text-sm text-muted-foreground">{seat.tier.name} - {seat.blockName}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-mono font-semibold text-foreground text-sm">
-                                                    {new Intl.NumberFormat('en-LK', {
-                                                        style: 'currency',
-                                                        currency: 'LKR',
-                                                        minimumFractionDigits: 0
-                                                    }).format(seat.tier.price)}
-                                                </p>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-7 w-7 text-muted-foreground rounded-full hover:bg-destructive/10 hover:text-destructive"
-                                                    onClick={() => onSeatRemove(seat.id)}
-                                                >
-                                                    <X className="h-4 w-4"/>
-                                                    <span className="sr-only">Remove seat</span>
-                                                </Button>
-                                            </div>
-                                        </div>
+                                    <li key={seat.id}>
+                                        <TicketItemView
+                                            seat={seat}
+                                            variant="list"
+                                            showRemoveButton={true}
+                                            onRemove={onSeatRemove}
+                                        />
                                     </li>
                                 ))}
                             </ul>
