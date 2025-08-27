@@ -50,7 +50,7 @@ const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
 
         try {
             const response = await createOrder({
-                eventID: eventId,
+                eventId: eventId,
                 sessionId: sessionId,
                 seatIds: selectedSeats.map(seat => seat.id),
             });
