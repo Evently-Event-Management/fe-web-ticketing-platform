@@ -53,13 +53,13 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
-            
+
             // Check if adding these files would exceed the maximum allowed
             if ((coverFiles.length + selectedFiles.length) > maxPhotos) {
                 toast.error(`You can only upload a maximum of ${maxPhotos} photos.`);
                 return;
             }
-            
+
             // Define compression options for cover photos
             const coverPhotoCompressionOptions = {
                 maxSizeMB: 1.5,            // Slightly larger than logos to maintain quality
@@ -67,10 +67,10 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                 useWebWorker: true,
                 fileType: 'image/jpeg'     // JPEG works well for cover photos
             };
-            
+
             // Show loading toast for long operations
             toast.loading('Processing images...');
-            
+
             try {
                 // Process files one by one with compression
                 const processedFiles = await Promise.all(
@@ -78,7 +78,7 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                         return await compressImage(file, coverPhotoCompressionOptions);
                     })
                 );
-                
+
                 // Add the compressed files to the state
                 setCoverFilesAction(prev => [...prev, ...processedFiles]);
                 toast.dismiss();
