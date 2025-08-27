@@ -86,7 +86,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
                 </div>
                 <Button size="lg" disabled={selectedSeats.length === 0}>Proceed to Checkout</Button>
                 <span className="text-xs text-muted-foreground">
-                    Discount codes can be applied at checkout.
+                    Discount codes coming soon.
                 </span>
             </CardFooter>
         </Card>

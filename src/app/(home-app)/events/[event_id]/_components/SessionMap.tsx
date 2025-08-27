@@ -47,12 +47,12 @@ export const SessionMap = ({location, scrollWheelZoom}: {
     const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
 
     return (
-        <div className="h-full w-full rounded-md overflow-hidden z-0">
+        <div className="h-full w-full rounded-md overflow-hidden" style={{zIndex: 10, position: 'relative'}}>
             <MapContainer
                 center={position}
                 zoom={13}
                 scrollWheelZoom={scrollWheelZoom || false}
-                style={{height: '100%', width: '100%'}}
+                style={{height: '100%', width: '100%', zIndex: 10, position: 'relative'}}
             >
                 <TileLayer
                     attribution={attribution}
