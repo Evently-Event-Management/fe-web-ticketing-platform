@@ -11,6 +11,8 @@ import {OnlineTicketSelection} from "./OnlineTicketSelection";
 import {SeatStatusUpdateDTO} from "@/types/sse";
 import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions";
 import {toast} from "sonner";
+import {useAuth} from "@/providers/AuthProvider";
+import NeedLoginNotice from "@/components/ui/NeedLoginNotice";
 
 // This type definition remains the same as it's used for props
 export type SelectedSeat = SeatDTO & {
@@ -26,6 +28,7 @@ export type SelectedSeat = SeatDTO & {
 export default function SessionBooking({session}: { session: SessionInfoBasicDTO }) {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const {isAuthenticated} = useAuth()
 
     // --- CHANGE #1: Store only the IDs of selected seats ---
     // This creates a single source of truth for all seat data: the `seatingMap`.
@@ -205,6 +208,14 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
 
     if (!seatingMap) {
         return <div className="text-center py-10">Failed to load seating information. Please try again later.</div>;
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="flex flex-col items-center justify-center py-10 max-w-md mx-auto">
+                <NeedLoginNotice />
+            </div>
+        );
     }
 
     return (
