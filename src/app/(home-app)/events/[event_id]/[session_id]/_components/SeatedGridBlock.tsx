@@ -4,6 +4,7 @@ import {Badge} from "@/components/ui/badge";
 import {cn} from "@/lib/utils";
 import {ReadModelSeatStatus} from "@/lib/validators/enums";
 import {TooltipContent, TooltipTrigger, Tooltip} from "@/components/ui/tooltip";
+import {Lock, X, Clock} from "lucide-react";
 
 export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
     block: SeatingBlockDTO;
@@ -22,32 +23,77 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                     const isDisabled = seatStatus !== ReadModelSeatStatus.AVAILABLE;
                     const isSelected = !!selectedSeats?.some(s => s === seat.id);
 
+                    // Get status-specific styling
+                    const getStatusStyles = () => {
+                        switch(seatStatus) {
+                            case ReadModelSeatStatus.AVAILABLE:
+                                return "cursor-pointer hover:brightness-105";
+                            case ReadModelSeatStatus.LOCKED:
+                                return "bg-amber-200 text-amber-900 cursor-not-allowed border-amber-500 border";
+                            case ReadModelSeatStatus.RESERVED:
+                                return "bg-red-200 text-red-900 cursor-not-allowed border-red-500 border";
+                            case ReadModelSeatStatus.BOOKED:
+                                return "bg-gray-300 text-gray-700 cursor-not-allowed";
+                            default:
+                                return "opacity-30 cursor-not-allowed";
+                        }
+                    };
+
+                    // Get status icon
+                    const StatusIcon = () => {
+                        switch(seatStatus) {
+                            case ReadModelSeatStatus.LOCKED:
+                                return <Lock className="absolute top-0 right-0 h-2.5 w-2.5 text-amber-600" />;
+                            case ReadModelSeatStatus.RESERVED:
+                                return <X className="absolute top-0 right-0 h-2.5 w-2.5 text-red-600" />;
+                            case ReadModelSeatStatus.BOOKED:
+                                return <Clock className="absolute top-0 right-0 h-2.5 w-2.5 text-gray-600" />;
+                            default:
+                                return null;
+                        }
+                    };
+
                     return (
                         <Tooltip key={seat.id}>
                             <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    className={cn(
-                                        "h-6 w-6 p-0 rounded-full text-xs font-mono transition-transform duration-200 hover:scale-110",
-                                        isDisabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:brightness-105",
-                                        isSelected && "ring-2 ring-offset-2 ring-offset-background ring-primary"
-                                    )}
-                                    style={{backgroundColor: seat.tier ? `${seat.tier.color}80` : undefined}}
-                                    disabled={isDisabled || !onSeatSelect}
-                                    onClick={() => onSeatSelect?.(seat, block.name)}
-                                >
-                                    {seat.label}
-                                </Button>
+                                <div className="relative">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        className={cn(
+                                            "h-6 w-6 p-0 rounded-full text-xs font-mono transition-transform duration-200 hover:scale-110",
+                                            getStatusStyles(),
+                                            isSelected && "ring-2 ring-offset-2 ring-offset-background ring-primary"
+                                        )}
+                                        style={{
+                                            backgroundColor: seatStatus === ReadModelSeatStatus.AVAILABLE && seat.tier
+                                                ? `${seat.tier.color}80`
+                                                : undefined
+                                        }}
+                                        disabled={isDisabled || !onSeatSelect}
+                                        onClick={() => onSeatSelect?.(seat, block.name)}
+                                    >
+                                        {seat.label}
+                                    </Button>
+                                    <StatusIcon />
+                                </div>
                             </TooltipTrigger>
                             <TooltipContent side="top"
                                             className="p-2 shadow-md border-border bg-popover">
                                 <div className="flex items-center gap-2">
                                     <Badge
-                                        variant={isDisabled ? 'destructive' : 'outline'}
+                                        variant={
+                                            seatStatus === ReadModelSeatStatus.LOCKED
+                                                ? 'warning'
+                                                : seatStatus === ReadModelSeatStatus.RESERVED || seatStatus === ReadModelSeatStatus.BOOKED
+                                                    ? 'destructive'
+                                                    : 'outline'
+                                        }
                                         className="text-xs px-1"
                                     >
-                                        {seatStatus.replace('_', ' ')}
+                                        {seatStatus === ReadModelSeatStatus.LOCKED
+                                            ? 'PAYMENT PROCESSING'
+                                            : seatStatus.replace('_', ' ')}
                                     </Badge>
                                     {seat.tier && (
                                         <>
@@ -72,4 +118,3 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
         </div>
     </>
 );
-
