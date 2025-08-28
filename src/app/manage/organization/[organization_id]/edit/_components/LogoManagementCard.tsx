@@ -41,10 +41,10 @@ function LogoManagementCard({organization, onUpdate}: LogoManagementCardProps) {
                 // Preserve PNG format for transparency if the uploaded file is PNG
                 fileType: file.type === 'image/png' ? 'image/png' : 'image/jpeg'
             };
-
+            
             // Compress the image with logo-specific options
             const compressedFile = await compressImage(file, logoCompressionOptions);
-
+            
             toast.promise(uploadLogo(organization.id, compressedFile), {
                 loading: 'Uploading logo...',
                 success: ( ) => {

@@ -22,7 +22,7 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                     const seatStatus = seat.status || ReadModelSeatStatus.AVAILABLE;
                     const isDisabled = seatStatus !== ReadModelSeatStatus.AVAILABLE;
                     const isSelected = !!selectedSeats?.some(s => s === seat.id);
-
+                    
                     // Get status-specific styling
                     const getStatusStyles = () => {
                         switch(seatStatus) {
@@ -38,7 +38,7 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                                 return "opacity-30 cursor-not-allowed";
                         }
                     };
-
+                    
                     // Get status icon
                     const StatusIcon = () => {
                         switch(seatStatus) {
@@ -66,8 +66,8 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                                             isSelected && "ring-2 ring-offset-2 ring-offset-background ring-primary"
                                         )}
                                         style={{
-                                            backgroundColor: seatStatus === ReadModelSeatStatus.AVAILABLE && seat.tier
-                                                ? `${seat.tier.color}80`
+                                            backgroundColor: seatStatus === ReadModelSeatStatus.AVAILABLE && seat.tier 
+                                                ? `${seat.tier.color}80` 
                                                 : undefined
                                         }}
                                         disabled={isDisabled || !onSeatSelect}
@@ -83,15 +83,15 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                                 <div className="flex items-center gap-2">
                                     <Badge
                                         variant={
-                                            seatStatus === ReadModelSeatStatus.LOCKED
-                                                ? 'warning'
+                                            seatStatus === ReadModelSeatStatus.LOCKED 
+                                                ? 'warning' 
                                                 : seatStatus === ReadModelSeatStatus.RESERVED || seatStatus === ReadModelSeatStatus.BOOKED
-                                                    ? 'destructive'
+                                                    ? 'destructive' 
                                                     : 'outline'
                                         }
                                         className="text-xs px-1"
                                     >
-                                        {seatStatus === ReadModelSeatStatus.LOCKED
+                                        {seatStatus === ReadModelSeatStatus.LOCKED 
                                             ? 'PAYMENT PROCESSING'
                                             : seatStatus.replace('_', ' ')}
                                     </Badge>
