@@ -8,7 +8,7 @@ import {
     Ticket,
     LayoutDashboard,
     CalendarDays,
-    Building,
+    Building, Users,
 } from "lucide-react"
 import Link from "next/link";
 import {useSidebar} from "@/components/ui/sidebar"
@@ -55,6 +55,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     },
                     {title: "My Events", url: organization ? `/manage/organization/${organization.id}/event` : "#"},
                 ],
+            },
+            {
+                title: "Staff Management",
+                url: organization ? `/manage/organization/${organization.id}/staff` : "#",
+                icon: Users
             },
             {
                 title: "Seating Layouts",
