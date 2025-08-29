@@ -5,7 +5,7 @@ import {ShoppingCart, Armchair} from 'lucide-react';
 import {SelectedSeat} from './SessionBooking';
 import {useState} from 'react';
 import OrderConfirmationDialog from '@/components/ui/OrderConfirmationDialog';
-import {useRouter, useParams} from 'next/navigation';
+import {useParams, useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import TicketItemView from '@/components/ui/TicketItemView';
 
@@ -32,8 +32,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
     const handleOrderSuccess = (orderId: string) => {
         toast.success("Order created successfully!");
         setDialogOpen(false);
-        // Redirect to payment page with order ID
-        router.push(`/payment/${orderId}`);
+        router.push(`/orders/${orderId}`);
     };
 
     return (
