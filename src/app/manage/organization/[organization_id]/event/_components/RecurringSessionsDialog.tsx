@@ -308,7 +308,7 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" onClick={handleSubmit(onSubmit)}>Generate Sessions</Button>
+                        <Button type="submit">Generate Sessions</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
