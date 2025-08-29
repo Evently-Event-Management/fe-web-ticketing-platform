@@ -90,9 +90,22 @@ export function EventFilters({categories, inHero = false}: EventFiltersProps) {
                         </Select>
                     </div>
 
-                    {/* Location */}
+                    {/* Location with Clear All button */}
                     <div className="space-y-2">
-                        <Label>Location</Label>
+                        <div className="flex justify-between items-center">
+                            <Label>Location</Label>
+                            {hasActiveFilters && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="h-6 px-2 text-xs font-normal text-muted-foreground"
+                                >
+                                    <X className="mr-1 h-3 w-3"/>
+                                    Clear All
+                                </Button>
+                            )}
+                        </div>
                         <Select
                             value={searchParams.get('location') || 'all'}
                             onValueChange={(value) => {
@@ -128,15 +141,6 @@ export function EventFilters({categories, inHero = false}: EventFiltersProps) {
                         </Select>
                     </div>
                 </div>
-
-                {hasActiveFilters && (
-                    <div className="mt-6 text-right">
-                        <Button variant="outline" size="sm" onClick={clearFilters}>
-                            <X className="mr-2 h-4 w-4"/>
-                            Clear All
-                        </Button>
-                    </div>
-                )}
             </Card>
         );
     }
