@@ -1,9 +1,13 @@
+'use client'
+
 import {EventCard} from "@/app/(home-app)/_components/EventCard";
 import CategorySection from "@/app/(home-app)/_components/CategorySection";
 import {EventThumbnailDTO} from "@/types/event";
 import {sriLankaLocations} from "@/app/(home-app)/_utils/locations";
 import {LocationCard} from "@/app/(home-app)/_components/LocationCard";
 import {ArrowRight, Calendar, MapPin, Users} from "lucide-react";
+import Link from 'next/link';
+import {useAuth} from '@/providers/AuthProvider';
 
 const trendingEvents: EventThumbnailDTO[] = [
     {
@@ -61,6 +65,8 @@ const trendingEvents: EventThumbnailDTO[] = [
 ];
 
 export default function HomePage() {
+    const {isAuthenticated, keycloak} = useAuth();
+
     return (
         <main className="min-h-screen bg-background">
             {/* Hero Section */}
@@ -78,32 +84,38 @@ export default function HomePage() {
                         {/* Stats */}
                         <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mb-16">
                             <div className="text-center">
-                                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mx-auto mb-3">
-                                    <Calendar className="w-6 h-6 text-primary" />
+                                <div
+                                    className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mx-auto mb-3">
+                                    <Calendar className="w-6 h-6 text-primary"/>
                                 </div>
                                 <div className="text-2xl font-semibold text-foreground">1000+</div>
                                 <div className="text-sm text-muted-foreground">Events</div>
                             </div>
                             <div className="text-center">
-                                <div className="flex items-center justify-center w-12 h-12 bg-chart-2/10 rounded-full mx-auto mb-3">
-                                    <MapPin className="w-6 h-6 text-chart-2" />
+                                <div
+                                    className="flex items-center justify-center w-12 h-12 bg-chart-2/10 rounded-full mx-auto mb-3">
+                                    <MapPin className="w-6 h-6 text-chart-2"/>
                                 </div>
                                 <div className="text-2xl font-semibold text-foreground">25+</div>
                                 <div className="text-sm text-muted-foreground">Cities</div>
                             </div>
                             <div className="text-center">
-                                <div className="flex items-center justify-center w-12 h-12 bg-chart-3/10 rounded-full mx-auto mb-3">
-                                    <Users className="w-6 h-6 text-chart-3" />
+                                <div
+                                    className="flex items-center justify-center w-12 h-12 bg-chart-3/10 rounded-full mx-auto mb-3">
+                                    <Users className="w-6 h-6 text-chart-3"/>
                                 </div>
                                 <div className="text-2xl font-semibold text-foreground">50K+</div>
                                 <div className="text-sm text-muted-foreground">Attendees</div>
                             </div>
                         </div>
 
-                        <button className="inline-flex items-center px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors duration-200 text-lg">
-                            Explore Events
-                            <ArrowRight className="ml-2 w-5 h-5" />
-                        </button>
+                        <Link href="/events">
+                            <button
+                                className="inline-flex items-center px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors duration-200 text-lg">
+                                Explore Events
+                                <ArrowRight className="ml-2 w-5 h-5"/>
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </section>
@@ -119,7 +131,7 @@ export default function HomePage() {
                             Discover events tailored to your interests across various categories
                         </p>
                     </div>
-                    <CategorySection />
+                    <CategorySection/>
                 </div>
             </section>
 
@@ -136,7 +148,7 @@ export default function HomePage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
                         {trendingEvents.map((event) => (
-                            <EventCard key={event.id} event={event} />
+                            <EventCard key={event.id} event={event}/>
                         ))}
                     </div>
                 </div>
@@ -153,11 +165,12 @@ export default function HomePage() {
                             Find exciting events happening in cities across Sri Lanka
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                    <div
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
                         {sriLankaLocations
                             .filter(location => !!location.imageUrl)
                             .map((location) => (
-                                <LocationCard key={location.name} location={location} />
+                                <LocationCard key={location.name} location={location}/>
                             ))}
                     </div>
                 </div>
@@ -170,12 +183,27 @@ export default function HomePage() {
                         Ready to discover your next adventure?
                     </h2>
                     <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-                        Join thousands of people who trust us to find their perfect events
+                        {isAuthenticated
+                            ? "Create amazing events and reach thousands of attendees"
+                            : "Join thousands of people who trust us to find their perfect events"
+                        }
                     </p>
-                    <button className="inline-flex items-center px-8 py-4 bg-background text-foreground rounded-full hover:bg-muted transition-colors duration-200 text-lg font-medium">
-                        Get Started
-                        <ArrowRight className="ml-2 w-5 h-5" />
-                    </button>
+
+                    {isAuthenticated ? (
+                        <Link href="/manage/organization">
+                            <button className="inline-flex items-center px-8 py-4 bg-background text-foreground rounded-full hover:bg-muted transition-colors duration-200 text-lg font-medium">
+                                Create Events
+                                <ArrowRight className="ml-2 w-5 h-5" />
+                            </button>
+                        </Link>
+                    ) : (
+                        <button
+                            onClick={() => keycloak.register()}
+                            className="inline-flex items-center px-8 py-4 bg-background text-foreground rounded-full hover:bg-muted transition-colors duration-200 text-lg font-medium">
+                            Get Started
+                            <ArrowRight className="ml-2 w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             </section>
         </main>
