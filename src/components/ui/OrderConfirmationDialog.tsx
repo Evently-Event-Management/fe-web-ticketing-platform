@@ -51,8 +51,8 @@ const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
         try {
             const response = await createOrder({
                 eventId: eventId,
-                sessionId: sessionId,
-                seatIds: selectedSeats.map(seat => seat.id),
+                session_id: sessionId,
+                seat_ids: selectedSeats.map(seat => seat.id),
             });
 
             toast.success("Order created successfully!");
