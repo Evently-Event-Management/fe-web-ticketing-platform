@@ -56,7 +56,7 @@ const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
             });
 
             toast.success("Order created successfully!");
-            onSuccess(response.orderId);
+            onSuccess(response.order_id);
         } catch (error) {
             console.error("Error creating order:", error);
             toast.error("Failed to create order. Please try again.");

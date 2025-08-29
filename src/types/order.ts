@@ -13,8 +13,8 @@ export interface CreateOrderRequest {
 }
 
 export interface CreateOrderResponse {
-    orderId: string; // UUID
-    status: OrderStatus;
-    expiresAt: string; // ISO 8601 format
-    totalPrice: number; // Use number for price
+    order_id: string;
+    session_id: string;
+    seat_ids: string[];
+    user_id: string;
 }
