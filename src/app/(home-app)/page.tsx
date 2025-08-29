@@ -64,11 +64,11 @@ export default function HomePage() {
     return (
         <main className="min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="relative bg-gradient-to-br from-muted via-background to-muted py-24 md:py-32">
+            <section className="relative bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 md:py-32">
                 <div className="container mx-auto px-4">
                     <div className="max-w-4xl mx-auto text-center">
                         <h1 className="text-5xl md:text-7xl font-light tracking-tight text-foreground mb-6">
-                            Discover
+                            <span className="text-primary">Discover</span>
                             <span className="block font-semibold text-foreground/80">Amazing Events</span>
                         </h1>
                         <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light max-w-2xl mx-auto">
@@ -78,29 +78,29 @@ export default function HomePage() {
                         {/* Stats */}
                         <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mb-16">
                             <div className="text-center">
-                                <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mx-auto mb-3">
-                                    <Calendar className="w-6 h-6 text-muted-foreground" />
+                                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mx-auto mb-3">
+                                    <Calendar className="w-6 h-6 text-primary" />
                                 </div>
                                 <div className="text-2xl font-semibold text-foreground">1000+</div>
                                 <div className="text-sm text-muted-foreground">Events</div>
                             </div>
                             <div className="text-center">
-                                <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mx-auto mb-3">
-                                    <MapPin className="w-6 h-6 text-muted-foreground" />
+                                <div className="flex items-center justify-center w-12 h-12 bg-chart-2/10 rounded-full mx-auto mb-3">
+                                    <MapPin className="w-6 h-6 text-chart-2" />
                                 </div>
                                 <div className="text-2xl font-semibold text-foreground">25+</div>
                                 <div className="text-sm text-muted-foreground">Cities</div>
                             </div>
                             <div className="text-center">
-                                <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mx-auto mb-3">
-                                    <Users className="w-6 h-6 text-muted-foreground" />
+                                <div className="flex items-center justify-center w-12 h-12 bg-chart-3/10 rounded-full mx-auto mb-3">
+                                    <Users className="w-6 h-6 text-chart-3" />
                                 </div>
                                 <div className="text-2xl font-semibold text-foreground">50K+</div>
                                 <div className="text-sm text-muted-foreground">Attendees</div>
                             </div>
                         </div>
 
-                        <button className="inline-flex items-center px-8 py-4 bg-foreground text-background rounded-full hover:bg-muted transition-colors duration-200 text-lg">
+                        <button className="inline-flex items-center px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors duration-200 text-lg">
                             Explore Events
                             <ArrowRight className="ml-2 w-5 h-5" />
                         </button>
@@ -109,11 +109,11 @@ export default function HomePage() {
             </section>
 
             {/* Categories Section */}
-            <section className="py-20 bg-background border-t border-border">
+            <section className="py-20 bg-primary/5 border-t border-border">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
-                            Browse by Category
+                            <span className="text-primary font-medium">Browse</span> by Category
                         </h2>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             Discover events tailored to your interests across various categories
@@ -124,14 +124,14 @@ export default function HomePage() {
             </section>
 
             {/* Trending Events Section */}
-            <section className="py-20 bg-muted">
+            <section className="py-20 bg-primary/10">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
-                            Trending Events
+                            <span className="text-primary font-medium">Trending</span> Events
                         </h2>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                            Don't miss out on the most popular events happening right now
+                            Don&#39;t miss out on the most popular events happening right now
                         </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
@@ -143,11 +143,11 @@ export default function HomePage() {
             </section>
 
             {/* Locations Section */}
-            <section className="py-20 bg-background">
+            <section className="py-20 bg-chart-1/10">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
-                            Explore by Location
+                            <span className="text-chart-1 font-medium">Explore</span> by Location
                         </h2>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             Find exciting events happening in cities across Sri Lanka
