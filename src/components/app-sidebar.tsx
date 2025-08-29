@@ -118,7 +118,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
  */
 export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>) {
     const {isAuthenticated, keycloak} = useAuth();
-    const {myLimits} = useLimits(); // Get current user limits
+    // const {myLimits} = useLimits(); // Get current user limits
     const {open} = useSidebar();
 
     if (!isAuthenticated || !keycloak) {
@@ -180,7 +180,6 @@ export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>
                         email: keycloak.tokenParsed?.email || "",
                         avatar: keycloak.tokenParsed?.picture || "",
                     }}
-                    tierName={myLimits?.currentTier}
                 />
             </SidebarFooter>
             <SidebarRail/>
