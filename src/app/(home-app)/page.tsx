@@ -2,8 +2,8 @@ import {EventCard} from "@/app/(home-app)/_components/EventCard";
 import CategorySection from "@/app/(home-app)/_components/CategorySection";
 import {EventThumbnailDTO} from "@/types/event";
 import {sriLankaLocations} from "@/app/(home-app)/_utils/locations";
-import Image from "next/image";
 import {LocationCard} from "@/app/(home-app)/_components/LocationCard";
+import {ArrowRight, Calendar, MapPin, Users} from "lucide-react";
 
 const trendingEvents: EventThumbnailDTO[] = [
     {
@@ -62,53 +62,120 @@ const trendingEvents: EventThumbnailDTO[] = [
 
 export default function HomePage() {
     return (
-        <main className="container mx-auto px-4 py-8">
+        <main className="min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="relative mb-12 h-[500px] rounded-lg overflow-hidden">
-                <Image
-                    src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070&auto=format&fit=crop"
-                    alt="Concert"
-                    className="w-full h-full object-cover"
-                    width={2070}
-                    height={1380}
-                    priority
-                />
-                <div
-                    className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center text-white p-4">
-                    <h1 className="text-4xl md:text-6xl font-bold">Events Made Easy</h1>
-                    <p className="mt-2">Discover and book your next event effortlessly</p>
+            <section className="relative bg-gradient-to-br from-muted via-background to-muted py-24 md:py-32">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <h1 className="text-5xl md:text-7xl font-light tracking-tight text-foreground mb-6">
+                            Discover
+                            <span className="block font-semibold text-foreground/80">Amazing Events</span>
+                        </h1>
+                        <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light max-w-2xl mx-auto">
+                            Find and book extraordinary experiences happening around you
+                        </p>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mb-16">
+                            <div className="text-center">
+                                <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mx-auto mb-3">
+                                    <Calendar className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-semibold text-foreground">1000+</div>
+                                <div className="text-sm text-muted-foreground">Events</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mx-auto mb-3">
+                                    <MapPin className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-semibold text-foreground">25+</div>
+                                <div className="text-sm text-muted-foreground">Cities</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full mx-auto mb-3">
+                                    <Users className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <div className="text-2xl font-semibold text-foreground">50K+</div>
+                                <div className="text-sm text-muted-foreground">Attendees</div>
+                            </div>
+                        </div>
+
+                        <button className="inline-flex items-center px-8 py-4 bg-foreground text-background rounded-full hover:bg-muted transition-colors duration-200 text-lg">
+                            Explore Events
+                            <ArrowRight className="ml-2 w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            {/* Category Section */}
-            <CategorySection/>
+            {/* Categories Section */}
+            <section className="py-20 bg-background border-t border-border">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
+                            Browse by Category
+                        </h2>
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                            Discover events tailored to your interests across various categories
+                        </p>
+                    </div>
+                    <CategorySection />
+                </div>
+            </section>
 
             {/* Trending Events Section */}
-            <section className="py-12">
-                <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold tracking-tight">Trending Events</h2>
-                    <p className="text-muted-foreground mt-2">See what&#39;s popular right now.</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
-                    {trendingEvents.map((event) => (
-                        <EventCard key={event.id} event={event}/>
-                    ))}
+            <section className="py-20 bg-muted">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
+                            Trending Events
+                        </h2>
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                            Don't miss out on the most popular events happening right now
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                        {trendingEvents.map((event) => (
+                            <EventCard key={event.id} event={event} />
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            {/* Browse by Location Section */}
-            <section className="py-12">
-                <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold tracking-tight">Explore by Location</h2>
-                    <p className="text-muted-foreground mt-2">Find events happening near you or in your favorite
-                        city.</p>
+            {/* Locations Section */}
+            <section className="py-20 bg-background">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
+                            Explore by Location
+                        </h2>
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                            Find exciting events happening in cities across Sri Lanka
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                        {sriLankaLocations
+                            .filter(location => !!location.imageUrl)
+                            .map((location) => (
+                                <LocationCard key={location.name} location={location} />
+                            ))}
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {sriLankaLocations
-                        .filter(location => !!location.imageUrl)
-                        .map((location) => (
-                            <LocationCard key={location.name} location={location}/>
-                        ))}
+            </section>
+
+            {/* CTA Section */}
+            <section className="py-20 bg-primary">
+                <div className="container mx-auto px-4 text-center">
+                    <h2 className="text-3xl md:text-4xl font-light text-primary-foreground mb-6">
+                        Ready to discover your next adventure?
+                    </h2>
+                    <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
+                        Join thousands of people who trust us to find their perfect events
+                    </p>
+                    <button className="inline-flex items-center px-8 py-4 bg-background text-foreground rounded-full hover:bg-muted transition-colors duration-200 text-lg font-medium">
+                        Get Started
+                        <ArrowRight className="ml-2 w-5 h-5" />
+                    </button>
                 </div>
             </section>
         </main>
