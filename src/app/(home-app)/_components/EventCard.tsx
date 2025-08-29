@@ -104,7 +104,7 @@ export function EventCard({event}: { event: EventThumbnailDTO }) {
                 {/* Starting Price Badge */}
                 <div className="absolute bottom-4 right-4 bg-card rounded-lg p-2 text-center shadow-md">
                     <span className="text-sm font-bold">
-                        {startingPrice ? `$${startingPrice.toFixed(2)}` : 'Free'}
+                        {startingPrice ? `LKR ${startingPrice.toFixed(2)}` : 'Free'}
                     </span>
                 </div>
             </CardHeader>

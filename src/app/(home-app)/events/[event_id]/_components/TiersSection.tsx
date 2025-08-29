@@ -2,7 +2,7 @@
 
 import {EventBasicInfoDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
-import {Ticket} from "lucide-react";
+import {BadgeCheck, Ticket} from "lucide-react";
 import {toast} from "sonner";
 
 // A single tier item, redesigned for a vertical list
@@ -12,10 +12,11 @@ const TierItem = ({tier}: { tier: EventBasicInfoDTO['tiers'][0]; }) => {
             className="flex items-center justify-between p-4 rounded-lg border transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
         >
             <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full" style={{backgroundColor: tier.color}}></div>
+                {/*<div className="w-3 h-3 rounded-full" style={{backgroundColor: tier.color}}></div>*/}
+                <BadgeCheck className="w-5 h-5" style={{color: tier.color}}/>
                 <span className="font-semibold text-gray-800 dark:text-white">{tier.name}</span>
             </div>
-            <span className="font-bold text-gray-900 dark:text-white">${tier.price.toFixed(2)}</span>
+            <span className="font-bold text-gray-900 dark:text-white">LKR {tier.price.toFixed(2)}</span>
         </div>
     )
 }
