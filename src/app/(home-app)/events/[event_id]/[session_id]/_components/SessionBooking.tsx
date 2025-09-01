@@ -219,7 +219,7 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
     }
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col" id="sessions-section">
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2">
                     {session.sessionType === SessionType.PHYSICAL ? (
