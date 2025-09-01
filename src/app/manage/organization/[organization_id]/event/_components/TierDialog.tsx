@@ -80,7 +80,7 @@ export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDia
                             name="price"
                             render={({field}) => (
                                 <FormItem>
-                                    <FormLabel>Price (USD)</FormLabel>
+                                    <FormLabel>Price (LKR)</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="number"
