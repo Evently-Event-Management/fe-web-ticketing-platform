@@ -65,7 +65,7 @@ export default async function EventsPage() {
             </section>
 
             {/* RESULTS SECTION (No changes here) */}
-            <section className="md:max-w-7xl mx-auto px-4 py-8"> {/* Negative margin to pull results up */}
+            <section className="md:max-w-7xl mx-auto px-4 py-8 space-y-10"> {/* Negative margin to pull results up */}
                 <Suspense fallback={<CategoryBarSkeleton/>}>
                     <CategoryFilterBar categories={categories}/>
                 </Suspense>
