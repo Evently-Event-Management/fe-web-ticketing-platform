@@ -21,8 +21,6 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const [isMapLoading, setIsMapLoading] = useState(false);
     const router = useRouter();
 
-    console.log("Rendering SessionItem for session:", session);
-
     const onOpen = (isOpen: boolean) => {
         if (isOpen && !seatingMap && session.sessionType === SessionType.PHYSICAL) {
             setIsMapLoading(true);

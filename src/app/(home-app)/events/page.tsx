@@ -1,70 +1,74 @@
-import {fetchParentCategories} from '@/lib/actions/public/categoryActions';
+import {fetchAllCategories} from '@/lib/actions/public/categoryActions';
 import {EventFilters} from './_components/EventFilters';
 import {EventResults} from './_components/EventResult';
 import {Suspense} from 'react';
 import {Skeleton} from '@/components/ui/skeleton';
 import Image from 'next/image';
+import {CategoryFilterBar} from './_components/CategoryFilterBar';
 
-// Loading component for the filter section
+// A simpler skeleton for the new filter bar
 const FilterSkeleton = () => (
-    <div className="w-full max-w-4xl mx-auto space-y-4 bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-md">
-        <Skeleton className="h-8 w-1/2"/>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-1/4"/>
-                <Skeleton className="h-10 w-full"/>
-            </div>
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-1/4"/>
-                <Skeleton className="h-10 w-full"/>
-            </div>
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-1/4"/>
-                <Skeleton className="h-10 w-full"/>
-            </div>
-        </div>
+    <div className="w-full max-w-3xl mx-auto">
+        <Skeleton className="h-16 w-full rounded-full"/>
     </div>
 );
 
+const CategoryBarSkeleton = () => (
+    <div className="flex items-center gap-2 overflow-x-auto pb-6">
+        <Skeleton className="h-9 w-28 rounded-md"/>
+        <Skeleton className="h-9 w-36 rounded-md"/>
+        <Skeleton className="h-9 w-24 rounded-md"/>
+        <Skeleton className="h-9 w-40 rounded-md"/>
+        <Skeleton className="h-9 w-32 rounded-md"/>
+    </div>
+);
+
+
 export default async function EventsPage() {
-    // Fetch categories on the server
-    const categories = await fetchParentCategories();
+    const categories = await fetchAllCategories();
 
     return (
         <main>
-            {/* Hero section with background image and filters on top */}
-            <section className="relative">
-                {/* Background image */}
-                <div className="absolute inset-0 h-[400px] w-full">
+            {/* HERO SECTION REVAMP */}
+            <section className="relative bg-background">
+                {/* New, more vibrant background image */}
+                <div className="absolute inset-0 h-[450px] w-full">
                     <Image
-                        src={'https://images.unsplash.com/photo-1519750157634-b6d493a0f77c?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-                        alt="Events background"
+                        src={'https://images.unsplash.com/photo-1669033425101-a9660d531a00?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                        alt="Vibrant event background"
                         fill
-                        className="object-cover brightness-50 dark:brightness-45"
+                        className="object-cover"
                         priority
                     />
+                    {/* Gradient overlay for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent dark:from-background dark:via-background/80 dark:to-black/30"/>
                 </div>
 
                 {/* Content overlay */}
-                <div className="relative pt-16 pb-32 px-4 flex flex-col items-center justify-center min-h-[400px]">
+                <div className="relative pt-24 pb-32 px-4 flex flex-col items-center justify-center min-h-[450px]">
                     <div className="text-center mb-8 text-white">
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Find Your Next Experience</h1>
-                        <p className="mt-4 max-w-2xl mx-auto text-lg text-white/80">
-                            Discover amazing events happening across Sri Lanka.
+                        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg">
+                            Find Your Next Experience
+                        </h1>
+                        <p className="mt-4 max-w-2xl mx-auto text-lg text-white/90 drop-shadow-sm">
+                            Discover concerts, workshops, and festivals happening across Sri Lanka.
                         </p>
                     </div>
 
-                    {/* Filter component */}
-                    <div className="w-full max-w-4xl">
+                    {/* Filter component is now centered and has a max-width */}
+                    <div className="w-full max-w-3xl">
                         <Suspense fallback={<FilterSkeleton/>}>
-                            <EventFilters categories={categories} inHero={true}/>
+                            <EventFilters/>
                         </Suspense>
                     </div>
                 </div>
             </section>
 
-            {/* Results section */}
-            <section className="md:max-w-7xl mx-auto px-4 py-8">
+            {/* RESULTS SECTION (No changes here) */}
+            <section className="md:max-w-7xl mx-auto px-4 py-8"> {/* Negative margin to pull results up */}
+                <Suspense fallback={<CategoryBarSkeleton/>}>
+                    <CategoryFilterBar categories={categories}/>
+                </Suspense>
                 <Suspense fallback={<div className="text-center py-10">Loading results...</div>}>
                     <EventResults/>
                 </Suspense>

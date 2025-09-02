@@ -1,7 +1,7 @@
 'use client';
 
 import {CategoryResponseWithParentName} from "@/types/category";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {fetchParentCategories} from "@/lib/actions/public/categoryActions";
 import {
     BookOpen,
@@ -10,32 +10,21 @@ import {
     Utensils,
     Dumbbell,
     Users,
-    PartyPopper, // Example for Nightlife/Holidays
-    Briefcase, // Example for Business
-    Heart, // Example for Dating
-    Gamepad2, // Example for Hobbies
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 // --- Enhanced CATEGORY_CONFIG to better match the visual style ---
 // I've added more icons to demonstrate flexibility.
 // You can map your actual category names to these.
-const CATEGORY_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
+export const CATEGORY_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
     // Keep your existing ones
     "Workshops & Education": {icon: BookOpen, color: "text-blue-500"},
     "Music": {icon: Music, color: "text-purple-500"},
     "Arts & Theatre": {icon: Brush, color: "text-pink-500"},
-    "Performing & Visual Arts": {icon: Brush, color: "text-pink-500"}, // Alias for consistency
+    "Performing & Visual Arts": {icon: Brush, color: "text-pink-500"},
     "Food & Drink": {icon: Utensils, color: "text-amber-500"},
     "Sports & Fitness": {icon: Dumbbell, color: "text-green-500"},
     "Community & Social": {icon: Users, color: "text-teal-500"},
-
-    // Adding more based on common categories, similar to your image
-    "Nightlife": {icon: PartyPopper, color: "text-indigo-500"},
-    "Holidays": {icon: PartyPopper, color: "text-red-500"},
-    "Business": {icon: Briefcase, color: "text-gray-600"},
-    "Dating": {icon: Heart, color: "text-rose-500"},
-    "Hobbies": {icon: Gamepad2, color: "text-cyan-500"},
 };
 
 // --- Skeleton Component for a cleaner loading state ---
