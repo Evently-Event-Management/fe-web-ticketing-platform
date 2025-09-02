@@ -7,7 +7,6 @@ export const SeatingLayoutPreview = ({seatingMap}: { seatingMap: SessionSeatingM
             <h3 className="font-semibold mb-4 text-foreground">Seating Layout: {seatingMap.name}</h3>
             <div
                 className="relative min-h-[400px] p-4 rounded-lg overflow-auto"
-                // Elegant dot-grid background
                 style={{
                     backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)',
                     backgroundSize: '20px 20px'

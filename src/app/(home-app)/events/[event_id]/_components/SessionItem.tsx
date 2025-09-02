@@ -13,7 +13,6 @@ import {SeatingLayoutPreview} from "@/app/(home-app)/events/[event_id]/_componen
 import {useState} from "react";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {SeatStatusSummary} from "@/app/(home-app)/events/[event_id]/_components/SeatStatusSummery";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import {useRouter} from "next/navigation";
 
 export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
@@ -22,41 +21,39 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const router = useRouter();
 
     const onOpen = (isOpen: boolean) => {
+        // Fetch the seating map only if the accordion is opened, a map doesn't already exist,
+        // and the session is a physical one.
         if (isOpen && !seatingMap && session.sessionType === SessionType.PHYSICAL) {
             setIsMapLoading(true);
-            setTimeout(() => {
-                getSessionSeatingMap(session.id)
-                    .then(data => setSeatingMap(data))
-                    .catch(err => console.error("Failed to fetch seating map", err))
-                    .finally(() => setIsMapLoading(false));
-            }, 500);
+            getSessionSeatingMap(session.id)
+                .then(data => setSeatingMap(data))
+                .catch(err => console.error("Failed to fetch seating map", err))
+                .finally(() => setIsMapLoading(false));
         }
     };
 
-    const formatDate = (iso: string) => new Date(iso).toLocaleDateString("en-LK", { // Using a specific locale for consistency
+    const formatDate = (iso: string) => new Date(iso).toLocaleDateString("en-LK", {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
-    const formatTime = (iso: string) => new Date(iso).toLocaleTimeString("en-LK", { // Using a specific locale for consistency
+    const formatTime = (iso: string) => new Date(iso).toLocaleTimeString("en-LK", {
         hour: '2-digit', minute: '2-digit', hour12: true
     });
 
-    // Function to format the sales start time
     const formatSalesStartTime = (iso: string) => {
         const salesStartDate = new Date(iso);
         const now = new Date();
 
-        // If sales start is today, show only time
         if (salesStartDate.toDateString() === now.toDateString()) {
             return `Sales start today at ${formatTime(iso)}`;
         }
-        // If sales start is tomorrow, show "Tomorrow at time"
-        else if (salesStartDate.toDateString() === new Date(now.setDate(now.getDate() + 1)).toDateString()) {
+
+        const tomorrow = new Date();
+        tomorrow.setDate(now.getDate() + 1);
+        if (salesStartDate.toDateString() === tomorrow.toDateString()) {
             return `Sales start tomorrow at ${formatTime(iso)}`;
         }
-        // Otherwise show full date and time
-        else {
-            return `Sales start on ${formatDate(iso)} at ${formatTime(iso)}`;
-        }
+
+        return `Sales start on ${formatDate(iso)} at ${formatTime(iso)}`;
     };
 
     const statusBadge: { [key in SessionStatus]: string } = {
@@ -80,12 +77,7 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                     </div>
                     <div>
                         {session.status === SessionStatus.ON_SALE &&
-                            <Button
-                                onClick={() => {
-                                    // Navigate to a path with the session ID as a path parameter
-                                    router.push(`${window.location.pathname}/${session.id}`);
-                                }}
-                            >
+                            <Button onClick={() => router.push(`${window.location.pathname}/${session.id}`)}>
                                 Buy Tickets
                             </Button>
                         }
@@ -102,7 +94,8 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4"/>
-                    <span>{session.venueDetails.name} - {session.sessionType === SessionType.PHYSICAL ? session.venueDetails.address :
+                    <span>
+                        {session.venueDetails.name} - {session.sessionType === SessionType.PHYSICAL ? session.venueDetails.address :
                         <a href={session.venueDetails.onlineLink} target="_blank" rel="noreferrer"
                            className="text-primary underline hover:text-primary/80">Online Link</a>}
                     </span>
@@ -116,52 +109,46 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                         </AccordionTrigger>
                         <AccordionContent className="space-y-4 pt-4">
                             {session.sessionType === SessionType.PHYSICAL ? (
-                                // --- Resizable Layout for Physical Sessions ---
-                                <ResizablePanelGroup
-                                    direction="horizontal"
-                                    className="min-h-[450px] w-full rounded-lg border"
-                                >
-                                    {/* --- LEFT PANEL --- */}
-                                    <ResizablePanel defaultSize={33} minSize={25}>
-                                        <div className="flex h-full flex-col gap-4 p-4">
-                                            {isMapLoading ? (
-                                                <>
-                                                    <Skeleton className="h-48 w-full"/>
-                                                    <Skeleton className="flex-grow w-full"/>
-                                                </>
-                                            ) : seatingMap ? (
-                                                <>
-                                                    <SeatStatusSummary seatingMap={seatingMap}/>
-                                                    {session.venueDetails.location && (
-                                                        <div className="flex-grow h-full">
-                                                            <SessionMap location={session.venueDetails.location}/>
-                                                        </div>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <div
-                                                    className="p-4 h-full border rounded-lg bg-muted/50 flex items-center justify-center text-center text-sm text-muted-foreground">
-                                                    Expand to load session details.
-                                                </div>
-                                            )}
-                                        </div>
-                                    </ResizablePanel>
-
-                                    <ResizableHandle withHandle/>
-
-                                    {/* --- RIGHT PANEL --- */}
-                                    <ResizablePanel defaultSize={67} minSize={40}>
-                                        <div className="h-full p-4">
-                                            {isMapLoading ? (
+                                // --- Simplified Grid Layout for Physical Sessions ---
+                                <div className="min-h-[450px] w-full rounded-lg border p-4">
+                                    {isMapLoading ? (
+                                        // Loading Skeletons
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+                                            <div className="md:col-span-1 flex flex-col gap-4">
+                                                <Skeleton className="h-48 w-full"/>
+                                                <Skeleton className="flex-grow w-full"/>
+                                            </div>
+                                            <div className="md:col-span-2">
                                                 <Skeleton className="h-full w-full"/>
-                                            ) : seatingMap ? (
-                                                <SeatingLayoutPreview seatingMap={seatingMap}/>
-                                            ) : null}
+                                            </div>
                                         </div>
-                                    </ResizablePanel>
-                                </ResizablePanelGroup>
+                                    ) : seatingMap ? (
+                                        // Seating Map and Details View
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+                                            {/* --- LEFT COLUMN --- */}
+                                            <div className="md:col-span-1 flex flex-col gap-4">
+                                                <SeatStatusSummary seatingMap={seatingMap}/>
+                                                {session.venueDetails.location && (
+                                                    <div className="flex-grow h-full">
+                                                        <SessionMap location={session.venueDetails.location}/>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* --- RIGHT COLUMN --- */}
+                                            <div className="md:col-span-2">
+                                                <SeatingLayoutPreview seatingMap={seatingMap}/>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Initial placeholder before data is loaded
+                                        <div
+                                            className="h-full flex items-center justify-center text-center text-sm text-muted-foreground">
+                                            Session details will be loaded here.
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
-                                // Simple Summary for Online Sessions
+                                // --- Simple Summary for Online Sessions ---
                                 <Card className="bg-muted/50">
                                     <CardHeader>
                                         <div className="flex items-center gap-3">

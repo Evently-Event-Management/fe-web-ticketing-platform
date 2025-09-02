@@ -34,8 +34,8 @@ const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
                     <>
                         <div className="text-sm font-medium mb-2 text-foreground">{block.name}</div>
                         <div
-                            className="grid gap-1.5"
-                            style={{gridTemplateColumns: `repeat(${block.rows?.[0]?.seats?.length || 1}, minmax(0, 1fr))`}}
+                            className="grid gap-1.5 justify-center" // Centering the grid horizontally
+                            style={{gridTemplateColumns: `repeat(${block.rows?.[0]?.seats?.length || 1}, auto)`}} // <-- THE FIX
                         >
                             {block.rows?.map(row =>
                                 row.seats.map(seat => (
@@ -47,10 +47,10 @@ const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
                                                 className="h-6 w-6 p-0 rounded-full text-xs font-mono transition-transform duration-200 hover:scale-110 hover:brightness-105"
                                                 style={{
                                                     backgroundColor: seat.tier ? `${seat.tier.color}80` : undefined,
-                                                    opacity: seat.status === 'RESERVED' ? 0.3 : 1,
-                                                    cursor: seat.status === 'RESERVED' ? 'not-allowed' : 'pointer'
+                                                    opacity: seat.status === 'RESERVED' || seat.status === 'BOOKED' ? 0.3 : 1,
+                                                    cursor: seat.status === 'RESERVED' || seat.status === 'BOOKED' ? 'not-allowed' : 'pointer'
                                                 }}
-                                                disabled={seat.status === 'RESERVED'}
+                                                disabled={seat.status === 'RESERVED' || seat.status === 'BOOKED'}
                                             >
                                                 {seat.label}
                                             </Button>
@@ -72,8 +72,8 @@ const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
                                                     <div className="flex justify-between items-center"><span
                                                         className="text-muted-foreground">Status:</span>
                                                         <Badge
-                                                            variant={seat.status === 'RESERVED' ? 'destructive' : 'outline'}>
-                                                            {seat.status || 'Available'}
+                                                            variant={seat.status === 'RESERVED' || seat.status === 'BOOKED' ? 'destructive' : 'outline'}>
+                                                            {seat.status?.replace('_', ' ') || 'Available'}
                                                         </Badge>
                                                     </div>
                                                     {seat.tier &&
