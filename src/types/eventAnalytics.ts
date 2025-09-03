@@ -23,6 +23,7 @@ export interface TierSales {
     tierColor: string;
     ticketsSold: number;
     totalRevenue: number; // or string for precision
+    tierCapacity: number;
     percentageOfTotalSales: number;
 }
 
@@ -37,6 +38,7 @@ export interface SessionSummary {
     eventTitle: string;
     startTime: string; // ISO 8601 Date String
     endTime: string;   // ISO 8601 Date String
+    salesStartTime: string; // ISO 8601 Date String
     sessionRevenue: number; // or string for precision
     sessionStatus: SessionStatus;
     ticketsSold: number;
@@ -66,7 +68,7 @@ export interface SessionAnalytics extends SessionSummary {
 
 
 export interface TimeSeriesData {
-    date: string; // Format: "YYYYMMDD"
+    date: string;
     views: number;
 }
 
@@ -84,15 +86,6 @@ export interface AudienceGeo {
 export interface DeviceBreakdown {
     device: 'Desktop' | 'Mobile' | 'Tablet' | 'Unknown';
     views: number;
-}
-
-export interface TierSales {
-    tierId: string;
-    tierName: string;
-    tierColor: string;
-    ticketsSold: number;
-    totalRevenue: number;
-    percentageOfTotalSales: number;
 }
 
 

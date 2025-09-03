@@ -9,6 +9,9 @@ import React from "react";
 import {Skeleton} from "@/components/ui/skeleton";
 import {DollarSign, Eye, Ticket} from "lucide-react";
 import {AnalyticsCard} from "./AnalyticsCard";
+import {
+    TierDistributionChart
+} from "@/app/manage/organization/[organization_id]/event/[eventId]/analytics/_components/TierDistribution";
 
 interface EventAnalyticsViewProps {
     analytics: EventAnalytics;
@@ -61,12 +64,23 @@ export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({analytics
 
             {/* Detailed Chart Grid */}
             <div className="grid gap-6 lg:grid-cols-2">
-                {isGaLoading ? (
-                    <Skeleton className="h-full w-full"/>
-                ) : (
-                    analytics.viewsTimeSeries && <EventViewsChart data={analytics.viewsTimeSeries}/>
-                )}
+                <TierDistributionChart data={analytics.salesByTier}/>
                 <TierSalesChart data={analytics.salesByTier}/>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+                {isGaLoading ? (
+                    <>
+                        <Skeleton className="w-full h-[300px]"/>
+                        <Skeleton className="w-full h-[300px]"/>
+                    </>
+
+                ) : (
+                    <>
+                        {analytics.viewsTimeSeries && <EventViewsChart data={analytics.viewsTimeSeries}/>}
+                        {analytics.deviceBreakdown && <DeviceBreakdownChart data={analytics.deviceBreakdown}/>}
+                    </>
+                )}
             </div>
 
             {/* GA Insights Grid */}
@@ -78,15 +92,15 @@ export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({analytics
                     </>
                 ) : (
                     <>
-                        {analytics.deviceBreakdown && <DeviceBreakdownChart data={analytics.deviceBreakdown}/>}
-                        <div className="space-y-6">
-                            {analytics.trafficSources && <TrafficSourcesChart data={analytics.trafficSources}/>}
-                            {analytics.audienceGeography &&
-                                <AudienceGeographyTable data={analytics.audienceGeography}/>}
-                        </div>
+                        {analytics.trafficSources && <TrafficSourcesChart data={analytics.trafficSources}/>}
+                        {analytics.audienceGeography &&
+                            <AudienceGeographyTable data={analytics.audienceGeography}/>
+                        }
                     </>
-                )}
+                )
+                }
             </div>
         </div>
-    );
+    )
+        ;
 };

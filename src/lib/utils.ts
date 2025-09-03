@@ -64,3 +64,40 @@ export const formatDate = (dateString: string): string => {
         return "Invalid Date";
     }
 };
+
+export const formatDateTimeShort = (dateString: string): string => {
+    try {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        console.error("Failed to format date:", error);
+        return "Invalid Date";
+    }
+}
+
+/**
+ * Formats an ISO 8601 duration string into a human-readable format.
+ * @param duration The ISO 8601 duration string (e.g., "P7D", "PT24H").
+ * @returns A human-readable string (e.g., "7 days", "24 hours").
+ */
+export function formatISODuration(duration: string): string {
+    if (!duration) return "N/A";
+
+    const match = duration.match(/P(?:(\d+)D)?T(?:(\d+)H)?/);
+    if (!match) return duration; // Return original if format is unexpected
+
+    const days = match[1] ? parseInt(match[1]) : 0;
+    const hours = match[2] ? parseInt(match[2]) : 0;
+
+    if (days > 0) {
+        return `${days} day${days > 1 ? 's' : ''}`;
+    }
+    if (hours > 0) {
+        return `${hours} hour${hours > 1 ? 's' : ''}`;
+    }
+    return "Less than an hour";
+}
