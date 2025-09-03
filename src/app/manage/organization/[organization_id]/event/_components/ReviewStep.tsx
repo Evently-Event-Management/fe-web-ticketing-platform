@@ -5,7 +5,7 @@ import {useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {useOrganization} from '@/providers/OrganizationProvider';
 import {ReviewEventHero} from '@/app/manage/_components/review/ReviewEventHero';
-import {ReviewEventDetails} from '@/app/manage/_components/review/ReviewEventDetails';
+import {EventOverview} from '@/app/manage/_components/review/EventOverview';
 import {ReviewTicketTiers} from '@/app/manage/_components/review/ReviewTicketTiers';
 import {ReviewSessions} from '@/app/manage/_components/review/ReviewSessions';
 import {JSX} from "react";
@@ -41,7 +41,7 @@ export function ReviewStep({coverFiles}: ReviewStepProps): JSX.Element {
             <Separator className={'border-3 my-2'}/>
 
             {/* Event Details Section with Description and Overview */}
-            <ReviewEventDetails
+            <EventOverview
                 overview={formData.overview}
             />
 

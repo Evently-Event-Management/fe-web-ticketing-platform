@@ -3,6 +3,7 @@ import {EventHero, ReviewEventHeroSkeleton} from "@/app/(home-app)/events/[event
 import {Separator} from "@/components/ui/separator";
 import {getEventSummery, getEventTotalViews} from "@/lib/actions/public/server/eventActions";
 import {EventTracker} from "@/app/(home-app)/events/[event_id]/_components/EventTracker";
+import {EventOverview} from "@/app/manage/_components/review/EventOverview";
 
 
 export default async function Layout({params, children}: {
@@ -23,9 +24,12 @@ export default async function Layout({params, children}: {
                         organization_id: eventSummery.organization?.id || '',
                     }}/>
                     <Suspense fallback={<ReviewEventHeroSkeleton/>}>
-                        <EventHero event={eventSummery} viewCount={viewsData.success ? viewsData.viewCount : undefined}/>
+                        <EventHero event={eventSummery}
+                                   viewCount={viewsData.success ? viewsData.viewCount : undefined}/>
+                        <Separator className={'border-3 my-2'}/>
+                        <EventOverview overview={eventSummery.overview}/>
                     </Suspense>
-                    <Separator/>
+                    <Separator className={'border-3 my-2'}/>
                     {children}
                 </div>
             </div>

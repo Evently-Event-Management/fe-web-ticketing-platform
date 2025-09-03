@@ -89,7 +89,7 @@
 
     /*Warning*/
     --warning: oklch(0.8 0.2 90); /* Warm Yellow */
-    --warning-foreground: oklch(0.2 0.02 60); /* Dark brown for contrast on yellow */
+    --warning-foreground: white;
 
     /* Chart Colors */
     --chart-1: oklch(0.65 0.15 150); /* Teal */
@@ -147,7 +147,7 @@
 
     /*Warning*/
     --warning: oklch(0.85 0.22 90); /* Brighter Yellow for dark mode */
-    --warning-foreground: oklch(0.15 0.02 60); /* Darker brown for contrast on bright yellow */
+    --warning-foreground: white;
 
     /* Chart Colors */
     --chart-1: oklch(0.65 0.15 150); /* Teal */
@@ -231,8 +231,9 @@
 }
 
 .prose hr {
-    margin-top: 1.5em; /* Adjust this value as needed */
-    margin-bottom: 1.5em; /* Adjust this value as needed */
+    margin-top: 2em; /* Adjust this value as needed */
+    margin-bottom: 2em; /* Adjust this value as needed */
+    border-width: 1px;
 }
 
 .prose ul ul,
@@ -272,4 +273,80 @@
 .prose ol {
     list-style-type: decimal; /* Default to decimal for ordered lists */
     padding-left: 1.5rem; /* Space for the number */
+}
+
+/* Styling for blockquotes */
+.prose blockquote {
+    margin-left: 0;
+    padding-left: 1.25rem;
+    border-left-width: 4px;
+    border-left-color: hsl(var(--border));
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Styling for inline code snippets */
+.prose code {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    padding: 0.2em 0.4em;
+    margin: 0 0.1em;
+    font-size: 0.875em;
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+}
+
+/* Styling for larger code blocks */
+.prose pre {
+    background-color: hsl(var(--secondary));
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto; /* Allows for horizontal scrolling if code is long */
+}
+
+/* Code inside a pre block shouldn't have extra styling */
+.prose pre code {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: inherit;
+}
+
+/* Styling for images */
+.prose img {
+    border-radius: var(--radius-md);
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+/* Styling for tables */
+.prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+.prose thead {
+    border-bottom: 2px solid hsl(var(--border));
+}
+
+.prose th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.prose tbody tr {
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.prose td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
+}
+
+.prose strong {
+    color: hsl(var(--foreground));
+    font-weight: 600;
 }

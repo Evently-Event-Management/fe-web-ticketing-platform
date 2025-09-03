@@ -41,14 +41,16 @@ import {
 import {toast} from 'sonner';
 
 // --- Helper to get status badge color ---
-const getStatusVariant = (status: EventStatus): "default" | "secondary" | "destructive" => {
+const getStatusVariant = (status: EventStatus): "default" | "secondary" | "destructive" | "success" | "warning" => {
     switch (status) {
         case EventStatus.APPROVED:
-            return 'default';
+            return 'success';
         case EventStatus.PENDING:
-            return 'secondary';
+            return 'warning';
         case EventStatus.REJECTED:
             return 'destructive';
+        case EventStatus.COMPLETED:
+            return 'secondary';
         default:
             return 'secondary';
     }
