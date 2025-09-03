@@ -65,18 +65,48 @@ export interface SessionAnalytics extends SessionSummary {
 }
 
 
+export interface TimeSeriesData {
+    date: string; // Format: "YYYYMMDD"
+    views: number;
+}
+
+export interface TrafficSource {
+    source: string;
+    medium: string;
+    views: number;
+}
+
+export interface AudienceGeo {
+    location: string; // e.g., "United States", "Colombo"
+    views: number;
+}
+
+export interface DeviceBreakdown {
+    device: 'Desktop' | 'Mobile' | 'Tablet' | 'Unknown';
+    views: number;
+}
+
+export interface TierSales {
+    tierId: string;
+    tierName: string;
+    tierColor: string;
+    ticketsSold: number;
+    totalRevenue: number;
+    percentageOfTotalSales: number;
+}
+
+
 /**
- * DTO representing overall analytics for an event across all sessions.
- * Note: `totalRevenue` and `averageRevenuePerTicket` are typed as numbers,
- * but may be strings for high-precision financial values.
+ * DTO representing overall analytics for an event across all sessions,
+ * enriched with detailed Google Analytics insights.
  */
 export interface EventAnalytics {
     eventId: string;
     eventTitle: string;
 
     // Revenue metrics
-    totalRevenue: number; // or string for precision
-    averageRevenuePerTicket: number; // or string for precision
+    totalRevenue: number;
+    averageRevenuePerTicket: number;
 
     // Capacity metrics
     totalTicketsSold: number;
@@ -88,4 +118,20 @@ export interface EventAnalytics {
 
     // Tier sales breakdown
     salesByTier: TierSales[];
+
+    // --- Enriched Google Analytics Metrics ---
+    pageViews?: number;
+    conversionRate?: number;
+    viewsTimeSeries?: TimeSeriesData[];
+    trafficSources?: TrafficSource[];
+    audienceGeography?: AudienceGeo[];
+    deviceBreakdown?: DeviceBreakdown[];
+}
+
+export interface GaInsights {
+    totalViews: number;
+    viewsTimeSeries: TimeSeriesData[];
+    trafficSources: TrafficSource[];
+    audienceGeography: AudienceGeo[];
+    deviceBreakdown: DeviceBreakdown[];
 }

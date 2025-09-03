@@ -1,40 +1,91 @@
-import { EventAnalytics } from "@/types/eventAnalytics";
-import { AnalyticsCard } from "./AnalyticsCard";
-import { DollarSign, Ticket, Percent, Users } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
-import { TierSalesChart } from "./TierSalesChart";
+import {EventAnalytics} from "@/types/eventAnalytics";
+import {formatCurrency} from "@/lib/utils";
+import {TierSalesChart} from "./TierSalesChart";
+import {EventViewsChart} from "./EventViewsChart";
+import {TrafficSourcesChart} from "./TrafficSourcesChart";
+import {AudienceGeographyTable} from "./AudienceGeographyTable";
+import {DeviceBreakdownChart} from "./DeviceBreakdownChart";
+import React from "react";
+import {Skeleton} from "@/components/ui/skeleton";
+import {DollarSign, Eye, Ticket} from "lucide-react";
+import {AnalyticsCard} from "./AnalyticsCard";
 
-export const EventAnalyticsView: React.FC<{ analytics: EventAnalytics }> = ({ analytics }) => {
+interface EventAnalyticsViewProps {
+    analytics: EventAnalytics;
+    isGaLoading?: boolean;
+}
+
+export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({analytics, isGaLoading = false}) => {
     return (
-        <div className="space-y-8">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-6">
+            {/* Top Level KPI Cards */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {/* Revenue Performance Card */}
                 <AnalyticsCard
-                    title="Total Revenue"
+                    title="Revenue Performance"
                     value={formatCurrency(analytics.totalRevenue, 'LKR', 'en-LK')}
-                    subtitle="Across all sessions"
-                    icon={<DollarSign className="h-4 w-4" />}
+                    subtitle={`${formatCurrency(analytics.averageRevenuePerTicket, 'LKR', 'en-LK')} avg. per ticket`}
+                    icon={
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <DollarSign className="h-4 w-4"/>
+                        </div>
+                    }
                 />
+
+                {/* Sales Performance Card */}
                 <AnalyticsCard
-                    title="Tickets Sold"
+                    title="Sales Performance"
                     value={analytics.totalTicketsSold.toLocaleString()}
-                    subtitle={`out of ${analytics.totalEventCapacity.toLocaleString()}`}
-                    icon={<Ticket className="h-4 w-4" />}
+                    secondaryValue={analytics.totalEventCapacity.toLocaleString()}
+                    subtitle={`${analytics.overallSellOutPercentage.toFixed(1)}% of total capacity sold`}
+                    icon={
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Ticket className="h-4 w-4"/>
+                        </div>
+                    }
                 />
+
+                {/* Audience Engagement Card */}
                 <AnalyticsCard
-                    title="Overall Sell-Out"
-                    value={`${analytics.overallSellOutPercentage.toFixed(1)}%`}
-                    subtitle="Average capacity filled"
-                    icon={<Percent className="h-4 w-4" />}
-                />
-                <AnalyticsCard
-                    title="Avg. Revenue / Ticket"
-                    value={formatCurrency(analytics.averageRevenuePerTicket, 'LKR', 'en-LK')}
-                    subtitle="Average ticket price"
-                    icon={<Users className="h-4 w-4" />}
+                    title="Audience Engagement"
+                    value={(analytics.pageViews ?? 0).toLocaleString()}
+                    subtitle={`${(analytics.conversionRate ?? 0).toFixed(2)}% conversion rate from views`}
+                    icon={
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Eye className="h-4 w-4"/>
+                        </div>
+                    }
+                    isLoading={isGaLoading}
                 />
             </div>
-            <div className="grid gap-8">
-                <TierSalesChart data={analytics.salesByTier} />
+
+            {/* Detailed Chart Grid */}
+            <div className="grid gap-6 lg:grid-cols-2">
+                {isGaLoading ? (
+                    <Skeleton className="h-full w-full"/>
+                ) : (
+                    analytics.viewsTimeSeries && <EventViewsChart data={analytics.viewsTimeSeries}/>
+                )}
+                <TierSalesChart data={analytics.salesByTier}/>
+            </div>
+
+            {/* GA Insights Grid */}
+            <div className="grid gap-6 lg:grid-cols-2">
+                {isGaLoading ? (
+                    <>
+                        <Skeleton className="h-[300px] w-full"/>
+                        <Skeleton className="h-[300px] w-full"/>
+                    </>
+                ) : (
+                    <>
+                        {analytics.deviceBreakdown && <DeviceBreakdownChart data={analytics.deviceBreakdown}/>}
+                        <div className="space-y-6">
+                            {analytics.trafficSources && <TrafficSourcesChart data={analytics.trafficSources}/>}
+                            {analytics.audienceGeography &&
+                                <AudienceGeographyTable data={analytics.audienceGeography}/>}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

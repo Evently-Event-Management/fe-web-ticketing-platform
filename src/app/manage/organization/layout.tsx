@@ -15,9 +15,10 @@ import {OrganizationProvider} from "@/providers/OrganizationProvider";
 import Link from "next/link";
 import {useAuth} from "@/providers/AuthProvider";
 import {LimitProvider} from "@/providers/LimitProvider";
+import Notice from "@/components/ui/Notice";
 
 export default function Layout({children}: Readonly<{ children: React.ReactNode }>) {
-    const {isAdmin} = useAuth();
+    const {isAdmin, isAuthenticated} = useAuth();
     const userIsAdmin = isAdmin();
 
     return (
@@ -60,6 +61,15 @@ export default function Layout({children}: Readonly<{ children: React.ReactNode 
                                 </div>
                             </div>
                         </header>
+                        {!isAuthenticated && (
+                            <div className="my-4 mx-auto w-full max-w-3xl">
+                                <Notice
+                                    title={"Authentication Required"}
+                                    message={"Please log in to access organization management features."}
+                                    submessage={" If you believe this is an error, contact support."}
+                                />
+                            </div>
+                        )}
                         {children}
                     </SidebarInset>
                 </SidebarProvider>

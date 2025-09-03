@@ -1,7 +1,7 @@
 import React, {Suspense} from 'react';
 import {EventHero, ReviewEventHeroSkeleton} from "@/app/(home-app)/events/[event_id]/_components/EventHero";
 import {Separator} from "@/components/ui/separator";
-import {getEventSummery, getEventViews} from "@/lib/actions/public/server/eventActions";
+import {getEventSummery, getEventTotalViews} from "@/lib/actions/public/server/eventActions";
 import {EventTracker} from "@/app/(home-app)/events/[event_id]/_components/EventTracker";
 
 
@@ -11,7 +11,7 @@ export default async function Layout({params, children}: {
 }) {
     const {event_id} = await params;
     const eventSummery = await getEventSummery(event_id);
-    const viewsData = await getEventViews(event_id);
+    const viewsData = await getEventTotalViews(event_id);
 
     return (
         <div>
