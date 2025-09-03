@@ -7,8 +7,7 @@ import { BlockOccupancyChart } from "./BlockOccupancyChart";
 import { SessionStatusBadge } from "@/components/SessionStatusBadge";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users } from "lucide-react";
+import { SeatStatusCard } from "./SeatStatusCard";
 
 export const SessionAnalyticsView: React.FC<{ analytics: SessionAnalytics }> = ({ analytics }) => {
     const pathname = usePathname();
@@ -48,30 +47,7 @@ export const SessionAnalyticsView: React.FC<{ analytics: SessionAnalytics }> = (
                     value={`${analytics.sellOutPercentage.toFixed(1)}%`}
                     icon={<Percent className="h-4 w-4" />}
                 />
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Seat Status</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="space-y-1 pt-2">
-                        <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Booked</span>
-                            <span className="font-medium">{(analytics.seatStatusBreakdown.BOOKED || 0).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Available</span>
-                            <span className="font-medium">{(analytics.seatStatusBreakdown.AVAILABLE || 0).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Locked</span>
-                            <span className="font-medium">{(analytics.seatStatusBreakdown.LOCKED || 0).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Reserved</span>
-                            <span className="font-medium">{(analytics.seatStatusBreakdown.RESERVED || 0).toLocaleString()}</span>
-                        </div>
-                    </CardContent>
-                </Card>
+                <SeatStatusCard seatStatusBreakdown={analytics.seatStatusBreakdown} />
             </div>
 
             {/* Charts */}
@@ -82,4 +58,3 @@ export const SessionAnalyticsView: React.FC<{ analytics: SessionAnalytics }> = (
         </div>
     );
 };
-
