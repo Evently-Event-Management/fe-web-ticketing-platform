@@ -12,7 +12,7 @@ import {SeatStatusUpdateDTO} from "@/types/sse";
 import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions";
 import {toast} from "sonner";
 import {useAuth} from "@/providers/AuthProvider";
-import NeedLoginNotice from "@/components/ui/NeedLoginNotice";
+import Notice from "@/components/ui/Notice";
 
 // This type definition remains the same as it's used for props
 export type SelectedSeat = SeatDTO & {
@@ -213,7 +213,11 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
     if (!isAuthenticated) {
         return (
             <div className="flex flex-col items-center justify-center py-10 max-w-md mx-auto">
-                <NeedLoginNotice />
+                <Notice
+                    title={"Login Required"}
+                    message={"You need to be logged in to book tickets for this session."}
+                    submessage={'Please log in or create an account to continue.'}
+                />
             </div>
         );
     }

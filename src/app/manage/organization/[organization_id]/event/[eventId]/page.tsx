@@ -12,7 +12,6 @@ import {EventPreview} from "@/app/manage/_components/review/EventPreview";
 import {Separator} from "@/components/ui/separator";
 import {getMyOrganizationById} from "@/lib/actions/organizationActions";
 import {OrganizationResponse} from "@/types/oraganizations";
-import {getEventViews} from "@/lib/actions/public/server/eventActions";
 
 export default function EventDetailsPage() {
     const params = useParams();
@@ -21,15 +20,6 @@ export default function EventDetailsPage() {
     const [event, setEvent] = useState<EventDetailDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [organization, setOrganization] = useState<OrganizationResponse | null>(null);
-
-    useEffect(() => {
-        getEventViews(eventId).then((data) => {
-            console.log("Event Analytics Data:", data);
-        }).catch((error) => {
-                console.error("Error fetching event analytics:", error);
-            }
-        );
-    }, [eventId]);
 
     // Load event data
     useEffect(() => {
