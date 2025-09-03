@@ -7,13 +7,13 @@ import {SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {SessionMap} from "@/app/(home-app)/events/[event_id]/_components/SessionMap";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
 import {Skeleton} from "@/components/ui/skeleton";
 import {SeatingLayoutPreview} from "@/app/(home-app)/events/[event_id]/_components/SeatingLayoutPreview";
 import {useState} from "react";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {SeatStatusSummary} from "@/app/(home-app)/events/[event_id]/_components/SeatStatusSummery";
 import {useRouter} from "next/navigation";
+import {SessionStatusBadge} from "@/components/SessionStatusBadge";
 
 export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
@@ -54,15 +54,6 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
         return `Sales start on ${formatDate(iso)} at ${formatTime(iso)}`;
     };
 
-    const statusBadge: { [key in SessionStatus]: string } = {
-        [SessionStatus.ON_SALE]: 'success',
-        [SessionStatus.SOLD_OUT]: 'destructive',
-        [SessionStatus.CANCELED]: 'secondary',
-        [SessionStatus.SCHEDULED]: 'default',
-        [SessionStatus.CLOSED]: 'outline',
-        [SessionStatus.PENDING]: 'warning',
-    };
-
     return (
         <Card className="mb-4 shadow-sm">
             <CardHeader>
@@ -70,9 +61,7 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                     <div className="flex items-center gap-2">
                         <CalendarIcon className="h-5 w-5 text-muted-foreground"/>
                         <span className="font-semibold text-foreground">{formatDate(session.startTime)}</span>
-                        <Badge variant={statusBadge[session.status] as "success" | "destructive" | "secondary" | "default" | "outline" | "warning"}>
-                            {session.status.replace('_', ' ')}
-                        </Badge>
+                        <SessionStatusBadge status={session.status} />
                     </div>
                     <div>
                         {session.status === SessionStatus.ON_SALE &&

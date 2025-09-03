@@ -12,7 +12,7 @@ import {EventPreview} from "@/app/manage/_components/review/EventPreview";
 import {Separator} from "@/components/ui/separator";
 import {getMyOrganizationById} from "@/lib/actions/organizationActions";
 import {OrganizationResponse} from "@/types/oraganizations";
-import {getEventAnalytics} from "@/lib/actions/public/server/eventActions";
+import {getEventViews} from "@/lib/actions/public/server/eventActions";
 
 export default function EventDetailsPage() {
     const params = useParams();
@@ -23,7 +23,7 @@ export default function EventDetailsPage() {
     const [organization, setOrganization] = useState<OrganizationResponse | null>(null);
 
     useEffect(() => {
-        getEventAnalytics(eventId).then((data) => {
+        getEventViews(eventId).then((data) => {
             console.log("Event Analytics Data:", data);
         }).catch((error) => {
                 console.error("Error fetching event analytics:", error);

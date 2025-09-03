@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Tag} from 'lucide-react';
+import {Eye, Tag} from 'lucide-react';
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {EventBasicInfoDTO} from "@/types/event";
 import {Skeleton} from "@/components/ui/skeleton";
@@ -22,7 +22,7 @@ const TicketActionPanel: React.FC<{ tiers: EventBasicInfoDTO['tiers'] }> = ({tie
 };
 
 
-export const EventHero: React.FC<{ event: EventBasicInfoDTO }> = ({event}) => {
+export const EventHero: React.FC<{ event: EventBasicInfoDTO, viewCount?: number }> = ({event, viewCount}) => {
     const {title, description, overview, coverPhotos, organization, category, tiers} = event;
 
     return (
@@ -57,6 +57,12 @@ export const EventHero: React.FC<{ event: EventBasicInfoDTO }> = ({event}) => {
                                     <span>{category.name}</span>
                                     {category.parentName &&
                                         <span className="ml-1 text-xs">({category.parentName})</span>}
+                                </div>
+                            )}
+                            {viewCount !== undefined && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Eye className="w-4 h-4"/>
+                                    <span>{viewCount.toLocaleString()} views</span>
                                 </div>
                             )}
                         </div>
