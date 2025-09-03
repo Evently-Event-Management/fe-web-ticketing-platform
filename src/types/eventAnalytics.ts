@@ -66,24 +66,6 @@ export interface SessionAnalytics extends SessionSummary {
 
 
 /**
- * DTO representing detailed analytics for a specific event session.
- * Extends SessionSummaryDTO to add detailed analytics information.
- * Note: Durations are typically represented as ISO 8601 duration strings (e.g., "PT2H30M").
- */
-export interface SessionAnalytics extends SessionSummary {
-    // Time-based insights
-    timeUntilStart: string;      // ISO 8601 Duration String
-    salesWindowDuration: string; // ISO 8601 Duration String
-
-    // Sales breakdown
-    salesByTier: TierSales[];
-
-    // Block occupancy breakdown
-    occupancyByBlock: BlockOccupancy[];
-}
-
-
-/**
  * DTO representing overall analytics for an event across all sessions.
  * Note: `totalRevenue` and `averageRevenuePerTicket` are typed as numbers,
  * but may be strings for high-precision financial values.
