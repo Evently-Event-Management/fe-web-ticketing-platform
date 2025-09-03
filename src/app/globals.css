@@ -23,6 +23,11 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -76,6 +81,15 @@
 
     /* Destructive */
     --destructive: oklch(0.6 0.22 25); /* Calmer Red */
+    --destructive-foreground: white;
+
+    /*Success*/
+    --success: oklch(0.6 0.22 140); /* Calmer Green */
+    --success-foreground: white;
+
+    /*Warning*/
+    --warning: oklch(0.8 0.2 90); /* Warm Yellow */
+    --warning-foreground: oklch(0.2 0.02 60); /* Dark brown for contrast on yellow */
 
     /* Chart Colors */
     --chart-1: oklch(0.65 0.15 150); /* Teal */
@@ -125,6 +139,15 @@
 
     /* Destructive */
     --destructive: oklch(0.65 0.2 25); /* Brighter Red for dark mode */
+    --destructive-foreground: white;
+
+    /*Success*/
+    --success: oklch(0.65 0.2 140); /* Brighter Green for dark mode */
+    --success-foreground: white;
+
+    /*Warning*/
+    --warning: oklch(0.85 0.22 90); /* Brighter Yellow for dark mode */
+    --warning-foreground: oklch(0.15 0.02 60); /* Darker brown for contrast on bright yellow */
 
     /* Chart Colors */
     --chart-1: oklch(0.65 0.15 150); /* Teal */

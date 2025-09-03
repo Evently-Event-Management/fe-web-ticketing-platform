@@ -21,8 +21,6 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const router = useRouter();
 
     const onOpen = (isOpen: boolean) => {
-        // Fetch the seating map only if the accordion is opened, a map doesn't already exist,
-        // and the session is a physical one.
         if (isOpen && !seatingMap && session.sessionType === SessionType.PHYSICAL) {
             setIsMapLoading(true);
             getSessionSeatingMap(session.id)
@@ -57,12 +55,12 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     };
 
     const statusBadge: { [key in SessionStatus]: string } = {
-        [SessionStatus.ON_SALE]: "border-green-500/50 bg-green-500/10 text-green-600",
-        [SessionStatus.SOLD_OUT]: "border-red-500/50 bg-red-500/10 text-red-600",
-        [SessionStatus.CANCELED]: "border-slate-500/50 bg-slate-500/10 text-slate-600",
-        [SessionStatus.SCHEDULED]: "border-blue-500/50 bg-blue-500/10 text-blue-600",
-        [SessionStatus.CLOSED]: "border-gray-500/50 bg-gray-500/10 text-gray-600",
-        [SessionStatus.PENDING]: "border-yellow-500/50 bg-yellow-500/10 text-yellow-600",
+        [SessionStatus.ON_SALE]: 'success',
+        [SessionStatus.SOLD_OUT]: 'destructive',
+        [SessionStatus.CANCELED]: 'secondary',
+        [SessionStatus.SCHEDULED]: 'default',
+        [SessionStatus.CLOSED]: 'outline',
+        [SessionStatus.PENDING]: 'warning',
     };
 
     return (
@@ -72,8 +70,9 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                     <div className="flex items-center gap-2">
                         <CalendarIcon className="h-5 w-5 text-muted-foreground"/>
                         <span className="font-semibold text-foreground">{formatDate(session.startTime)}</span>
-                        <Badge variant="outline"
-                               className={`ml-2 ${statusBadge[session.status]}`}>{session.status.replace('_', ' ')}</Badge>
+                        <Badge variant={statusBadge[session.status] as "success" | "destructive" | "secondary" | "default" | "outline" | "warning"}>
+                            {session.status.replace('_', ' ')}
+                        </Badge>
                     </div>
                     <div>
                         {session.status === SessionStatus.ON_SALE &&

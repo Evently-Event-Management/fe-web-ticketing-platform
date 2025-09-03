@@ -3,7 +3,7 @@ import {Tag} from 'lucide-react';
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {EventBasicInfoDTO} from "@/types/event";
 import {Skeleton} from "@/components/ui/skeleton";
-import EventCarousel from "@/app/(home-app)/events/[event_id]/_components/EventCarousel";
+import EventCarousel from "@/components/EventCarousel";
 import TiersSection from "@/app/(home-app)/events/[event_id]/_components/TiersSection";
 import {Separator} from "@/components/ui/separator";
 import {Card} from "@/components/ui/card";
@@ -22,7 +22,7 @@ const TicketActionPanel: React.FC<{ tiers: EventBasicInfoDTO['tiers'] }> = ({tie
 };
 
 
-export const ReviewEventHero: React.FC<{ event: EventBasicInfoDTO }> = ({event}) => {
+export const EventHero: React.FC<{ event: EventBasicInfoDTO }> = ({event}) => {
     const {title, description, overview, coverPhotos, organization, category, tiers} = event;
 
     return (
@@ -43,19 +43,25 @@ export const ReviewEventHero: React.FC<{ event: EventBasicInfoDTO }> = ({event})
                         </Avatar>
                     )}
                     <div className="flex flex-col gap-1 min-w-0">
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">{title}</h1>
-                        {category && (
-                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                                <Tag className="w-4 h-4"/>
-                                <span>{category.name}</span>
-                                {category.parentName && <span className="ml-1 text-xs">({category.parentName})</span>}
-                            </div>
-                        )}
+                        <h1 className="text-3xl md:text-4xl font-extrabold">{title}</h1>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                            {organization && (
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <span>by</span>
+                                    <span className="font-medium text-foreground">{organization.name}</span>
+                                </div>
+                            )}
+                            {category && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Tag className="w-4 h-4"/>
+                                    <span>{category.name}</span>
+                                    {category.parentName &&
+                                        <span className="ml-1 text-xs">({category.parentName})</span>}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-
-                <Separator/>
-
                 <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
                     {description && (
                         <div>
