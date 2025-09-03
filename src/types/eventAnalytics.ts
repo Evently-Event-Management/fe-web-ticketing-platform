@@ -1,4 +1,4 @@
-import {ReadModelSeatStatus} from "@/lib/validators/enums";
+import {ReadModelSeatStatus, SessionStatus} from "@/lib/validators/enums";
 
 /**
  * DTO representing occupancy analytics for a specific venue block.
@@ -38,6 +38,7 @@ export interface SessionSummary {
     startTime: string; // ISO 8601 Date String
     endTime: string;   // ISO 8601 Date String
     sessionRevenue: number; // or string for precision
+    sessionStatus: SessionStatus;
     ticketsSold: number;
     sessionCapacity: number;
     sellOutPercentage: number;
@@ -101,7 +102,7 @@ export interface EventAnalytics {
     overallSellOutPercentage: number;
 
     // Session status overview
-    sessionStatusBreakdown: Record<string, number>;
+    sessionStatusBreakdown: Record<SessionStatus, number>;
 
     // Tier sales breakdown
     salesByTier: TierSales[];
