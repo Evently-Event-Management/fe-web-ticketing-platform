@@ -1,28 +1,28 @@
 "use client";
 
+import React, {useState, useMemo} from "react";
 import {TierSales} from "@/types/eventAnalytics";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
+    CardDescription,
 } from "@/components/ui/card";
 import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
+    ChartConfig,
 } from "@/components/ui/chart";
-import {
-    PieChart,
-    Pie,
-    Cell,
-    ResponsiveContainer,
-    Legend,
-} from "recharts";
+import {PieChart, Pie, Cell, Label} from "recharts";
 import {formatCurrency} from "@/lib/utils";
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
+import {DollarSign, Ticket} from "lucide-react";
 
 export const TierSalesChart: React.FC<{ data: TierSales[] }> = ({data}) => {
-    // build config for shadcn chart block
+    const [mode, setMode] = useState<"revenue" | "tickets">("revenue");
+
     const chartConfig = data.reduce(
         (acc, tier) => {
             acc[tier.tierName] = {
@@ -31,77 +31,111 @@ export const TierSalesChart: React.FC<{ data: TierSales[] }> = ({data}) => {
             };
             return acc;
         },
-        {} as Record<string, { label: string; color: string }>
+        {} as ChartConfig
     );
 
+    const totalValue = useMemo(() => {
+        return data.reduce(
+            (acc, curr) =>
+                acc + (mode === "revenue" ? curr.totalRevenue : curr.ticketsSold),
+            0
+        );
+    }, [data, mode]);
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Revenue by Tier</CardTitle>
+        <Card className="flex flex-col h-full">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-0">
+                <div>
+                    <CardTitle>Sales by Tier</CardTitle>
+                    <CardDescription>
+                        Breakdown of sales by ticket type
+                    </CardDescription>
+                </div>
+
+                {/* Toggle aligned right */}
+                <ToggleGroup
+                    type="single"
+                    value={mode}
+                    onValueChange={(val) => val && setMode(val as "revenue" | "tickets")}
+                    className="h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground"
+                >
+                    <ToggleGroupItem
+                        value="revenue"
+                        aria-label="By Revenue"
+                        className="flex items-center gap-2 rounded-md px-3 py-1 text-sm font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow"
+                    >
+                        <DollarSign className="h-4 w-4"/>
+                        Revenue
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                        value="tickets"
+                        aria-label="By Tickets"
+                        className="flex items-center gap-2 rounded-md px-3 py-1 text-sm font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow"
+                    >
+                        <Ticket className="h-4 w-4"/>
+                        Tickets
+                    </ToggleGroupItem>
+                </ToggleGroup>
             </CardHeader>
-            <CardContent>
+
+            <CardContent className="flex-1 pb-0">
                 <ChartContainer
                     config={chartConfig}
-                    className="h-[300px] w-full"
+                    className="mx-auto aspect-square max-h-[250px]"
                 >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                outerRadius={100}
-                                dataKey="totalRevenue"
-                                nameKey="tierName"
-                            >
-                                {data.map((entry) => (
-                                    <Cell
-                                        key={`cell-${entry.tierId}`}
-                                        fill={entry.tierColor}
-                                    />
-                                ))}
-                            </Pie>
-
-                            <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        formatter={(value, _, {payload}) => {
-                                            if (!payload) return null;
-                                            return (
-                                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                                    <div className="flex flex-col">
-                                                        <span
-                                                            className="text-[0.70rem] uppercase text-muted-foreground">
-                                                            Tier
-                                                        </span>
-                                                        <span className="font-bold">
-                                                            {payload.tierName}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span
-                                                            className="text-[0.70rem] uppercase text-muted-foreground">
-                                                            Revenue
-                                                        </span>
-                                                        <span className="font-bold">
-                                                            {formatCurrency(
-                                                                payload.totalRevenue,
-                                                                "LKR",
-                                                                "en-LK"
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        }}
-                                    />
-                                }
+                    <PieChart>
+                        <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent hideLabel/>}
+                        />
+                        <Pie
+                            data={data}
+                            dataKey={mode === "revenue" ? "totalRevenue" : "ticketsSold"}
+                            nameKey="tierName"
+                            innerRadius={60}
+                            strokeWidth={5}
+                        >
+                            {data.map((entry) => (
+                                <Cell key={`cell-${entry.tierId}`} fill={entry.tierColor}/>
+                            ))}
+                            <Label
+                                content={({viewBox}) => {
+                                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                        return (
+                                            <text
+                                                x={viewBox.cx}
+                                                y={viewBox.cy}
+                                                textAnchor="middle"
+                                                dominantBaseline="middle"
+                                            >
+                                                <tspan
+                                                    x={viewBox.cx}
+                                                    y={viewBox.cy}
+                                                    className="fill-foreground text-lg font-bold"
+                                                >
+                                                    {mode === "revenue"
+                                                        ? formatCurrency(totalValue, "LKR", "en-LK").split(
+                                                            "."
+                                                        )[0]
+                                                        : totalValue.toLocaleString()}
+                                                </tspan>
+                                                <tspan
+                                                    x={viewBox.cx}
+                                                    y={(viewBox.cy || 0) + 24}
+                                                    className="fill-muted-foreground"
+                                                >
+                                                    {mode === "revenue"
+                                                        ? "Total Revenue"
+                                                        : "Tickets Sold"}
+                                                </tspan>
+                                            </text>
+                                        );
+                                    }
+                                    return null;
+                                }}
                             />
-
-                            <Legend/>
-                        </PieChart>
-                    </ResponsiveContainer>
+                        </Pie>
+                    </PieChart>
                 </ChartContainer>
             </CardContent>
         </Card>
