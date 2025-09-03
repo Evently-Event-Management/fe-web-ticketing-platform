@@ -1,5 +1,5 @@
 import {Controller, useForm} from "react-hook-form";
-import {addDays, addWeeks, format, setHours, setMinutes} from "date-fns";
+import {addDays, addWeeks, format, setHours, setMinutes, subDays, subHours} from "date-fns";
 import {
     Dialog,
     DialogContent,
@@ -19,7 +19,7 @@ import * as React from "react";
 import {SessionFormData} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
-import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import {Enums, SessionType} from "@/lib/validators/enums";
 
 interface RecurringSessionFormValues {
     frequency: 'daily' | 'weekly';
@@ -28,7 +28,7 @@ interface RecurringSessionFormValues {
     startDate: Date;
     startTime: string;
     durationHours: number;
-    salesStartRuleType: SalesStartRuleType;
+    salesStartRuleType: Enums;
     salesStartHoursBefore: number;
     salesStartFixedDatetime: Date;
     salesStartFixedTime: string; // Added field for fixed time
@@ -50,7 +50,7 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
             startDate: new Date(),
             startTime: '19:00',
             durationHours: 2,
-            salesStartRuleType: SalesStartRuleType.ROLLING,
+            salesStartRuleType: Enums.ROLLING,
             salesStartHoursBefore: 168,
             salesStartFixedDatetime: new Date(),
             salesStartFixedTime: '12:00', // Default fixed time
@@ -82,18 +82,28 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
 
         const newSessions: SessionFormData[] = [];
         let currentStartTime = setMinutes(
-            setHours(data.startDate, parseInt(data.startTime.split(':')[0])),
+            setHours(
+                new Date(data.startDate), // Ensure we have a fresh Date object
+                parseInt(data.startTime.split(':')[0])
+            ),
             parseInt(data.startTime.split(':')[1])
         );
 
-        // Handle fixed sales start time if applicable
-        let salesStartFixedDatetime;
-        if (data.salesStartRuleType === 'FIXED') {
+        // For fixed sales start, calculate the datetime once
+        let fixedSalesStartTime: Date | undefined;
+
+        if (data.salesStartRuleType === Enums.FIXED) {
             const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
-            salesStartFixedDatetime = setMinutes(setHours(data.salesStartFixedDatetime, hours), minutes);
+            fixedSalesStartTime = setMinutes(
+                setHours(
+                    new Date(data.salesStartFixedDatetime),
+                    hours
+                ),
+                minutes
+            );
 
             // Validate that sales start time is before the first event start time
-            if (salesStartFixedDatetime >= currentStartTime) {
+            if (fixedSalesStartTime >= currentStartTime) {
                 toast.error("Sales start time must be before the first event start time");
                 return;
             }
@@ -101,17 +111,26 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
 
         for (let i = 0; i < data.count; i++) {
             const endTime = new Date(currentStartTime.getTime() + data.durationHours * 60 * 60 * 1000);
+
+            // Calculate sales start time based on the rule type default to seven days before start
+            let salesStartTime = new Date(subDays(currentStartTime, 7)).toISOString();
+
+            if (data.salesStartRuleType === Enums.IMMEDIATE) {
+                // For immediate sales, use current time
+                salesStartTime = new Date().toISOString();
+            } else if (data.salesStartRuleType === Enums.ROLLING) {
+                // For rolling sales, subtract the specified hours from each event start time
+                salesStartTime = subHours(currentStartTime, data.salesStartHoursBefore).toISOString();
+            } else if (data.salesStartRuleType === Enums.FIXED && fixedSalesStartTime) {
+                // For fixed date, use the pre-calculated time (same for all sessions)
+                salesStartTime = fixedSalesStartTime.toISOString();
+            }
+
             newSessions.push({
                 startTime: currentStartTime.toISOString(),
                 sessionType: SessionType.PHYSICAL,
                 endTime: endTime.toISOString(),
-                salesStartRuleType: data.salesStartRuleType,
-                ...(data.salesStartRuleType === SalesStartRuleType.ROLLING && {
-                    salesStartHoursBefore: data.salesStartHoursBefore,
-                }),
-                ...(data.salesStartRuleType === 'FIXED' && {
-                    salesStartFixedDatetime: salesStartFixedDatetime?.toISOString(),
-                }),
+                salesStartTime: salesStartTime,
                 layoutData: {name: null, layout: {blocks: []}},
             });
 
@@ -121,6 +140,8 @@ export function RecurringSessionsDialog({open, setOpen, onGenerate, currentSessi
                 currentStartTime = addWeeks(currentStartTime, data.interval);
             }
         }
+
+        console.log("Generated sessions:", newSessions);
         onGenerate(newSessions);
         setOpen(false);
     };

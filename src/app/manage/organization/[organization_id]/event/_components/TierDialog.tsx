@@ -80,7 +80,7 @@ export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDia
                             name="price"
                             render={({field}) => (
                                 <FormItem>
-                                    <FormLabel>Price (USD)</FormLabel>
+                                    <FormLabel>Price (LKR)</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="number"
@@ -126,7 +126,15 @@ export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDia
                             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit">{mode === 'create' ? 'Create' : 'Save'}</Button>
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    form.handleSubmit(handleSubmit)(e);
+                                }}
+                                type="button"
+                            >
+                                {mode === 'create' ? 'Create' : 'Save'}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

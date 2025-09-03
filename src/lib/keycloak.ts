@@ -4,7 +4,7 @@
 import Keycloak from 'keycloak-js'
 
 const keycloak = new Keycloak({
-    url: 'http://auth.ticketly.com:8080',
+    url: 'https://auth.dpiyumal.me',
     realm: 'event-ticketing',
     clientId: 'web-frontend',
 })
