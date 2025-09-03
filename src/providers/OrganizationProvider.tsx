@@ -63,8 +63,6 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
                     activeOrg = fetchedOrgs[0];
                 }
             }
-            // ✅ Automatic creation logic has been removed.
-            // If no orgs are found, activeOrg will remain null.
 
             if (isMounted && activeOrg) {
                 localStorage.setItem('selectedOrgId', activeOrg.id);
