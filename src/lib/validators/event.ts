@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import {SessionType} from "@/lib/validators/enums";
 
 
 // --- Seating Layout Schemas ---
@@ -68,15 +68,7 @@ const tierSchema = z.object({
 const sessionSchema = z.object({
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
-    salesStartRuleType: z.enum([
-        SalesStartRuleType.IMMEDIATE,
-        SalesStartRuleType.ROLLING,
-        SalesStartRuleType.FIXED
-    ]),
-    salesStartHoursBefore: z.number().optional().nullable(),
-    salesStartFixedDatetime: z.iso.datetime({message: "Invalid date format."}).optional().nullable(),
-
-    // ✅ UPDATED: Use the new SessionType enum
+    salesStartTime: z.iso.datetime({message: "Invalid sales start date format."}),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
     venueDetails: venueDetailsSchema.optional(),
     layoutData: sessionSeatingMapRequestSchema,
@@ -169,11 +161,9 @@ export const sessionDetailSchema = z.object({
     id: z.uuid(),
     startTime: z.iso.datetime(),
     endTime: z.iso.datetime(),
+    salesStartTime: z.iso.datetime(),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
     venueDetails: venueDetailsSchema,
-    salesStartRuleType: z.enum(Object.values(SalesStartRuleType)),
-    salesStartHoursBefore: z.number().nullable(),
-    salesStartFixedDatetime: z.iso.datetime().nullable(),
     status: z.string(), // Corresponds to SessionStatus enum
     layoutData: sessionSeatingMapRequestSchema, // Assuming this is the correct shape
 });

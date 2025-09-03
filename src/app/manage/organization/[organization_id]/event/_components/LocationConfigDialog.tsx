@@ -1,11 +1,12 @@
-'use client';
+'use client'
 
 import * as React from 'react';
-import {useState, useEffect, useRef} from 'react';
+import {useState, useEffect} from 'react';
 import {useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {toast} from 'sonner';
-import {GoogleMap, useJsApiLoader, Marker} from '@react-google-maps/api';
+import {MapContainer, TileLayer, Marker, useMapEvents} from 'react-leaflet';
+import L, {LatLngLiteral} from 'leaflet';
 
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -14,21 +15,38 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Skeleton} from '@/components/ui/skeleton';
-import {SessionType} from "@/lib/validators/salesStartRuleType";
+import {SessionType} from "@/lib/validators/enums";
 
-const MAP_CONTAINER_STYLE = {
-    width: '100%',
-    height: '100%',
-    borderRadius: 'var(--radius)',
-};
+import 'leaflet/dist/leaflet.css';
 
 // Default center for the map (Colombo, Sri Lanka)
-const DEFAULT_MAP_CENTER = {
+const DEFAULT_MAP_CENTER: LatLngLiteral = {
     lat: 6.9271,
     lng: 79.8612,
 };
 
-const LIBRARIES: ("places")[] = ['places'];
+// Fix for default Leaflet marker icons
+// Using proper typing for the Leaflet Icon prototype
+interface IconDefaultPrototype extends L.Icon.Default {
+    _getIconUrl?: unknown;
+}
+
+delete (L.Icon.Default.prototype as IconDefaultPrototype)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+});
+
+// Small helper to handle map clicks
+function LocationMarker({setMarkerPosition}: { setMarkerPosition: (pos: LatLngLiteral) => void }) {
+    useMapEvents({
+        click(e) {
+            setMarkerPosition(e.latlng);
+        }
+    });
+    return null;
+}
 
 export function LocationConfigDialog({index, open, setOpenAction}: {
     index: number;
@@ -54,9 +72,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
         onlineLink?: string;
     }>({});
 
-    const [markerPosition, setMarkerPosition] = useState<google.maps.LatLngLiteral>(DEFAULT_MAP_CENTER);
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-    const autocompleteInputRef = useRef<HTMLInputElement>(null);
+    const [markerPosition, setMarkerPosition] = useState<LatLngLiteral>(DEFAULT_MAP_CENTER);
 
     // Snapshot form values when dialog opens
     useEffect(() => {
@@ -68,69 +84,33 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                     name: sessionData.venueDetails?.name || '',
                     address: sessionData.venueDetails?.address || '',
                     onlineLink: sessionData.venueDetails?.onlineLink || '',
-                    latitude: sessionData.venueDetails?.latitude || DEFAULT_MAP_CENTER.lat,
-                    longitude: sessionData.venueDetails?.longitude || DEFAULT_MAP_CENTER.lng,
+                    latitude: sessionData.venueDetails?.latitude ?? DEFAULT_MAP_CENTER.lat,
+                    longitude: sessionData.venueDetails?.longitude ?? DEFAULT_MAP_CENTER.lng,
                 }
             });
 
-            // Set marker position based on venueDetails if available
-            if (sessionData.venueDetails?.latitude && sessionData.venueDetails?.longitude) {
-                setMarkerPosition({
-                    lat: sessionData.venueDetails.latitude,
-                    lng: sessionData.venueDetails.longitude
-                });
-            } else {
-                setMarkerPosition(DEFAULT_MAP_CENTER);
-            }
+            setMarkerPosition({
+                lat: sessionData.venueDetails?.latitude ?? DEFAULT_MAP_CENTER.lat,
+                lng: sessionData.venueDetails?.longitude ?? DEFAULT_MAP_CENTER.lng
+            });
 
             setLocalErrors({});
         }
     }, [open, getValues, index]);
 
-    // Update marker position when local venue details change
+    // Keep marker synced with form state
     useEffect(() => {
         if (localFormState.sessionType === SessionType.PHYSICAL) {
             setMarkerPosition({
-                lat: localFormState.venueDetails.latitude || DEFAULT_MAP_CENTER.lat,
-                lng: localFormState.venueDetails.longitude || DEFAULT_MAP_CENTER.lng
+                lat: localFormState.venueDetails.latitude ?? DEFAULT_MAP_CENTER.lat,
+                lng: localFormState.venueDetails.longitude ?? DEFAULT_MAP_CENTER.lng
             });
         }
-    }, [localFormState.venueDetails.latitude, localFormState.venueDetails.longitude, localFormState.sessionType]);
-
-    const {isLoaded} = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-        libraries: LIBRARIES,
-    });
-
-    // Configure Google Places Autocomplete after loading
-    useEffect(() => {
-        if (isLoaded && autocompleteRef.current && autocompleteInputRef.current) {
-            // Ensure autocomplete suggestions appear above the dialog
-            const pacContainers = document.querySelectorAll('.pac-container');
-            pacContainers.forEach(container => {
-                (container as HTMLElement).style.zIndex = '9999';
-            });
-        }
-    }, [isLoaded]);
-
-    const handleMapClick = (event: google.maps.MapMouseEvent) => {
-        if (event.latLng) {
-            const newPos = {lat: event.latLng.lat(), lng: event.latLng.lng()};
-            setMarkerPosition(newPos);
-
-            // Update local state
-            setLocalFormState(prev => ({
-                ...prev,
-                venueDetails: {
-                    ...prev.venueDetails,
-                    latitude: newPos.lat,
-                    longitude: newPos.lng
-                }
-            }));
-
-        }
-    };
+    }, [
+        localFormState.venueDetails.latitude,
+        localFormState.venueDetails.longitude,
+        localFormState.sessionType
+    ]);
 
     // Local validation
     const validateLocalState = () => {
@@ -153,12 +133,9 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     };
 
     const handleSave = () => {
-        // Validate before saving
         const isValid = validateLocalState();
-
         if (!isValid) return;
 
-        // Apply changes to current session
         setValue(`sessions.${index}.sessionType`, localFormState.sessionType, {shouldValidate: true});
 
         if (localFormState.sessionType === SessionType.PHYSICAL) {
@@ -174,13 +151,12 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
             }, {shouldValidate: true});
         }
 
-        // Reset layoutData for current session
         setValue(`sessions.${index}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
 
         if (applyToAll) {
             const allSessions = getValues('sessions');
             allSessions.forEach((_, i) => {
-                if (i === index) return; // Skip the current session
+                if (i === index) return;
 
                 setValue(`sessions.${i}.sessionType`, localFormState.sessionType, {shouldValidate: true});
 
@@ -197,7 +173,6 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                     }, {shouldValidate: true});
                 }
 
-                // Reset layoutData for all sessions
                 setValue(`sessions.${i}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
             });
             toast.success("Location details applied to all sessions.");
@@ -225,13 +200,11 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
 
     return (
         <Dialog open={open} onOpenChange={setOpenAction}>
-            {/* ✅ Restructured Dialog for better overflow handling */}
             <DialogContent className="sm:max-w-6xl p-0 grid grid-rows-[auto_1fr_auto] max-h-[90vh]">
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Configure Location for Session {index + 1}</DialogTitle>
                 </DialogHeader>
 
-                {/* ✅ Main content area is now scrollable */}
                 <div className="overflow-y-auto">
                     <Tabs
                         defaultValue={localFormState.sessionType === SessionType.ONLINE ? "online" : "physical"}
@@ -244,9 +217,9 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                             <TabsTrigger value="physical">Physical</TabsTrigger>
                             <TabsTrigger value="online">Online</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="physical" className={'px-4 py-0'}>
+                        <TabsContent value="physical" className="px-4 py-0">
                             <div className="grid grid-cols-1 md:grid-cols-2">
-                                {/* Left Side - Form Fields */}
+                                {/* Left Side */}
                                 <div className="space-y-4 p-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="venue-name">Venue Name</Label>
@@ -272,7 +245,6 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                                     <div className="text-sm text-muted-foreground pt-4">
                                         <p>Use the map to locate the venue precisely. You can:</p>
                                         <ul className="list-disc pl-5 mt-2 space-y-1">
-                                            <li>Search for a venue using the search box.</li>
                                             <li>Click on the map to place a marker.</li>
                                             <li>Drag the marker to fine-tune the location.</li>
                                         </ul>
@@ -281,41 +253,52 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
 
                                 {/* Right Side - Map */}
                                 <div className="flex flex-col md:h-full gap-4">
-                                    {isLoaded ? (
-                                        <>
-                                            <Input
-                                                type="text"
-                                                placeholder="Search functionality coming soon..."
-                                                className="w-full shadow-md opacity-70"
-                                                disabled
+                                    {open ? (
+                                        <MapContainer
+                                            center={markerPosition}
+                                            zoom={15}
+                                            style={{width: '100%', height: '400px', borderRadius: 'var(--radius)'}}
+                                        >
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
-
-                                            <GoogleMap mapContainerStyle={MAP_CONTAINER_STYLE} center={markerPosition}
-                                                       zoom={15} onClick={handleMapClick}>
-                                                <Marker
-                                                    position={markerPosition}
-                                                    draggable={true}
-                                                    onDragEnd={(e) => {
-                                                        if (e.latLng) {
-                                                            const newPos = {lat: e.latLng.lat(), lng: e.latLng.lng()};
-                                                            setMarkerPosition(newPos);
-                                                            setLocalFormState(prev => ({
-                                                                ...prev,
-                                                                venueDetails: {
-                                                                    ...prev.venueDetails,
-                                                                    latitude: newPos.lat,
-                                                                    longitude: newPos.lng
-                                                                }
-                                                            }));
-                                                        }
-                                                    }}
-                                                />
-                                            </GoogleMap>
-                                        </>
+                                            <Marker
+                                                position={markerPosition}
+                                                draggable={true}
+                                                eventHandlers={{
+                                                    dragend: (e) => {
+                                                        const marker = e.target as L.Marker;
+                                                        const pos = marker.getLatLng();
+                                                        setMarkerPosition(pos);
+                                                        setLocalFormState(prev => ({
+                                                            ...prev,
+                                                            venueDetails: {
+                                                                ...prev.venueDetails,
+                                                                latitude: pos.lat,
+                                                                longitude: pos.lng
+                                                            }
+                                                        }));
+                                                    }
+                                                }}
+                                            />
+                                            <LocationMarker setMarkerPosition={(pos) => {
+                                                setMarkerPosition(pos);
+                                                setLocalFormState(prev => ({
+                                                    ...prev,
+                                                    venueDetails: {
+                                                        ...prev.venueDetails,
+                                                        latitude: pos.lat,
+                                                        longitude: pos.lng
+                                                    }
+                                                }));
+                                            }}/>
+                                        </MapContainer>
                                     ) : <Skeleton className="h-full w-full"/>}
                                 </div>
                             </div>
                         </TabsContent>
+
                         <TabsContent value="online" className="p-6">
                             <div className="space-y-2">
                                 <Label htmlFor="online-link">Online Link</Label>

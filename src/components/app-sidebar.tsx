@@ -8,7 +8,7 @@ import {
     Ticket,
     LayoutDashboard,
     CalendarDays,
-    Building,
+    Building, Users,
 } from "lucide-react"
 import Link from "next/link";
 import {useSidebar} from "@/components/ui/sidebar"
@@ -55,6 +55,11 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                     },
                     {title: "My Events", url: organization ? `/manage/organization/${organization.id}/event` : "#"},
                 ],
+            },
+            {
+                title: "Staff Management",
+                url: organization ? `/manage/organization/${organization.id}/staff` : "#",
+                icon: Users
             },
             {
                 title: "Seating Layouts",
@@ -113,7 +118,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
  */
 export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>) {
     const {isAuthenticated, keycloak} = useAuth();
-    const {myLimits} = useLimits(); // Get current user limits
+    // const {myLimits} = useLimits(); // Get current user limits
     const {open} = useSidebar();
 
     if (!isAuthenticated || !keycloak) {
@@ -175,7 +180,6 @@ export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>
                         email: keycloak.tokenParsed?.email || "",
                         avatar: keycloak.tokenParsed?.picture || "",
                     }}
-                    tierName={myLimits?.currentTier}
                 />
             </SidebarFooter>
             <SidebarRail/>

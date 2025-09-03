@@ -168,7 +168,7 @@ export default function OrganizationEventsPage() {
                     </p>
                 </div>
                 <Button asChild>
-                    <Link href={`/manage/organization/${organizationId}/events/create`}>
+                    <Link href={`/manage/organization/${organizationId}/event/create`}>
                         <PlusCircle className="mr-2 h-4 w-4"/>
                         Create Event
                     </Link>

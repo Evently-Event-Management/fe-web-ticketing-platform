@@ -1,31 +1,37 @@
-'use client'
+"use client";
 
-import React, { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useOrganization } from "@/providers/OrganizationProvider"
-import {toast} from "sonner";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useOrganization } from "@/providers/OrganizationProvider";
+import { toast } from "sonner";
 
 export default function OrganizationIdLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const { organization } = useOrganization()
-  const router = useRouter()
+  const { organization, isLoading } = useOrganization();
+  const router = useRouter();
 
   useEffect(() => {
-    // If no active organization is set, redirect to my-organizations page
-    if (!organization) {
-      toast.error("No active organization found. Redirecting to your organizations.")
-      router.push('/manage/organization/my-organizations')
+    // Only redirect if we're not in a loading state and there's no organization
+    if (!isLoading && !organization) {
+      toast.error(
+        "No active organization found. Redirecting to your organizations."
+      );
+      router.push("/manage/organization/my-organizations");
     }
-  }, [organization, router])
+  }, [organization, router, isLoading]);
 
-  // Don't render children until we confirm there's an active organization
-  // This prevents the page from flashing content before redirecting
-  if (!organization) {
-    return null
+  // Show loading indicator or null while we wait for organization data
+  if (isLoading) {
+    return null; // Or return a loading spinner component if you have one
   }
 
-  return <>{children}</>
+  // Don't render children until we confirm there's an active organization
+  if (!organization) {
+    return null;
+  }
+
+  return <>{children}</>;
 }

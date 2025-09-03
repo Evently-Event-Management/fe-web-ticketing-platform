@@ -183,6 +183,7 @@ function CarouselPrevious({
     <Button
       data-slot="carousel-previous"
       variant={variant}
+      type="button"
       size={size}
       className={cn(
         "absolute size-8 rounded-full",
@@ -213,6 +214,7 @@ function CarouselNext({
     <Button
       data-slot="carousel-next"
       variant={variant}
+      type={'button'}
       size={size}
       className={cn(
         "absolute size-8 rounded-full",

@@ -1,5 +1,10 @@
 import {apiFetch} from '@/lib/api';
-import {OrganizationRequest, OrganizationResponse} from '@/types/oraganizations';
+import {
+    InviteStaffRequest,
+    OrganizationMemberResponse,
+    OrganizationRequest,
+    OrganizationResponse
+} from '@/types/oraganizations';
 
 const API_BASE_PATH = '/event-seating/v1/organizations';
 
@@ -70,6 +75,26 @@ export const deleteOrganizationById = (orgId: string): Promise<void> => {
         method: 'DELETE',
     });
 };
+
+/**
+ * Add staff to an organization the current user OWNS.
+ */
+export const inviteStaffToOrganization = (orgId: string, request: InviteStaffRequest): Promise<OrganizationMemberResponse> => {
+    return apiFetch<OrganizationMemberResponse>(`${API_BASE_PATH}/${orgId}/staff`, {
+        method: 'POST',
+        body: JSON.stringify(request),
+    });
+}
+
+export const getOrganizationMembers = (orgId: string): Promise<OrganizationMemberResponse[]> => {
+    return apiFetch<OrganizationMemberResponse[]>(`${API_BASE_PATH}/${orgId}/staff`);
+}
+
+export const removeOrganizationMember = (orgId: string, userId: string): Promise<void> => {
+    return apiFetch<void>(`${API_BASE_PATH}/${orgId}/staff/${userId}`, {
+        method: 'DELETE',
+    });
+}
 
 
 // ================================================================================

@@ -7,6 +7,7 @@ import {Building, Trash2, Upload} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {OrganizationResponse} from "@/types/oraganizations";
 import {Input} from "@/components/ui/input";
+import {compressImage} from "@/lib/imageUtils";
 
 interface LogoManagementCardProps {
     organization: OrganizationResponse;
@@ -32,7 +33,19 @@ function LogoManagementCard({organization, onUpdate}: LogoManagementCardProps) {
         }
 
         try {
-            toast.promise(uploadLogo(organization.id, file), {
+            // Logo-specific compression options
+            const logoCompressionOptions = {
+                maxSizeMB: 0.3,           // Lower size limit for logos (300KB)
+                maxWidthOrHeight: 512,    // Smaller dimensions suitable for logos
+                useWebWorker: true,
+                // Preserve PNG format for transparency if the uploaded file is PNG
+                fileType: file.type === 'image/png' ? 'image/png' : 'image/jpeg'
+            };
+            
+            // Compress the image with logo-specific options
+            const compressedFile = await compressImage(file, logoCompressionOptions);
+            
+            toast.promise(uploadLogo(organization.id, compressedFile), {
                 loading: 'Uploading logo...',
                 success: ( ) => {
                     onUpdate();
@@ -135,7 +148,7 @@ function LogoManagementCard({organization, onUpdate}: LogoManagementCardProps) {
                 </div>
 
                 <p className="text-xs text-muted-foreground text-center">
-                    Supports PNG, JPG, JPEG, WebP. Max file size: 1MB
+                    Supports PNG, JPG, JPEG, WebP. Max file size: 5MB (will be compressed to ~300KB)
                 </p>
             </CardContent>
         </Card>

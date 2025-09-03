@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import {useState} from 'react';
 import {useFormContext} from 'react-hook-form';
@@ -8,33 +6,25 @@ import {Button} from '@/components/ui/button';
 import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
 import {TimeConfigDialog} from './TimeConfigDialog'; // Assuming this component exists
-import {LocationConfigDialog} from './LocationConfigDialog';
 import {LinkIcon, MapPin, Settings, Trash2, Edit, Tag} from 'lucide-react';
-import {SalesStartRuleType, SessionType} from "@/lib/validators/salesStartRuleType";
+import { SessionType} from "@/lib/validators/enums";
+import dynamic from "next/dynamic";
 
-// Helper function to create a descriptive string for the sales rule
-const getSalesRuleDescription = (session: SessionFormData): string => {
-    if (!session) return "Sales rule not set";
-    switch (session.salesStartRuleType) {
-        case SalesStartRuleType.IMMEDIATE:
-            return "On sale immediately";
-        case SalesStartRuleType.FIXED:
-            // Check if the date is valid before formatting
-            return session.salesStartFixedDatetime
-                ? `Sales start on ${format(parseISO(session.salesStartFixedDatetime), 'MMM d, yyyy h:mm a')}`
-                : "Fixed date not set";
-        case SalesStartRuleType.ROLLING:
-            if (session.salesStartHoursBefore === undefined || session.salesStartHoursBefore === null || session.salesStartHoursBefore < 0) {
-                return "Rolling days not set or invalid";
-            } else if (session.salesStartHoursBefore < 24) {
-                return `Sales start ${session.salesStartHoursBefore} hour(s) before the session`;
-            } else {
-                const days = Math.floor(session.salesStartHoursBefore / 24);
-                const hours = session.salesStartHoursBefore % 24;
-                return `Sales start ${days} days ${hours > 0 ? `and ${hours} hour(s)` : ''} before the session`;
-            }
-        default:
-            return "Sales rule not set";
+const LocationConfigDialog = dynamic(
+    () => import("./LocationConfigDialog").then(mod => mod.LocationConfigDialog),
+    {ssr: false}
+);
+
+// Helper function to display the sales start time
+const getSalesStartTimeDisplay = (session: SessionFormData): string => {
+    if (!session || !session.salesStartTime) return "Sales start time not set";
+
+    try {
+        const salesStartDate = parseISO(session.salesStartTime);
+        return `Sales start on ${format(salesStartDate, 'MMM d, yyyy h:mm a')}`;
+    } catch (e) {
+        console.error("Error parsing sales start time:", e);
+        return "Invalid sales start time";
     }
 };
 
@@ -111,7 +101,7 @@ export function SessionListItem({field, index, onRemoveAction}: {
                 </div>
                 <div className="flex items-center gap-2">
                     <Tag className="h-4 w-4"/>
-                    <span>Sales Rule: {getSalesRuleDescription(sessionData)}</span>
+                    <span>{getSalesStartTimeDisplay(sessionData)}</span>
                 </div>
             </div>
 

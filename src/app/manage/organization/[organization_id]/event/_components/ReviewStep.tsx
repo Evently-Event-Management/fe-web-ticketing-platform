@@ -5,10 +5,11 @@ import {useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {useOrganization} from '@/providers/OrganizationProvider';
 import {ReviewEventHero} from '@/app/manage/_components/review/ReviewEventHero';
-import {ReviewEventDetails} from '@/app/manage/_components/review/ReviewEventDetails';
+import {EventOverview} from '@/app/manage/_components/review/EventOverview';
 import {ReviewTicketTiers} from '@/app/manage/_components/review/ReviewTicketTiers';
 import {ReviewSessions} from '@/app/manage/_components/review/ReviewSessions';
 import {JSX} from "react";
+import {Separator} from "@/components/ui/separator";
 
 interface ReviewStepProps {
     coverFiles: File[];
@@ -34,16 +35,22 @@ export function ReviewStep({coverFiles}: ReviewStepProps): JSX.Element {
                 categoryName={formData.categoryName}
                 organization={organization}
                 coverFiles={coverFiles}
+                description={formData.description}
             />
 
+            <Separator className={'border-3 my-2'}/>
+
             {/* Event Details Section with Description and Overview */}
-            <ReviewEventDetails
-                description={formData.description}
+            <EventOverview
                 overview={formData.overview}
             />
 
+            <Separator className={'border-3 my-2'}/>
+
             {/* Tiers & Pricing Section */}
             <ReviewTicketTiers tiers={formData.tiers}/>
+
+            <Separator className={'border-3 my-2'}/>
 
             {/* Sessions & Schedule Section */}
             <ReviewSessions sessions={formData.sessions} tiers={formData.tiers}/>
