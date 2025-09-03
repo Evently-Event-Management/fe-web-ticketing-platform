@@ -61,7 +61,7 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                     <div className="flex items-center gap-2">
                         <CalendarIcon className="h-5 w-5 text-muted-foreground"/>
                         <span className="font-semibold text-foreground">{formatDate(session.startTime)}</span>
-                        <SessionStatusBadge status={session.status} />
+                        <SessionStatusBadge status={session.status}/>
                     </div>
                     <div>
                         {session.status === SessionStatus.ON_SALE &&

@@ -2,31 +2,13 @@ import {SeatingBlockDTO} from "@/types/event";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
+import {Progress} from "@/components/ui/progress";
+import {
+    getAvailabilityPercentage,
+    getStandingAreaTierColor
+} from "@/app/(home-app)/events/[event_id]/_components/utils";
 
 const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
-    // Calculate availability percentage for standing capacity blocks
-    const getAvailabilityPercentage = (block: SeatingBlockDTO) => {
-        if (block.type !== 'standing_capacity' || !block.capacity) return 100;
-
-        // Count reserved/booked/locked seats if available
-        const reservedCount = block.seats?.filter(seat =>
-            seat.status === 'RESERVED' ||
-            seat.status === 'BOOKED' ||
-            seat.status === 'LOCKED'
-        ).length || 0;
-
-        // Calculate available percentage
-        return Math.max(0, Math.min(100, ((block.capacity - reservedCount) / block.capacity) * 100));
-    };
-
-    // Get the tier color for standing capacity blocks
-    const getStandingAreaTierColor = (block: SeatingBlockDTO) => {
-        if (block.type !== 'standing_capacity') return undefined;
-
-        // Find first seat with tier info or return undefined
-        return block.seats?.[0]?.tier?.color;
-    };
-
     const blockContent = () => {
         switch (block.type) {
             case 'seated_grid':
@@ -97,8 +79,7 @@ const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
 
             case 'standing_capacity':
                 const availabilityPercentage = getAvailabilityPercentage(block);
-                const tierColor = getStandingAreaTierColor(block);
-
+                getStandingAreaTierColor(block);
                 return (
                     <div className="flex flex-col items-center justify-center h-full text-center">
                         <p className="font-medium text-foreground">{block.name}</p>
@@ -107,16 +88,7 @@ const SeatingBlockPreview = ({block}: { block: SeatingBlockDTO }) => {
                         </p>
 
                         {/* Availability indicator */}
-                        <div className="w-full mt-2 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                            <div
-                                className="h-2.5 rounded-full transition-all"
-                                style={{
-                                    width: `${availabilityPercentage}%`,
-                                    backgroundColor: tierColor || 'hsl(var(--primary))'
-                                }}
-                            ></div>
-                        </div>
-
+                        <Progress value={availabilityPercentage} className="w-full mt-2 h-3 rounded-full"/>
                         <p className="text-xs mt-1 text-muted-foreground">
                             {availabilityPercentage.toFixed(0)}% Available
                         </p>

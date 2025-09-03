@@ -2,21 +2,11 @@ import {SeatingBlockDTO, SeatDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {PlusIcon} from "lucide-react";
 import {ReadModelSeatStatus} from "@/lib/validators/enums";
+import {
+    getAvailabilityPercentage,
+    getStandingAreaTierColor
+} from "@/app/(home-app)/events/[event_id]/_components/utils";
 
-function getAvailabilityPercentage(block: SeatingBlockDTO) {
-    if (block.type !== 'standing_capacity' || !block.capacity) return 100;
-    const reservedCount = block.seats?.filter(seat =>
-        seat.status === 'RESERVED' ||
-        seat.status === 'BOOKED' ||
-        seat.status === 'LOCKED'
-    ).length || 0;
-    return Math.max(0, Math.min(100, ((block.capacity - reservedCount) / block.capacity) * 100));
-}
-
-function getStandingAreaTierColor(block: SeatingBlockDTO) {
-    if (block.type !== 'standing_capacity') return undefined;
-    return block.seats?.[0]?.tier?.color;
-}
 
 export const StandingCapacityBlock = ({block, selectedSeats, onSeatSelect}: {
     block: SeatingBlockDTO;
@@ -48,7 +38,7 @@ export const StandingCapacityBlock = ({block, selectedSeats, onSeatSelect}: {
                     disabled={isDisabled}
                     onClick={handleQuickPick}
                 >
-                    <PlusIcon className="h-5 w-5" />
+                    <PlusIcon className="h-5 w-5"/>
                 </Button>
             </div>
             <div className="text-center mt-2">
