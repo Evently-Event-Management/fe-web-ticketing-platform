@@ -32,7 +32,7 @@ export const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
                 <div className="text-muted-foreground">{icon}</div>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold space-y-2">
                     {value}
                     {secondaryValue && (
                         <span className="text-sm font-normal text-muted-foreground"> / {secondaryValue}</span>

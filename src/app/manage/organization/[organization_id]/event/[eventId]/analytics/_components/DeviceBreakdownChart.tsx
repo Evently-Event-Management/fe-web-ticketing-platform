@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react";
-import { DeviceBreakdown } from "@/types/eventAnalytics";
+import {DeviceBreakdown} from "@/types/eventAnalytics";
 import {Pie, PieChart, Cell, Label} from "recharts";
 import {
     Card,
@@ -15,19 +15,18 @@ import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-    ChartLegend,
 } from "@/components/ui/chart";
-import { Laptop, Smartphone, Tablet, HelpCircle } from "lucide-react";
+import {Laptop, Smartphone, Tablet, HelpCircle} from "lucide-react";
 
 const chartConfig = {
-    desktop: { label: "Desktop", color: "var(--color-chart-1)", icon: Laptop },
-    mobile: { label: "Mobile", color: "var(--color-chart-2)", icon: Smartphone },
-    tablet: { label: "Tablet", color: "var(--color-chart-3)", icon: Tablet },
-    other: { label: "Other", color: "var(--color-chart-4)", icon: HelpCircle },
-    unknown: { label: "Unknown", color: "var(--color-chart-5)", icon: HelpCircle },
+    desktop: {label: "Desktop", color: "var(--color-chart-1)", icon: Laptop},
+    mobile: {label: "Mobile", color: "var(--color-chart-2)", icon: Smartphone},
+    tablet: {label: "Tablet", color: "var(--color-chart-3)", icon: Tablet},
+    other: {label: "Other", color: "var(--color-chart-4)", icon: HelpCircle},
+    unknown: {label: "Unknown", color: "var(--color-chart-5)", icon: HelpCircle},
 } satisfies ChartConfig;
 
-export const DeviceBreakdownChart: React.FC<{ data: DeviceBreakdown[] }> = ({ data }) => {
+export const DeviceBreakdownChart: React.FC<{ data: DeviceBreakdown[] }> = ({data}) => {
 
     const totalViews = React.useMemo(() => {
         return data.reduce((acc, curr) => acc + curr.views, 0)
@@ -57,7 +56,7 @@ export const DeviceBreakdownChart: React.FC<{ data: DeviceBreakdown[] }> = ({ da
                     <PieChart>
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
+                            content={<ChartTooltipContent hideLabel/>}
                         />
                         <Pie
                             data={data}
@@ -67,10 +66,10 @@ export const DeviceBreakdownChart: React.FC<{ data: DeviceBreakdown[] }> = ({ da
                             strokeWidth={5}
                         >
                             {normalizedData.map((entry) => (
-                                <Cell key={`cell-${entry.device}`} fill={entry.fill} />
+                                <Cell key={`cell-${entry.device}`} fill={entry.fill}/>
                             ))}
                             <Label
-                                content={({ viewBox }) => {
+                                content={({viewBox}) => {
                                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                                         return (
                                             <text
@@ -99,26 +98,26 @@ export const DeviceBreakdownChart: React.FC<{ data: DeviceBreakdown[] }> = ({ da
                                 }}
                             />
                         </Pie>
-                        {/* Custom Legend with Icons */}
-                        <ChartLegend
-                            content={({ payload }) => (
-                                <ul className="flex flex-wrap justify-center gap-4 mt-4">
-                                    {payload?.map((entry) => {
-                                        const deviceKey = entry.value as keyof typeof chartConfig;
-                                        const Icon = chartConfig[deviceKey]?.icon ?? chartConfig.unknown.icon;
-                                        return (
-                                            <li key={deviceKey} className="flex items-center gap-2 text-sm">
-                                                <Icon className="h-4 w-4 text-muted-foreground" />
-                                                <span>{chartConfig[deviceKey]?.label ?? "Other"}</span>
-                                                <span className="font-medium text-foreground">
-                                                    ({data.find(d => d.device === entry.value)?.views ?? 0})
-                                                </span>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            )}
-                        />
+                        {/*/!* Custom Legend with Icons *!/*/}
+                        {/*<ChartLegend*/}
+                        {/*    content={({ payload }) => (*/}
+                        {/*        <ul className="flex flex-wrap justify-center gap-4 mt-4">*/}
+                        {/*            {payload?.map((entry) => {*/}
+                        {/*                const deviceKey = entry.value as keyof typeof chartConfig;*/}
+                        {/*                const Icon = chartConfig[deviceKey]?.icon ?? chartConfig.unknown.icon;*/}
+                        {/*                return (*/}
+                        {/*                    <li key={deviceKey} className="flex items-center gap-2 text-sm">*/}
+                        {/*                        <Icon className="h-4 w-4 text-muted-foreground" />*/}
+                        {/*                        <span>{chartConfig[deviceKey]?.label ?? "Other"}</span>*/}
+                        {/*                        <span className="font-medium text-foreground">*/}
+                        {/*                            ({data.find(d => d.device === entry.value)?.views ?? 0})*/}
+                        {/*                        </span>*/}
+                        {/*                    </li>*/}
+                        {/*                );*/}
+                        {/*            })}*/}
+                        {/*        </ul>*/}
+                        {/*    )}*/}
+                        {/*/>*/}
                     </PieChart>
                 </ChartContainer>
             </CardContent>
