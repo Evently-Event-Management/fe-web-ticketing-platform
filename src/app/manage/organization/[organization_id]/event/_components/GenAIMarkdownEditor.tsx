@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {UseFormGetValues} from 'react-hook-form';
-import MDEditor from '@uiw/react-md-editor';
+import MDEditor, { commands } from '@uiw/react-md-editor';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -15,11 +15,12 @@ import {
 } from '@/components/ui/dialog';
 import {Textarea} from '@/components/ui/textarea';
 import {Label} from '@/components/ui/label';
-import {Wand2, AlertTriangle, Loader2} from 'lucide-react';
+import {Wand2, AlertTriangle, Loader2, Sparkles, Brain, Pencil, Columns3, Eye} from 'lucide-react';
 import {toast} from 'sonner';
 import {getOverview} from '@/lib/actions/aiActions';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
+import {useTheme} from "next-themes";
 
 interface GeminiMarkdownEditorProps {
     value: string;
@@ -32,6 +33,7 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const {resolvedTheme} = useTheme();
 
     const handleGenerate = async () => {
         const {title, description, categoryName} = getValues();
@@ -42,7 +44,7 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
         }
 
         setIsGenerating(true);
-        toast.loading("Generating with AI...");
+        toast.loading("AI is crafting your content...");
 
         try {
             const request = {
@@ -57,9 +59,8 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
             onChange(response.markdownContent);
 
             toast.dismiss();
-            // ++ POST-GENERATION PROMPT: A more descriptive success toast
-            toast.success("Content generated successfully!", {
-                description: "Please review the generated overview and edit any details as needed.",
+            toast.success("✨ AI magic complete!", {
+                description: "Your content is ready! Review and customize as needed.",
                 duration: 5000,
             });
 
@@ -68,73 +69,177 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
         } catch (error) {
             console.error(error);
             toast.dismiss();
-            toast.error("An error occurred while generating the overview. Please try again.");
+            toast.error("Oops! The AI had a hiccup. Please try again.");
         } finally {
             setIsGenerating(false);
         }
     };
 
-    const colorMode = document.documentElement.getAttribute('data-color-mode') || 'light';
+    const editCommand = {
+        name: 'edit',
+        keyCommand: 'edit',
+        buttonProps: { 'aria-label': 'Edit' },
+        icon: (
+            <span className="flex items-center gap-2 px-2">
+                <Pencil className="h-4 w-4" /> Edit
+            </span>
+        ),
+        execute: (state: any, api: any) => {
+            api.setPreviewMode('edit');
+        },
+    };
+
+    const liveCommand = {
+        name: 'live',
+        keyCommand: 'live',
+        buttonProps: { 'aria-label': 'Split view' },
+        icon: (
+            <span className="flex items-center gap-2 px-2">
+                <Columns3 className="h-4 w-4" /> Split
+            </span>
+        ),
+        execute: (state: any, api: any) => {
+            api.setPreviewMode('live');
+        },
+    };
+
+    const previewCommand = {
+        name: 'preview',
+        keyCommand: 'preview',
+        buttonProps: { 'aria-label': 'Preview' },
+        icon: (
+            <span className="flex items-center gap-2 px-2">
+                <Eye className="h-4 w-4" /> Preview
+            </span>
+        ),
+        execute: (state: any, api: any) => {
+            api.setPreviewMode('preview');
+        },
+    };
+
+
 
     return (
-        <div className="space-y-2">
-            <div className="flex justify-between items-center">
-                <Label>Overview</Label>
-                <Button type="button" variant="outline" size="sm" onClick={() => setIsDialogOpen(true)}>
+        <div className="space-y-4">
+            {/* Simplified Header */}
+            <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg border">
+                <div className="flex items-center gap-3">
+                    <Brain className="h-5 w-5 text-primary"/>
+                    <div>
+                        <Label className="font-semibold">Event Overview</Label>
+                        <p className="text-xs text-muted-foreground">Powered by AI</p>
+                    </div>
+                </div>
+                <Button type="button" size="sm" onClick={() => setIsDialogOpen(true)}>
                     <Wand2 className="mr-2 h-4 w-4"/>
                     Generate with AI
                 </Button>
             </div>
 
-            <div data-color-mode={colorMode}>
+            {/* Editor with Simplified Placeholder */}
+            <div
+                data-color-mode={resolvedTheme}
+                className="relative rounded-md border"
+            >
                 <MDEditor
                     value={value || ''}
                     onChange={(val) => onChange(val || '')}
-                    height={300}
-                    preview="edit"
+                    height={500}
+                    commands={[
+                        // Our new, custom switcher group
+                        commands.group([editCommand, liveCommand, previewCommand], {
+                            name: 'preview',
+                            groupName: 'preview',
+                            buttonProps: { 'aria-label': 'Preview mode' },
+                        }),
+                        // A divider
+                        commands.divider,
+                        // Other useful default commands
+                        commands.bold,
+                        commands.italic,
+                        commands.strikethrough,
+                        commands.hr,
+                        commands.title,
+                        commands.divider,
+                        commands.link,
+                        commands.quote,
+                        commands.code,
+                        commands.image,
+                    ]}
                 />
+                {!value && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="text-center">
+                            <p className="text-sm text-muted-foreground">Click <span
+                                className="font-semibold text-primary">Generate with AI</span> to create your event
+                                overview.</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
+            {/* Simplified Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Generate Event Overview with AI</DialogTitle>
-                        <DialogDescription>
-                            Provide any additional instructions or keywords. We&#39;ll use the event details you&#39;ve
-                            already entered.
+                        <div className="flex justify-center mb-4">
+                            <div className="w-14 h-14 flex items-center justify-center bg-primary/10 rounded-full">
+                                <Sparkles className="h-8 w-8 text-primary"/>
+                            </div>
+                        </div>
+                        <DialogTitle className="text-center text-xl">
+                            Generate with AI
+                        </DialogTitle>
+                        <DialogDescription className="text-center">
+                            Provide any extra details below to guide the AI.
                         </DialogDescription>
                     </DialogHeader>
 
-                    {/* ++ DISCLAIMER: Added an alert to warn the user */}
-                    <Alert variant="default">
+                    {/* Standard Alert */}
+                    <Alert>
                         <AlertTriangle className="h-4 w-4"/>
-                        <AlertTitle>Review is Required</AlertTitle>
+                        <AlertTitle>Always Review AI Content</AlertTitle>
                         <AlertDescription>
-                            AI can make mistakes. Please carefully review and edit the generated content to ensure all
-                            details are accurate before publishing.
+                            Carefully check the generated text for accuracy before publishing.
                         </AlertDescription>
                     </Alert>
 
-                    <div className="grid gap-4 py-4">
-                        <Label htmlFor="prompt">Additional Instructions (Optional)</Label>
+                    <div className="space-y-2">
+                        <Label htmlFor="prompt">
+                            Additional Instructions <span className="text-xs text-muted-foreground">(Optional)</span>
+                        </Label>
                         <Textarea
                             id="prompt"
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
-                            placeholder="e.g., Focus on the networking opportunities. Mention that it's beginner-friendly."
+                            placeholder="e.g., Focus on networking, mention it's for beginners..."
                             className="min-h-24"
+                            disabled={isGenerating}
                         />
                     </div>
+
                     <DialogFooter>
-                        {/* ++ ANIMATION: The button now shows an animated loading state */}
-                        <Button type="button" onClick={handleGenerate} disabled={isGenerating}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                            disabled={isGenerating}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleGenerate}
+                            disabled={isGenerating}
+                            className="min-w-28" // Set a min-width to prevent layout shift
+                        >
                             {isGenerating ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                                    Please wait...
+                                    Generating
                                 </>
                             ) : (
-                                "✨ Generate"
+                                "Generate"
                             )}
                         </Button>
                     </DialogFooter>
