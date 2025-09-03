@@ -20,7 +20,7 @@ export function EventTracker({ event }: { event: EventData }) {
                 event_id: event.id,
                 event_title: event.title,
                 organization_id: event.organization_id,
-                debug_mode: true,
+                debug_mode: true, // Enable debug mode for testing
             });
         }
     }, [event]); // This effect runs when the component mounts or the event prop changes

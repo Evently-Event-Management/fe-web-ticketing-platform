@@ -1,7 +1,7 @@
 'use server';
 
 import {EventBasicInfoDTO, SessionInfoBasicDTO} from "@/types/event";
-import { BetaAnalyticsDataClient } from '@google-analytics/data';
+import {BetaAnalyticsDataClient} from '@google-analytics/data';
 
 const API_BASE_PATH = `${process.env.NEXT_PUBLIC_API_BASE_URL}/event-query/v1`;
 
@@ -34,9 +34,7 @@ export async function getSessionSummery(sessionId: string): Promise<SessionInfoB
 }
 
 
-export async function getEventAnalytics(eventId: string) {
-    // The Google client library automatically finds your credentials
-    // from the .env.local file you created earlier.
+export async function getEventViews(eventId: string) {
     const analyticsClient = new BetaAnalyticsDataClient({
         credentials: {
             client_email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -48,13 +46,13 @@ export async function getEventAnalytics(eventId: string) {
     try {
         const [response] = await analyticsClient.runReport({
             property: `properties/${propertyId}`,
-            dateRanges: [{ startDate: '30daysAgo', endDate: 'yesterday' }],
-            dimensions: [{ name: 'customEvent:event_id' }],
-            metrics: [{ name: 'eventCount' }],
+            dateRanges: [{startDate: '30daysAgo', endDate: 'today'}],
+            dimensions: [{name: 'customEvent:event_id'}],
+            metrics: [{name: 'eventCount'}],
             dimensionFilter: {
                 filter: {
                     fieldName: 'customEvent:event_id',
-                    stringFilter: { value: eventId, matchType: 'EXACT' },
+                    stringFilter: {value: eventId, matchType: 'EXACT'},
                 },
             },
         });
@@ -70,6 +68,6 @@ export async function getEventAnalytics(eventId: string) {
         };
     } catch (error) {
         console.error("Error fetching Google Analytics data:", error);
-        return { success: false, error: "Failed to fetch analytics data." };
+        return {success: false, error: "Failed to fetch analytics data."};
     }
 }
