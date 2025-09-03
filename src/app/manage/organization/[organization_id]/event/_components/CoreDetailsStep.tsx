@@ -28,6 +28,7 @@ import {ImageIcon, X, PlusCircle, Upload} from 'lucide-react';
 import {toast} from 'sonner';
 import Autoplay from 'embla-carousel-autoplay';
 import {CreateEventFormData} from "@/lib/validators/event";
+import {GeminiMarkdownEditor} from './GenAIMarkdownEditor';
 
 interface CoreDetailsStepProps {
     coverFiles: File[];
@@ -41,7 +42,7 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // ✅ Use the form context from parent instead of creating a new form
-    const {control, setValue} = useFormContext<CreateEventFormData>();
+    const {control, setValue, getValues} = useFormContext<CreateEventFormData>();
 
     const maxPhotos = myLimits?.eventLimits.maxCoverPhotos || 1;
 
@@ -196,10 +197,25 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                     <FormField control={control} name="description" render={({field}) => (
                         <FormItem><FormLabel>Short Description</FormLabel><FormControl><Textarea
                             placeholder="A brief summary of your event." {...field} /></FormControl><FormMessage/></FormItem>)}/>
-                    <FormField control={control} name="overview" render={({field}) => (
-                        <FormItem><FormLabel>Overview</FormLabel><FormControl><Textarea
-                            placeholder="Provide more details like schedule, speakers, etc."
-                            className="min-h-32" {...field} /></FormControl><FormMessage/></FormItem>)}/>
+
+                    <FormField
+                        control={control}
+                        name="overview"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormControl>
+                                    <GeminiMarkdownEditor
+                                        value={field.value || ''}
+                                        onChange={field.onChange}
+                                        getValues={getValues}
+                                        organizationName={organization?.name || 'Our Organization'}
+                                    />
+                                </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+
                 </CardContent>
             </Card>
         </div>
