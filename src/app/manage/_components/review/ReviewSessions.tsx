@@ -55,19 +55,26 @@ const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({session, ind
             className="border rounded-lg mb-4 overflow-hidden"
         >
             <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40">
-                <div className="flex items-center gap-3 text-left">
-                    <Calendar className="h-4 w-4 text-muted-foreground"/>
-                    <div>
-                        <div className="font-medium">
-                            {format(startDate, "EEEE, MMMM d, yyyy")}
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3 text-left">
+                        <Calendar className="h-4 w-4 text-muted-foreground"/>
+                        <div>
+                            <div className="font-medium">
+                                {format(startDate, "EEEE, MMMM d, yyyy")}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                                {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
+                            </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                            {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
-                        </div>
+                        <Badge variant={isOnline ? "secondary" : "default"} className="ml-4">
+                            {isOnline ? 'Online' : 'Physical'}
+                        </Badge>
                     </div>
-                    <Badge variant={isOnline ? "secondary" : "default"} className="ml-4">
-                        {isOnline ? 'Online' : 'Physical'}
-                    </Badge>
+                    {session.salesStartTime && (
+                        <div className="text-sm text-muted-foreground italic hidden sm:block">
+                            Sales start on {format(parseISO(session.salesStartTime), 'MMM d, yyyy h:mm a')}
+                        </div>
+                    )}
                 </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pt-2 pb-4">

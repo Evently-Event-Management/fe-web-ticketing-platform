@@ -32,9 +32,9 @@ const EventCarousel = ({coverPhotos}: { coverPhotos: string[] }) => {
                     ))}
                 </CarouselContent>
                 <CarouselPrevious
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 border-none h-10 w-10"/>
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10"/>
                 <CarouselNext
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 border-none h-10 w-10"/>
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10"/>
             </Carousel>
         </div>
     );

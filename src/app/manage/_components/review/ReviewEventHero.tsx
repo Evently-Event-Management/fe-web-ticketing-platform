@@ -1,12 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
 import {Tag} from 'lucide-react';
-import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
-import Autoplay from 'embla-carousel-autoplay';
 import {OrganizationResponse} from "@/types/oraganizations";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import EventCarousel from "@/components/EventCarousel";
 
 
 interface ReviewEventHeroProps {
@@ -28,33 +26,12 @@ export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
         if (typeof file === 'string') {
             return file; // Assuming it's already a URL
         }
-        return URL.createObjectURL(file); // Create a local URL for the file
+        return URL.createObjectURL(file);
     };
 
     return (
         <div className="space-y-6">
-            {coverFiles.length > 0 && (
-                <div className="w-full rounded-xl overflow-hidden">
-                    <Carousel plugins={[Autoplay({delay: 4000, stopOnInteraction: false})]}>
-                        <CarouselContent>
-                            {coverFiles.map((file, index) => (
-                                <CarouselItem key={index}>
-                                    <div className="aspect-[21/9] w-full relative">
-                                        <Image
-                                            src={getImageUrl(file)}
-                                            alt={`Cover photo ${index + 1}`}
-                                            fill
-                                            className="object-cover rounded-lg"
-                                        />
-                                    </div>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="absolute left-4"/>
-                        <CarouselNext className="absolute right-4"/>
-                    </Carousel>
-                </div>
-            )}
+            <EventCarousel coverPhotos={coverFiles.map(getImageUrl)}/>
 
             <div className="space-y-4">
                 <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
