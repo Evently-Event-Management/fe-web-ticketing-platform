@@ -11,12 +11,14 @@ interface ReviewEventHeroProps {
     title: string;
     categoryName?: string | null;
     organization?: OrganizationResponse | null;
+    description?: string | null;
     coverFiles: File[] | string[];
 }
 
 export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
                                                                     title,
                                                                     categoryName,
+                                                                    description,
                                                                     organization,
                                                                     coverFiles
                                                                 }) => {
@@ -39,8 +41,8 @@ export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
                 <div className="flex flex-wrap items-center gap-4 text-sm">
 
                     {organization?.name && (
-                        <div className="flex items-center gap-1">
-                            <Avatar className="h-6 w-6">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
                                 <AvatarImage src={organization.logoUrl} alt={organization.name}/>
                                 <AvatarFallback> {organization.name.charAt(0).toUpperCase()} </AvatarFallback>
                             </Avatar>
@@ -56,6 +58,11 @@ export const ReviewEventHero: React.FC<ReviewEventHeroProps> = ({
                     )}
 
                 </div>
+                {description && (
+                    <div className="text-lg leading-relaxed text-muted-foreground">
+                        {description}
+                    </div>
+                )}
             </div>
         </div>
     );

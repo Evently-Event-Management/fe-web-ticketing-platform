@@ -64,7 +64,7 @@ export function OnlineConfigView({onSave}: {
                     </SelectContent>
                 </Select>
             </div>
-            <Button onClick={handleSave} className="w-full">Set Capacity & Tier</Button>
+            <Button onClick={handleSave} type={'button'}  className="w-full">Set Capacity & Tier</Button>
         </div>
     );
 }

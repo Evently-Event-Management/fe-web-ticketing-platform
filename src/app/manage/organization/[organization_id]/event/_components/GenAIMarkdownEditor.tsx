@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {UseFormGetValues} from 'react-hook-form';
-import MDEditor, { commands } from '@uiw/react-md-editor';
+import MDEditor from '@uiw/react-md-editor';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import {Textarea} from '@/components/ui/textarea';
 import {Label} from '@/components/ui/label';
-import {Wand2, AlertTriangle, Loader2, Sparkles, Brain, Pencil, Columns3, Eye} from 'lucide-react';
+import {Wand2, AlertTriangle, Loader2, Sparkles, Brain} from 'lucide-react';
 import {toast} from 'sonner';
 import {getOverview} from '@/lib/actions/aiActions';
 import {CreateEventFormData} from '@/lib/validators/event';
@@ -75,49 +75,6 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
         }
     };
 
-    const editCommand = {
-        name: 'edit',
-        keyCommand: 'edit',
-        buttonProps: { 'aria-label': 'Edit' },
-        icon: (
-            <span className="flex items-center gap-2 px-2">
-                <Pencil className="h-4 w-4" /> Edit
-            </span>
-        ),
-        execute: (state: any, api: any) => {
-            api.setPreviewMode('edit');
-        },
-    };
-
-    const liveCommand = {
-        name: 'live',
-        keyCommand: 'live',
-        buttonProps: { 'aria-label': 'Split view' },
-        icon: (
-            <span className="flex items-center gap-2 px-2">
-                <Columns3 className="h-4 w-4" /> Split
-            </span>
-        ),
-        execute: (state: any, api: any) => {
-            api.setPreviewMode('live');
-        },
-    };
-
-    const previewCommand = {
-        name: 'preview',
-        keyCommand: 'preview',
-        buttonProps: { 'aria-label': 'Preview' },
-        icon: (
-            <span className="flex items-center gap-2 px-2">
-                <Eye className="h-4 w-4" /> Preview
-            </span>
-        ),
-        execute: (state: any, api: any) => {
-            api.setPreviewMode('preview');
-        },
-    };
-
-
 
     return (
         <div className="space-y-4">
@@ -145,27 +102,7 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
                     value={value || ''}
                     onChange={(val) => onChange(val || '')}
                     height={500}
-                    commands={[
-                        // Our new, custom switcher group
-                        commands.group([editCommand, liveCommand, previewCommand], {
-                            name: 'preview',
-                            groupName: 'preview',
-                            buttonProps: { 'aria-label': 'Preview mode' },
-                        }),
-                        // A divider
-                        commands.divider,
-                        // Other useful default commands
-                        commands.bold,
-                        commands.italic,
-                        commands.strikethrough,
-                        commands.hr,
-                        commands.title,
-                        commands.divider,
-                        commands.link,
-                        commands.quote,
-                        commands.code,
-                        commands.image,
-                    ]}
+                    preview="preview"
                 />
                 {!value && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
