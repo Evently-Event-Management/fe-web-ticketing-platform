@@ -6,7 +6,7 @@ interface ReviewEventDetailsProps {
     overview?: string;
 }
 
-export const ReviewEventDetails: React.FC<ReviewEventDetailsProps> = ({
+export const EventOverview: React.FC<ReviewEventDetailsProps> = ({
                                                                           overview
                                                                       }) => {
     if (!overview) return null;

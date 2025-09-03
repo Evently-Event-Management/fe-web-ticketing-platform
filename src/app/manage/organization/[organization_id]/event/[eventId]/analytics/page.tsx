@@ -8,16 +8,18 @@ import {columns} from "./_components/SessionTableColumns";
 import {DataTable} from "@/components/DataTable";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getAllSessionsAnalytics, getEventAnalytics} from "@/lib/actions/public/analyticsActions";
+import { AlertTriangle } from "lucide-react";
+import {useParams} from "next/navigation";
 
-type AnalyticsPageProps = { params: { eventId: string; } }
 
-export default function AnalyticsPage({params}: AnalyticsPageProps) {
-    const {eventId} = params;
+export default function AnalyticsPage() {
     const [analyticsData, setAnalyticsData] = useState<EventAnalytics | null>(null);
     const [sessions, setSessions] = useState<SessionSummary[]>([]);
     const [isEventLoading, setIsEventLoading] = useState(true);
     const [isGaLoading, setIsGaLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const params = useParams();
+    const eventId = params.eventId as string;
 
     // Fetch core event data
     useEffect(() => {
@@ -83,7 +85,18 @@ export default function AnalyticsPage({params}: AnalyticsPageProps) {
     }, [eventId]);
 
     if (error) {
-        return <div className="p-8 text-center text-destructive">{error}</div>;
+        return (
+            <div
+                className="container mx-auto p-8 flex flex-col items-center justify-center text-center h-[calc(100vh-200px)]">
+                <div className="p-4 bg-destructive/10 rounded-full mb-4">
+                    <AlertTriangle className="h-8 w-8 text-destructive"/>
+                </div>
+                <h2 className="text-xl font-semibold text-destructive">{error}</h2>
+                <p className="text-muted-foreground mt-2">
+                    Please wait for the event to be approved by an administrator.
+                </p>
+            </div>
+        );
     }
 
     // Show skeleton while core event data is loading

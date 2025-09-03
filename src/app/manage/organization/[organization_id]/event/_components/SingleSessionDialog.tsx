@@ -68,37 +68,34 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
     };
 
     const onSubmit = (data: SingleSessionFormValues) => {
-        // Check if adding this session would exceed the limit
-        console.log("Current session count:", currentSessionCount);
-        console.log("Submitted data:", data);
         if (currentSessionCount >= maxSessions) {
             toast.error(`Cannot add more sessions. You have reached the limit of ${maxSessions} sessions.`);
             return;
         }
 
-        // Create the session start time by combining date and time
         const startTime = setMinutes(
             setHours(
-                new Date(data.startDate), // Ensure we have a fresh Date object
+                new Date(data.startDate),
                 parseInt(data.startTime.split(':')[0])
             ),
             parseInt(data.startTime.split(':')[1])
         );
 
-        // Calculate end time based on duration
         const endTime = new Date(startTime.getTime() + data.durationHours * 60 * 60 * 1000);
 
-        // Calculate sales start time based on the rule type
         let salesStartTime = new Date(subDays(startTime, 7)).toISOString();
 
         if (data.salesStartRuleType === Enums.IMMEDIATE) {
-            // For immediate sales, use current time
             salesStartTime = new Date().toISOString();
         } else if (data.salesStartRuleType === Enums.ROLLING) {
-            // For rolling sales, subtract the specified hours from the event start time
             salesStartTime = subHours(startTime, data.salesStartHoursBefore).toISOString();
         } else if (data.salesStartRuleType === Enums.FIXED) {
-            // For fixed datetime, combine the selected date with the time
+
+            if (!data.salesStartFixedDatetime) {
+                toast.error("Please select a sales start date for the fixed rule.");
+                return;
+            }
+
             const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
             const fixedSalesStartTime = setMinutes(
                 setHours(
@@ -108,7 +105,6 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
                 minutes
             );
 
-            // Validate that sales start time is before event start time
             if (fixedSalesStartTime >= startTime) {
                 toast.error("Sales start time must be before the event start time");
                 return;
@@ -117,16 +113,14 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             salesStartTime = fixedSalesStartTime.toISOString();
         }
 
-        // Create the session object
         const newSession: SessionFormData = {
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
             sessionType: SessionType.PHYSICAL,
-            salesStartTime: salesStartTime, // Use the calculated sales start time
+            salesStartTime: salesStartTime,
             layoutData: {name: null, layout: {blocks: []}}
         };
 
-        console.log("New session:", newSession);
         onAdd(newSession);
         setOpen(false);
     };

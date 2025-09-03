@@ -23,11 +23,11 @@ const TicketActionPanel: React.FC<{ tiers: EventBasicInfoDTO['tiers'] }> = ({tie
 
 
 export const EventHero: React.FC<{ event: EventBasicInfoDTO, viewCount?: number }> = ({event, viewCount}) => {
-    const {title, description, overview, coverPhotos, organization, category, tiers} = event;
+    const {title, description, coverPhotos, organization, category, tiers} = event;
 
     return (
         // Changed from a single column to a responsive grid layout
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 px-4">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
 
             {/* Left Column: Event Details */}
             <div className="lg:col-span-2 space-y-6">
@@ -73,12 +73,6 @@ export const EventHero: React.FC<{ event: EventBasicInfoDTO, viewCount?: number 
                         <div>
                             <h2 className="text-xl font-bold mb-2">About this event</h2>
                             <p>{description}</p>
-                        </div>
-                    )}
-                    {overview && (
-                        <div className="mt-4">
-                            <h2 className="text-xl font-bold mb-2">Overview</h2>
-                            <p>{overview}</p>
                         </div>
                     )}
                 </div>
