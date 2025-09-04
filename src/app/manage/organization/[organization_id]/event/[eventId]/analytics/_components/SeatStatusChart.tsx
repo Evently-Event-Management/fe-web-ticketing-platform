@@ -20,7 +20,7 @@ import {ReadModelSeatStatus} from "@/lib/validators/enums";
 
 const statusConfig = {
     [ReadModelSeatStatus.AVAILABLE]: {label: "Available", color: "var(--color-chart-2)"},
-    [ReadModelSeatStatus.BOOKED]: {label: "Booked", color: "var(--color-chart-5)"},
+    [ReadModelSeatStatus.BOOKED]: {label: "Booked", color: "var(--color-chart-1)"},
     [ReadModelSeatStatus.RESERVED]: {label: "Reserved", color: "var(--color-chart-4)"},
     [ReadModelSeatStatus.LOCKED]: {label: "Locked", color: "var(--color-chart-3)"},
 } satisfies Record<ReadModelSeatStatus, { label: string; color: string }>
