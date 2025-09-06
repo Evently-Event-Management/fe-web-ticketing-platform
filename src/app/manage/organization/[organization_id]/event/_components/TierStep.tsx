@@ -116,6 +116,7 @@ export function TiersStep() {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
+                        type={'button'}
                         onClick={() => openEditDialog(index)}
                       >
                         <Edit className="h-4 w-4" />
@@ -124,6 +125,7 @@ export function TiersStep() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        type={'button'}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                         onClick={() => openDeleteDialog(index)}
                         disabled={fields.length <= 1} // Prevent deleting the last tier
