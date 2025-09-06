@@ -27,7 +27,7 @@ export const SessionAnalyticsView: React.FC<{ analytics: SessionAnalytics }> = (
                 <h1 className="text-3xl font-bold tracking-tight">{analytics.eventTitle}</h1>
                 <div className="flex items-center gap-4 mt-2">
                     <p className="text-muted-foreground">
-                        Session Details for {formatDate(analytics.startTime)}
+                        Session Details for {formatDate(analytics.startTime)} - {formatDate(analytics.endTime)}
                     </p>
                     <SessionStatusBadge status={analytics.sessionStatus}/>
                 </div>
@@ -58,8 +58,8 @@ export const SessionAnalyticsView: React.FC<{ analytics: SessionAnalytics }> = (
 
                 />
                 <AnalyticsCard
-                    title="Time Until Start"
-                    value={analytics.sessionStatus === 'SCHEDULED' ? formatDate(analytics.startTime) : analytics.sessionStatus === 'ON_SALE' ? `Started on ${formatDateTimeShort(analytics.startTime)}` : `Ended on ${formatDateTimeShort(analytics.endTime)}`}
+                    title="Sales Window"
+                    value={analytics.sessionStatus === 'SCHEDULED' ? `Start on ${formatDate(analytics.salesStartTime)}` : analytics.sessionStatus === 'ON_SALE' ? `Started on ${formatDateTimeShort(analytics.salesStartTime)}` : `Ended on ${formatDateTimeShort(analytics.startTime)}`}
                     subtitle={`Sales window: ${formatISODuration(analytics.salesWindowDuration)}`}
                     icon={
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
