@@ -17,7 +17,7 @@ import * as React from "react";
 
 export default function Topbar() {
     const {isAuthenticated, keycloak, isAdmin} = useAuth()
-    const username = keycloak.tokenParsed?.name || 'User'
+    const username = keycloak?.tokenParsed?.name || 'User'
     const userIsAdmin = isAdmin()
 
     return (
@@ -91,10 +91,10 @@ export default function Topbar() {
                                             <DropdownMenuSeparator/>
                                         </>
                                     )}
-                                    <DropdownMenuItem onClick={() => keycloak.logout()}>
+                                    <DropdownMenuItem onClick={() => keycloak?.logout()}>
                                         Logout
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => keycloak.accountManagement()}>
+                                    <DropdownMenuItem onClick={() => keycloak?.accountManagement()}>
                                         Manage Account
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -102,11 +102,12 @@ export default function Topbar() {
                         </>
                     ) : (
                         <>
+                            {/* FIX: Use optional chaining on keycloak methods */}
                             <Button variant="outline" className="hidden lg:inline-flex"
-                                    onClick={() => keycloak.login()}>
+                                    onClick={() => keycloak?.login()}>
                                 Login
                             </Button>
-                            <Button onClick={() => keycloak.register()}>
+                            <Button onClick={() => keycloak?.register()}>
                                 Sign Up
                             </Button>
                         </>

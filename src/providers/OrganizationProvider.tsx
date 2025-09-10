@@ -78,9 +78,9 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
     }, []);
 
     useEffect(() => {
-        if (!isAuthenticated || !keycloak.tokenParsed) return;
+        if (!isAuthenticated || !keycloak || !keycloak.tokenParsed) return;
         let isMounted = true;
-        setupOrganization(isMounted);
+        setupOrganization(isMounted).then();
         return () => {
             isMounted = false;
         };

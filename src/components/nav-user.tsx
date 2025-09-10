@@ -103,13 +103,13 @@ export function NavUser({
                             </>
                         )}
                         <DropdownMenuGroup>
-                            <DropdownMenuItem onClick={() => keycloak.accountManagement()}>
+                            <DropdownMenuItem onClick={() => keycloak?.accountManagement()}>
                                 <UserRoundPen/>
                                 Account
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuItem onClick={() => keycloak.logout()}>
+                        <DropdownMenuItem onClick={() => keycloak?.logout()}>
                             <LogOut/>
                             Log out
                         </DropdownMenuItem>

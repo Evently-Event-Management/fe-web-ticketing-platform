@@ -21,7 +21,7 @@ const Notice: React.FC<NoticeProps> = ({
     const {keycloak} = useAuth();
 
     const handleLogin = () => {
-        keycloak.login({
+        keycloak?.login({
             redirectUri: window.location.href
         }).then(r => console.log(r)).catch(e => console.error(e));
     };
