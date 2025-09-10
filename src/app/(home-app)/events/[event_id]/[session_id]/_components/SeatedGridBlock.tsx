@@ -100,10 +100,10 @@ export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
                                             <div className="flex items-center gap-1">
                                                 <div className="h-2 w-2 rounded-full"
                                                      style={{backgroundColor: seat.tier.color}}/>
-                                                <span className="text-xs">{seat.tier.name}</span>
+                                                <span className="text-xs text-foreground">{seat.tier.name}</span>
                                             </div>
                                             <span
-                                                className="text-xs font-medium">{new Intl.NumberFormat('en-LK', {
+                                                className="text-xs font-medium text-foreground">{new Intl.NumberFormat('en-LK', {
                                                 style: 'currency',
                                                 currency: 'LKR'
                                             }).format(seat.tier.price)}</span>
