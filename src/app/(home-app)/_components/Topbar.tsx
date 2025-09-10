@@ -23,7 +23,7 @@ export default function Topbar() {
     return (
         <header
             className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2">
-            <div className="container flex h-12 items-center">
+            <div className="flex h-12 items-center justify-between w-full">
                 <div className="mr-4 flex">
                     <Link className="mr-6 flex items-center space-x-2" href="/">
                         <div className="flex items-center gap-2 p-3 text-primary">
