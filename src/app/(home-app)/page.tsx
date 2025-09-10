@@ -198,7 +198,7 @@ export default function HomePage() {
                         </Link>
                     ) : (
                         <button
-                            onClick={() => keycloak.register()}
+                            onClick={() => keycloak?.register()}
                             className="inline-flex items-center px-8 py-4 bg-background text-foreground rounded-full hover:bg-muted transition-colors duration-200 text-lg font-medium">
                             Get Started
                             <ArrowRight className="ml-2 w-5 h-5" />

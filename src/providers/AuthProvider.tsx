@@ -25,6 +25,10 @@ export default function AuthProvider({children}: { children: ReactNode }) {
     const [isInitialized, setInitialized] = useState(false)
 
     useEffect(() => {
+        if (!keycloak) {
+            return;
+        }
+
         keycloak
             .init({
                 onLoad: 'check-sso', // Don't force login
@@ -43,8 +47,7 @@ export default function AuthProvider({children}: { children: ReactNode }) {
 
     // Check if the user belongs to the System Admins group
     const isAdmin = (): boolean => {
-        if (!isAuthenticated || !keycloak.tokenParsed) return false
-
+        if (!isAuthenticated || !keycloak || !keycloak.tokenParsed) return false
         const userGroups = keycloak.tokenParsed.user_groups || []
         return userGroups.includes('/Permissions/Users/System Admins')
     }

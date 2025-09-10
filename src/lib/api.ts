@@ -13,6 +13,10 @@ type ApiFetchOptions = Omit<RequestInit, 'headers'> & {
  * @returns The parsed JSON response
  */
 export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {}): Promise<T> {
+    if (!keycloak) {
+        throw new Error('Keycloak is not initialized. Cannot make API calls.');
+    }
+
     if (!keycloak.authenticated) {
         throw new Error('User is not authenticated');
     }
