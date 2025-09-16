@@ -48,7 +48,7 @@ const sessionSeatingMapRequestSchema = z.object({
 
 // ✅ UPDATED: This DTO now holds details for both physical and online locations
 const venueDetailsSchema = z.object({
-    name: z.string().optional(), // Optional in schema; requirement for physical venues is enforced in session schema refinements
+    name: z.string().optional(),
     address: z.string().optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
@@ -131,6 +131,14 @@ export const stepValidationFields = {
     3: ['sessions'] as const,
     4: ['sessions'] as const,
 } as const;
+
+
+export const step1Schema = createEventSchema.pick({
+    title: true,
+    categoryId: true,
+    description: true,
+    overview: true
+});
 
 
 // --- API Response Schemas ---
