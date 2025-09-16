@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import {z} from 'zod';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
@@ -9,42 +8,32 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
+import {Tier, tierSchema} from "@/lib/validators/event";
 
-const tierSchema = z.object({
-    name: z.string().min(1, {message: "Tier name is required"}),
-    price: z.number().min(0, {message: "Price must be a positive number"}),
-    color: z.string().min(1, {message: "Color is required"})
-});
-
-type TierFormValues = z.infer<typeof tierSchema>;
 
 interface TierDialogProps {
     open: boolean;
     setOpen: (open: boolean) => void;
-    onSave: (tier: { name: string, price: number, color: string }) => void;
+    onSave: (tier: Tier) => void;
     initialValues?: { name: string, price: number, color: string };
     mode: 'create' | 'edit';
 }
 
 export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDialogProps) {
-    // Default values when creating a new tier
-    const defaultValues: TierFormValues = {
+    const defaultValues: Tier = {
+        id: `temp_tier_${Date.now()}`,
         name: '',
         price: 0,
         color: '#8B5CF6' // Default purple color
     };
 
-    const form = useForm<TierFormValues>({
+    const form = useForm<Tier>({
         resolver: zodResolver(tierSchema),
         defaultValues: initialValues || defaultValues
     });
 
-    const handleSubmit = (values: TierFormValues) => {
-        onSave({
-            name: values.name,
-            price: values.price,
-            color: values.color
-        });
+    const handleSubmit = (tier: Tier) => {
+        onSave(tier);
         setOpen(false);
         form.reset();
     };

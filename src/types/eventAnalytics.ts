@@ -1,4 +1,5 @@
-import {ReadModelSeatStatus, SessionStatus} from "@/lib/validators/enums";
+import {SessionStatus} from "@/types/enums/sessionStatus";
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 /**
  * DTO representing occupancy analytics for a specific venue block.

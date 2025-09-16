@@ -12,7 +12,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {SessionType} from "@/lib/validators/enums";
+
+import {SessionType} from "@/types/enums/sessionType";
 
 export function SessionListItemSeating({field, index, onConfigure}: {
     field: SessionFormData;

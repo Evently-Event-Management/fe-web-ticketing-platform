@@ -213,7 +213,6 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                                 <FormMessage/>
                             </FormItem>
                         )}/>
-                        {/* You can add another field here to create a two-column layout */}
                     </div>
 
                     <FormField control={control} name="description" render={({field}) => (

@@ -16,7 +16,8 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import {ReadModelSeatStatus} from "@/lib/validators/enums";
+
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 const statusConfig = {
     [ReadModelSeatStatus.AVAILABLE]: {label: "Available", color: "var(--color-chart-2)"},
