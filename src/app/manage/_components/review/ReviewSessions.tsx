@@ -4,8 +4,8 @@ import {Calendar, Clock, LinkIcon, MapPin, Tag} from 'lucide-react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from "@/components/ui/accordion";
 import {Badge} from '@/components/ui/badge';
 import {SessionFormData, Tier} from '@/lib/validators/event';
-import {SessionType} from "@/lib/validators/enums";
 import dynamic from "next/dynamic";
+import {SessionType} from "@/types/enums/sessionType";
 
 const SeatingInformation = dynamic(
     () => import("./SeatingInformation").then(mod => mod.SeatingInformation),

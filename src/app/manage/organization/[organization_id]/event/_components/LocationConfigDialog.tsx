@@ -15,9 +15,9 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Skeleton} from '@/components/ui/skeleton';
-import {SessionType} from "@/lib/validators/enums";
 
 import 'leaflet/dist/leaflet.css';
+import {SessionType} from "@/types/enums/sessionType";
 
 // Default center for the map (Colombo, Sri Lanka)
 const DEFAULT_MAP_CENTER: LatLngLiteral = {

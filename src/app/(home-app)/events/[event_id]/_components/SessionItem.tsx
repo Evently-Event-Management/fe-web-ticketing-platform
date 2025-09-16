@@ -1,6 +1,5 @@
 'use client'
 
-import {SessionStatus, SessionType} from "@/lib/validators/enums";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 import {CalendarIcon, Clock, MapPin, Video} from "lucide-react";
 import {SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
@@ -14,6 +13,8 @@ import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {SeatStatusSummary} from "@/app/(home-app)/events/[event_id]/_components/SeatStatusSummery";
 import {useRouter} from "next/navigation";
 import {SessionStatusBadge} from "@/components/SessionStatusBadge";
+import {SessionType} from "@/types/enums/sessionType";
+import {SessionStatus} from "@/types/enums/sessionStatus";
 
 export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);

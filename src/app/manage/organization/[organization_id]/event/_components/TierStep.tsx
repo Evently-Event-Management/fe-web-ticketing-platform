@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { CreateEventFormData } from '@/lib/validators/event';
+import {CreateEventFormData, Tier} from '@/lib/validators/event';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Ticket, Edit, Trash2 } from 'lucide-react';
@@ -46,16 +46,11 @@ export function TiersStep() {
     initialRenderRef.current = false;
   }, [append, fields.length]);
 
-  const handleCreateTier = (tier: { name: string, price: number, color: string }) => {
-    append({
-      id: `temp_tier_${Date.now()}`, // Temporary client ID
-      name: tier.name,
-      price: tier.price,
-      color: tier.color
-    });
+  const handleCreateTier = (tier: Tier) => {
+    append(tier);
   };
 
-  const handleEditTier = (tier: { name: string, price: number, color: string }) => {
+  const handleEditTier = (tier: Tier) => {
     if (editingIndex !== null) {
       update(editingIndex, {
         ...fields[editingIndex],

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionFormData} from '@/lib/validators/event';
+import {CreateEventFormData, SessionBasicData} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {PlusCircle, Repeat, Trash2,} from 'lucide-react';
@@ -29,20 +29,18 @@ export function SchedulingStep() {
         name: "sessions",
     });
 
-    const handleGenerateSessions = (newSessions: SessionFormData[]) => {
-        // Session count validation is now handled in the dialog component
-        append(newSessions);
+    const handleGenerateSessions = (newSessions: SessionBasicData[]) => {
+        append(newSessions as typeof fields);
         toast.success(`${newSessions.length} recurring sessions have been added.`);
     };
 
-    const handleAddSingleSession = (newSession: SessionFormData) => {
-        // Session count validation is now handled in the dialog component
-        append(newSession);
+    const handleAddSingleSession = (newSession: SessionBasicData) => {
+        append(newSession as typeof fields[0]);
         toast.success("New session has been added.");
     };
 
     const clearAllSessions = () => {
-        replace([]); // replace with an empty array
+        replace([]);
         toast.info("All sessions have been cleared.");
     };
 

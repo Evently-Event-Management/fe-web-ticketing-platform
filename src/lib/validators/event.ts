@@ -1,12 +1,27 @@
 import {z} from 'zod';
-import {SessionType} from "@/lib/validators/enums";
 
+import {SessionType} from "@/types/enums/sessionType";
 
-// --- Seating Layout Schemas ---
+// --- Reusable Atomic Schemas ---
 
 const positionSchema = z.object({
-    x: z.number(),
-    y: z.number(),
+    x: z.number().min(0, {message: "X position must be non-negative."}),
+    y: z.number().min(0, {message: "Y position must be non-negative."}),
+})
+
+export const tierSchema = z.object({
+    id: z.string(),
+    name: z.string().min(1, {message: "Tier name cannot be empty."}),
+    price: z.number().min(0, {message: "Price must be a positive number."}),
+    color: z.string().optional(),
+});
+
+const venueDetailsSchema = z.object({
+    name: z.string().optional(),
+    address: z.string().optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
+    onlineLink: z.string().optional(),
 });
 
 const seatSchema = z.object({
@@ -34,111 +49,116 @@ export const blockSchema = z.object({
     seats: z.array(seatSchema).optional(),
 });
 
-const layoutSchema = z.object({
-    blocks: z.array(blockSchema),
-});
-
 const sessionSeatingMapRequestSchema = z.object({
     name: z.string().nullable(),
-    layout: layoutSchema,
+    layout: z.object({
+        blocks: z.array(blockSchema),
+    }),
 });
 
 
-// --- Venue & Tier Schemas ---
+// --- Composable Session Schemas ---
 
-// ✅ UPDATED: This DTO now holds details for both physical and online locations
-const venueDetailsSchema = z.object({
-    name: z.string().optional(),
-    address: z.string().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    onlineLink: z.string().optional(),
-});
-
-const tierSchema = z.object({
-    id: z.string(),
-    name: z.string().min(1, {message: "Tier name cannot be empty."}),
-    price: z.number().min(0, {message: "Price must be a positive number."}),
-    color: z.string().optional(),
-});
-
-
-// --- Session Schema with Conditional Logic ---
-
-const sessionSchema = z.object({
+// 1. The most basic session, as created in the dialogs.
+// It has optional fields and only universal time-based rules.
+export const baseSessionSchema = z.object({
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
     salesStartTime: z.iso.datetime({message: "Invalid sales start date format."}),
-    sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
+    sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]).nullable(),
     venueDetails: venueDetailsSchema.optional(),
-    layoutData: sessionSeatingMapRequestSchema,
+    layoutData: sessionSeatingMapRequestSchema.optional(),
+})
+    .refine(data => new Date(data.endTime) > new Date(data.startTime), {
+        message: "End time must be after the start time.",
+        path: ["endTime"],
+    })
+    .refine(data => new Date(data.startTime) > new Date(), {
+        message: "Start time must be in the future.",
+        path: ["startTime"],
+    })
+    .refine(data => new Date(data.salesStartTime) < new Date(data.startTime), {
+        message: "Sales start time must be before the session start time.",
+        path: ["salesStartTime"],
+    });
 
-}).refine(data => {
-    // If it's an online session, the onlineLink must be a valid URL.
-    if (data.sessionType === SessionType.ONLINE) {
-        return data.venueDetails?.onlineLink && z.url().safeParse(data.venueDetails.onlineLink).success;
-    }
-    return true;
-}, {
-    message: "A valid URL is required for online sessions.",
-    path: ["venueDetails", "onlineLink"], // Point error to the correct field
-}).refine(data => {
-    // If it's a physical session, venueDetails and its name must be provided.
-    if (data.sessionType === SessionType.PHYSICAL) {
-        return !!data.venueDetails && !!data.venueDetails.name && data.venueDetails.name.length > 0;
-    }
-    return true;
-}, {
-    message: "Venue details are required for physical sessions.",
-    path: ["venueDetails", "name"], // Point error to the correct field
-}).refine(data => {
-    return new Date(data.endTime) > new Date(data.startTime);
-}, {
-    message: "End time must be after the start time.",
-    path: ["endTime"],
-});
+// 2. A session that is "complete" for Step 3.
+// It enforces that a sessionType and valid venueDetails are now present.
+const sessionWithVenueSchema = baseSessionSchema
+    .extend({
+        // Override sessionType to be non-nullable for this validation step
+        sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
+    })
+    .refine(data => {
+        if (data.sessionType === SessionType.ONLINE) {
+            return data.venueDetails?.onlineLink && z.url().safeParse(data.venueDetails.onlineLink).success;
+        }
+        return true;
+    }, {
+        message: "A valid URL is required for online sessions.",
+        path: ["venueDetails", "onlineLink"],
+    })
+    .refine(data => {
+        if (data.sessionType === SessionType.PHYSICAL) {
+            return !!data.venueDetails?.name?.trim();
+        }
+        return true;
+    }, {
+        message: "Venue name is required for physical sessions.",
+        path: ["venueDetails", "name"],
+    });
 
 
-// --- Final Event Schema ---
+// 3. A session that is "complete" for Step 4.
+// It enforces that layoutData exists and that all seats have a tier.
+const sessionWithSeatingSchema = sessionWithVenueSchema
+    .extend({
+        layoutData: sessionSeatingMapRequestSchema,
+    })
 
-export const createEventSchema = z.object({
+
+// --- Progressive Event Schemas (The Chain) ---
+
+// This is the base schema for Step 1
+export const step1Schema = z.object({
     title: z.string().min(3, {message: "Title must be at least 3 characters."}),
     description: z.string().optional(),
     overview: z.string().optional(),
     organizationId: z.uuid(),
     categoryId: z.uuid({message: "Please select a category."}),
     categoryName: z.string().optional().nullable(),
-    tiers: z.array(tierSchema).min(1, {message: "You must create at least one tier."}),
-    sessions: z.array(sessionSchema).min(1, {message: "You must schedule at least one session."}),
 });
+
+// Step 2 adds the 'tiers' requirement
+export const step2Schema = step1Schema.extend({
+    tiers: z.array(tierSchema).min(1, {message: "You must create at least one tier."}),
+});
+
+// Step 3 adds the 'sessions' requirement with venue validation
+export const step3Schema = step2Schema.extend({
+    sessions: z.array(sessionWithVenueSchema)
+        .min(1, {message: "You must schedule at least one session."}),
+});
+
+// Step 4 makes the 'sessions' validation stricter with seating checks
+export const step4Schema = step3Schema.extend({
+    sessions: z.array(sessionWithSeatingSchema)
+        .min(1, {message: "You must schedule at least one session."}),
+});
+
+// The final, complete schema for the entire form submission
+export const finalCreateEventSchema = step4Schema;
+
 
 // --- Type Inference ---
 
-export type CreateEventFormData = z.infer<typeof createEventSchema>;
-export type SessionFormData = z.infer<typeof sessionSchema>;
+export type CreateEventFormData = z.infer<typeof finalCreateEventSchema>;
+export type SessionBasicData = z.infer<typeof baseSessionSchema>;
+export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type Tier = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
-export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
-export type Seat = z.infer<typeof seatSchema>;
-export type Row = z.infer<typeof rowSchema>;
 export type Block = z.infer<typeof blockSchema>;
-
-// --- Step-by-Step Validation Fields ---
-
-export const stepValidationFields = {
-    1: ['title', 'categoryId', 'description', 'overview'] as const,
-    2: ['tiers'] as const,
-    3: ['sessions'] as const,
-    4: ['sessions'] as const,
-} as const;
-
-
-export const step1Schema = createEventSchema.pick({
-    title: true,
-    categoryId: true,
-    description: true,
-    overview: true
-});
+export type Seat = z.infer<typeof seatSchema>;
 
 
 // --- API Response Schemas ---

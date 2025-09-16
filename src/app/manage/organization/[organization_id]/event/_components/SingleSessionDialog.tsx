@@ -16,35 +16,73 @@ import {Button} from "@/components/ui/button";
 import {Calendar as CalendarIcon} from "lucide-react";
 import {Calendar} from "@/components/ui/calendar";
 import * as React from "react";
-import {SessionFormData} from "@/lib/validators/event";
+import {baseSessionSchema, SessionBasicData} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
-import {Enums, SessionType} from "@/lib/validators/enums";
+import {SalesStartRuleType} from "@/types/enums/salesStartRuleType";
+import {z} from "zod";
 
 interface SingleSessionFormValues {
     startDate: Date;
     startTime: string;
     durationHours: number;
-    salesStartRuleType: Enums;
+    salesStartRuleType: SalesStartRuleType;
     salesStartHoursBefore: number;
     salesStartFixedDatetime: Date;
     salesStartFixedTime: string; // Added field for fixed time
     isDaysNotHours: boolean;
 }
 
+export const singleSessionDialogSchema = z.object({
+    startDate: z.date(),
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
+    durationHours: z.number().min(0.5),
+    salesStartRuleType: z.enum([SalesStartRuleType.IMMEDIATE, SalesStartRuleType.ROLLING, SalesStartRuleType.FIXED]),
+    salesStartHoursBefore: z.number(),
+    salesStartFixedDatetime: z.date(),
+    salesStartFixedTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
+})
+    .transform((data) => {
+        const startTime = setMinutes(
+            setHours(new Date(data.startDate), parseInt(data.startTime.split(':')[0])),
+            parseInt(data.startTime.split(':')[1])
+        );
+        const endTime = new Date(startTime.getTime() + data.durationHours * 60 * 60 * 1000);
+        let salesStartTimeObj = subDays(startTime, 7);
+
+        if (data.salesStartRuleType === SalesStartRuleType.IMMEDIATE) {
+            salesStartTimeObj = new Date();
+        } else if (data.salesStartRuleType === SalesStartRuleType.ROLLING) {
+            salesStartTimeObj = subHours(startTime, data.salesStartHoursBefore);
+        } else if (data.salesStartRuleType === SalesStartRuleType.FIXED) {
+            const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
+            salesStartTimeObj = setMinutes(
+                setHours(new Date(data.salesStartFixedDatetime), hours),
+                minutes
+            );
+        }
+
+        return {
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            salesStartTime: salesStartTimeObj.toISOString(),
+            sessionType: null,
+        };
+    });
+
 export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, maxSessions}: {
     open: boolean,
     setOpen: (open: boolean) => void,
-    onAdd: (session: SessionFormData) => void,
+    onAdd: (session: SessionBasicData) => void,
     currentSessionCount: number,
     maxSessions: number
 }) {
-    const {control, handleSubmit, watch, setValue} = useForm<SingleSessionFormValues>({
+    const {control, handleSubmit, watch, setValue, reset} = useForm<SingleSessionFormValues>({
         defaultValues: {
             startDate: new Date(),
             startTime: '19:00',
             durationHours: 2,
-            salesStartRuleType: Enums.ROLLING,
+            salesStartRuleType: SalesStartRuleType.ROLLING,
             salesStartHoursBefore: 168,
             salesStartFixedDatetime: new Date(),
             salesStartFixedTime: '12:00', // Default fixed time
@@ -73,55 +111,27 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
             return;
         }
 
-        const startTime = setMinutes(
-            setHours(
-                new Date(data.startDate),
-                parseInt(data.startTime.split(':')[0])
-            ),
-            parseInt(data.startTime.split(':')[1])
-        );
+        // 1. Use Zod to validate and transform the raw form data
+        const parsedResult = singleSessionDialogSchema.safeParse(data);
 
-        const endTime = new Date(startTime.getTime() + data.durationHours * 60 * 60 * 1000);
-
-        let salesStartTime = new Date(subDays(startTime, 7)).toISOString();
-
-        if (data.salesStartRuleType === Enums.IMMEDIATE) {
-            salesStartTime = new Date().toISOString();
-        } else if (data.salesStartRuleType === Enums.ROLLING) {
-            salesStartTime = subHours(startTime, data.salesStartHoursBefore).toISOString();
-        } else if (data.salesStartRuleType === Enums.FIXED) {
-
-            if (!data.salesStartFixedDatetime) {
-                toast.error("Please select a sales start date for the fixed rule.");
-                return;
-            }
-
-            const [hours, minutes] = data.salesStartFixedTime.split(':').map(num => parseInt(num));
-            const fixedSalesStartTime = setMinutes(
-                setHours(
-                    new Date(data.salesStartFixedDatetime),
-                    hours
-                ),
-                minutes
-            );
-
-            if (fixedSalesStartTime >= startTime) {
-                toast.error("Sales start time must be before the event start time");
-                return;
-            }
-
-            salesStartTime = fixedSalesStartTime.toISOString();
+        if (!parsedResult.success) {
+            console.error("Single session form validation failed:", parsedResult.error);
+            parsedResult.error.issues.forEach((issue) => toast.error(issue.message));
+            return;
         }
 
-        const newSession: SessionFormData = {
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
-            sessionType: SessionType.PHYSICAL,
-            salesStartTime: salesStartTime,
-            layoutData: {name: null, layout: {blocks: []}}
-        };
+        const validatedResult = baseSessionSchema.safeParse(parsedResult.data);
 
+        if (!validatedResult.success) {
+            console.error("Base session validation failed:", validatedResult.error);
+            validatedResult.error.issues.forEach((issue) => toast.error(issue.message));
+            return;
+        }
+
+        // 3. If success, result.data is our perfectly formed SessionBasicData object
+        const newSession = validatedResult.data;
         onAdd(newSession);
+        reset()
         setOpen(false);
     };
 

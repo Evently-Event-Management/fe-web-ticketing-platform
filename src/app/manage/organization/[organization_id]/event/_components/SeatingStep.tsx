@@ -13,7 +13,6 @@ import {PhysicalConfigView} from "@/app/manage/organization/[organization_id]/ev
 import {Button} from "@/components/ui/button";
 import {toast} from "sonner";
 import {ArrowLeft} from "lucide-react";
-import {SessionType} from "@/lib/validators/enums";
 import {
     Dialog,
     DialogContent,
@@ -21,6 +20,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {SessionType} from "@/types/enums/sessionType";
 
 interface SeatingStepProps {
     onConfigModeChange?: (isInConfigMode: boolean) => void;

@@ -4,7 +4,6 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {SeatDTO, SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {Skeleton} from "@/components/ui/skeleton";
-import {ReadModelSeatStatus, SessionType} from "@/lib/validators/enums";
 import {SelectionSummary} from "./SelectionSummery";
 import {SeatingLayout} from "./SeatingLayout";
 import {OnlineTicketSelection} from "./OnlineTicketSelection";
@@ -13,6 +12,8 @@ import {subscribeToSeatStatusUpdates} from "@/lib/actions/public/sseActions";
 import {toast} from "sonner";
 import {useAuth} from "@/providers/AuthProvider";
 import Notice from "@/components/ui/Notice";
+import {SessionType} from "@/types/enums/sessionType";
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 // This type definition remains the same as it's used for props
 export type SelectedSeat = SeatDTO & {

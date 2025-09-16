@@ -1,5 +1,6 @@
 // src/types/sse.ts
-import { ReadModelSeatStatus } from "@/lib/validators/enums";
+
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 /**
  * DTO for real-time seat status updates received via SSE.

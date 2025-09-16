@@ -7,8 +7,8 @@ import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
 import {TimeConfigDialog} from './TimeConfigDialog'; // Assuming this component exists
 import {LinkIcon, MapPin, Settings, Trash2, Edit, Tag} from 'lucide-react';
-import { SessionType} from "@/lib/validators/enums";
 import dynamic from "next/dynamic";
+import {SessionType} from "@/types/enums/sessionType";
 
 const LocationConfigDialog = dynamic(
     () => import("./LocationConfigDialog").then(mod => mod.LocationConfigDialog),

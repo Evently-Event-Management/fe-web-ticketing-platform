@@ -1,37 +1,47 @@
 'use client';
 
 import * as React from 'react';
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {CoreDetailsStep} from "@/app/manage/organization/[organization_id]/event/_components/CoreDetailsStep";
 import {Progress} from "@/components/ui/progress";
 import {toast} from "sonner";
-import {FormProvider, useForm, Path} from "react-hook-form";
+import {FormProvider, Path, useForm} from "react-hook-form";
 import {Button} from "@/components/ui/button";
 import {TiersStep} from "@/app/manage/organization/[organization_id]/event/_components/TierStep";
 import {zodResolver} from '@hookform/resolvers/zod';
-import {CreateEventFormData, createEventSchema, stepValidationFields, step1Schema} from '@/lib/validators/event';
+import {
+    CreateEventFormData, finalCreateEventSchema,
+    step1Schema,
+    step2Schema,
+    step3Schema,
+} from '@/lib/validators/event';
 import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/_components/SchedulingStep";
 import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_components/SeatingStep";
 import {useOrganization} from "@/providers/OrganizationProvider";
 import {ReviewStep} from "@/app/manage/organization/[organization_id]/event/_components/ReviewStep";
 import {
     AlertDialog,
-    AlertDialogAction, AlertDialogCancel,
+    AlertDialogAction,
+    AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle, AlertDialogTrigger,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { createEvent } from "@/lib/actions/eventActions";
-import { useRouter } from "next/navigation";
+import {createEvent} from "@/lib/actions/eventActions";
+import {useRouter} from "next/navigation";
 import {z} from "zod";
 
 const getValidationSchemaForStep = (step: number): z.ZodSchema<Partial<CreateEventFormData>> | null => {
     switch (step) {
         case 1:
             return step1Schema;
-        // We'll add cases for steps 2, 3, and 4 later
+        case 2:
+            return step2Schema;
+        case 3:
+            return step3Schema;
         default:
             return null; // No validation needed for the final review step on "Next"
     }
@@ -52,25 +62,18 @@ export default function CreateEventPage() {
     const totalSteps = 5;
 
     const methods = useForm<CreateEventFormData>({
-        resolver: zodResolver(createEventSchema),
-        mode: 'onChange', // Enable real-time validation
+        resolver: zodResolver(finalCreateEventSchema),
+        mode: 'onChange',
         defaultValues: {
             title: 'An Example Event',
             description: 'This is a sample event description.',
             overview: 'An overview of the event goes here.',
-            organizationId: activeOrganization?.id || '', // This might be undefined initially
+            organizationId: activeOrganization?.id || '',
             categoryId: '',
             tiers: [],
             sessions: [],
         },
     });
-
-    // New: compute current step error messages
-    const currentStepFields = stepValidationFields[step as keyof typeof stepValidationFields] || [];
-    const currentStepErrorMessages = currentStepFields
-        .map(field => methods.formState.errors[field]?.message)
-        .filter(Boolean) as string[];
-    const firstStepErrorMessage = currentStepErrorMessages[0];
 
     // Update organizationId when activeOrganization becomes available
     useEffect(() => {
@@ -93,8 +96,6 @@ export default function CreateEventPage() {
             setStep(s => Math.min(totalSteps, s + 1));
         } else {
             const { fieldErrors } = validationResult.error.flatten();
-
-            // 🎯 The Fix: Type the fieldName correctly for setError
             Object.entries(fieldErrors).forEach(([fieldName, messages]) => {
                 if (messages) {
                     methods.setError(fieldName as Path<CreateEventFormData>, {
@@ -148,7 +149,6 @@ export default function CreateEventPage() {
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>;
             case 2:
                 return <TiersStep/>;
-            // Add cases for other steps here
             case 3:
                 return <SchedulingStep/>
             case 4:
@@ -160,14 +160,6 @@ export default function CreateEventPage() {
         }
     };
 
-    // Helper function to check if current step has errors
-    const hasStepErrors = () => {
-        const fieldsToCheck = stepValidationFields[step as keyof typeof stepValidationFields];
-        if (!fieldsToCheck) return false;
-
-        return fieldsToCheck.some(field => methods.formState.errors[field]);
-    };
-
     return (
         <div className="w-full flex justify-center p-4 md:p-8">
             <div className="w-full max-w-5xl space-y-8">
@@ -177,11 +169,6 @@ export default function CreateEventPage() {
                             <h1 className="text-2xl font-bold">Create New Event</h1>
                             <p className="text-sm text-muted-foreground">Step {step} of {totalSteps}</p>
                         </div>
-                        {firstStepErrorMessage && (
-                            <div className="text-sm text-destructive">
-                                {firstStepErrorMessage}
-                            </div>
-                        )}
                     </div>
                     <Progress value={(step / totalSteps) * 100} className="mt-2"/>
                 </div>

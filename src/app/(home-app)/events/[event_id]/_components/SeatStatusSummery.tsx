@@ -1,8 +1,8 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {SessionSeatingMapDTO} from "@/types/event";
-import {ReadModelSeatStatus} from "@/lib/validators/enums";
 import {useMemo} from "react";
 import {cn} from "@/lib/utils";
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 const statusConfig: Record<ReadModelSeatStatus, { label: string; color: string }> = {
     [ReadModelSeatStatus.AVAILABLE]: {label: "Available", color: "bg-green-500"},

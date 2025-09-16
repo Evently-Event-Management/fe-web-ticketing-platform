@@ -1,4 +1,6 @@
-import {ReadModelSeatStatus, SessionStatus, SessionType} from "@/lib/validators/enums";
+import {SessionType} from "@/types/enums/sessionType";
+import {SessionStatus} from "@/types/enums/sessionStatus";
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 export interface EventResponseDTO {
     id: string;
