@@ -20,9 +20,15 @@ interface LayoutEditorProps {
     initialData?: LayoutData;
     onSave: (layoutData: LayoutData) => Promise<void>;
     isLoading?: boolean;
+    toolboxPlacement?: 'sidebar' | 'header';
 }
 
-export function LayoutEditor({initialData, onSave, isLoading = false}: LayoutEditorProps) {
+export function LayoutEditor({
+                                 initialData,
+                                 onSave,
+                                 isLoading = false,
+                                 toolboxPlacement = 'sidebar',
+                             }: LayoutEditorProps) {
     const [blocks, setBlocks] = useState<LayoutBlock[]>([]);
     const [selectedBlock, setSelectedBlock] = useState<LayoutBlock | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
@@ -55,6 +61,13 @@ export function LayoutEditor({initialData, onSave, isLoading = false}: LayoutEdi
         };
         setBlocks(prev => [...prev, newBlock]);
     };
+
+    // --- Define toolbox buttons once to avoid repetition ---
+    const toolButtons: { type: BlockType; label: string }[] = [
+        { type: 'seated_grid', label: 'Seated Block' },
+        { type: 'standing_capacity', label: 'Capacity Block' },
+        { type: 'non_sellable', label: 'Non-Sellable' },
+    ];
 
     const handleDragEnd = (event: DragEndEvent) => {
         const {active, delta} = event;
@@ -92,19 +105,15 @@ export function LayoutEditor({initialData, onSave, isLoading = false}: LayoutEdi
 
     const handleSaveLayout = () => {
         if (blocks.length === 0) {
-            // You might want to use a toast here as well
             console.log("Cannot save an empty layout.");
             return;
         }
-
-        // No need to normalize coordinates, backend will handle it
         const layoutData: LayoutData = {
             name: layoutName,
             layout: {
                 blocks: blocks,
             },
         };
-
         onSave(layoutData).then();
     };
 
@@ -124,45 +133,70 @@ export function LayoutEditor({initialData, onSave, isLoading = false}: LayoutEdi
                 }
             `}</style>
             <DndContext onDragEnd={handleDragEnd} modifiers={[restrictToParentElement]}>
-                <div className="flex h-full bg-muted/40">
-                    {/* Toolbox */}
-                    <aside className="w-64 border-r bg-background p-4 flex flex-col">
-                        <div className="flex-grow space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="layout-name">Layout Name</Label>
-                                <Input
-                                    id="layout-name"
-                                    value={layoutName}
-                                    onChange={(e) => setLayoutName(e.target.value)}
-                                    placeholder="e.g., Main Auditorium"
-                                />
-                            </div>
-                            <h2 className="text-lg font-semibold pt-4 border-t">Toolbox</h2>
-                            <Button type={'button'} className="w-full justify-start" variant="ghost"
-                                    onClick={() => addNewBlock('seated_grid')}>
-                                <Plus className="mr-2 h-4 w-4"/> Seated Block
-                            </Button>
-                            <Button type={'button'} className="w-full justify-start" variant="ghost"
-                                    onClick={() => addNewBlock('standing_capacity')}>
-                                <Plus className="mr-2 h-4 w-4"/> Capacity Block
-                            </Button>
-                            <Button type={'button'} className="w-full justify-start" variant="ghost"
-                                    onClick={() => addNewBlock('non_sellable')}>
-                                <Plus className="mr-2 h-4 w-4"/> Non-Sellable
-                            </Button>
+                {/* --- HEADER BAR (UPDATED) --- */}
+                <div className="bg-background border-b">
+                    <div className="px-4 py-2 flex items-center justify-between">
+                        <div className="flex items-center space-x-4 flex-1">
+                            <Input
+                                id="header-layout-name"
+                                value={layoutName}
+                                onChange={(e) => setLayoutName(e.target.value)}
+                                placeholder="e.g., Main Auditorium"
+                                className="max-w-xs"
+                            />
                         </div>
-                        <div className="mt-auto">
-                            <Button type={'button'} className="w-full mb-2" variant="outline" onClick={() => setBlocks([])}
-                                    disabled={isLoading}>
+                        <div className="flex items-center space-x-2">
+                            <Button type={'button'} variant="outline" onClick={() => setBlocks([])} disabled={isLoading}>
                                 <BrushCleaning className="mr-2 h-4 w-4"/>
                                 Clear Layout
                             </Button>
-                            <Button type={'button'} className="w-full" onClick={handleSaveLayout} disabled={isLoading}>
+                            <Button type={'button'} onClick={handleSaveLayout} disabled={isLoading}>
                                 <Save className="mr-2 h-4 w-4"/>
                                 {isLoading ? 'Saving...' : 'Save Layout'}
                             </Button>
                         </div>
-                    </aside>
+                    </div>
+
+                    {/* Second row: Toolbox buttons when header placement is selected */}
+                    {toolboxPlacement === 'header' && (
+                        <div className="px-4 py-2 border-t flex items-center justify-end">
+                            <div className="flex items-center space-x-2">
+                                {toolButtons.map(tool => (
+                                    <Button
+                                        key={tool.type}
+                                        type={'button'}
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addNewBlock(tool.type)}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4"/>
+                                        {tool.label}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex h-full bg-muted/40" >
+                    {toolboxPlacement === 'sidebar' && (
+                        <aside className="w-64 border-r bg-background p-4 flex flex-col">
+                            <div className="flex-grow space-y-4">
+                                <h2 className="text-lg font-semibold">Toolbox</h2>
+                                {toolButtons.map(tool => (
+                                    <Button
+                                        key={tool.type}
+                                        type={'button'}
+                                        className="w-full justify-start"
+                                        variant="ghost"
+                                        onClick={() => addNewBlock(tool.type)}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4"/> {tool.label}
+                                    </Button>
+                                ))}
+                            </div>
+                        </aside>
+                    )}
 
                     {/* Canvas Wrapper */}
                     <div className="flex-1 relative flex items-center justify-center p-8">
