@@ -321,10 +321,11 @@ export function PhysicalConfigView({onSave, initialConfig}: {
                 return (
                     <div className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
                         <LayoutEditor
+                            className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden flex flex-col"}
+                            containerHeight="flex-grow"
                             onSave={handleSave}
                             initialData={selectedLayout ?? undefined}
                             toolboxPlacement={'header'}
-                            canvasHeight={'70vh'}
                         />
                     </div>
                 );

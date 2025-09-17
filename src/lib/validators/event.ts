@@ -164,6 +164,7 @@ export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
+export type Row = z.infer<typeof rowSchema>;
 
 
 // --- API Response Schemas ---
