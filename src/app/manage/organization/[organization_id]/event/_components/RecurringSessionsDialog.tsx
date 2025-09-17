@@ -20,7 +20,6 @@ import {SessionBasicData} from "@/lib/validators/event";
 import {Switch} from "@/components/ui/switch";
 import {toast} from "sonner";
 import {SalesStartRuleType} from "@/types/enums/salesStartRuleType";
-import {SessionType} from "@/types/enums/sessionType";
 import {z} from "zod";
 
 interface RecurringSessionFormValues {
@@ -82,6 +81,7 @@ export const recurringSessionDialogSchema = z.object({
                 startTime: currentStartTime.toISOString(),
                 sessionType: null,
                 endTime: endTime.toISOString(),
+                salesStartRuleType: data.salesStartRuleType,
                 salesStartTime: salesStartTimeObj.toISOString(),
             });
 

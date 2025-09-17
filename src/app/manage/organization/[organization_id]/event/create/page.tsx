@@ -92,6 +92,8 @@ export default function CreateEventPage() {
         const formData = methods.getValues();
         const validationResult = await currentSchema.safeParseAsync(formData);
 
+        console.log(validationResult);
+
         if (validationResult.success) {
             setStep(s => Math.min(totalSteps, s + 1));
         } else {

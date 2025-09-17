@@ -1,6 +1,7 @@
 import {z} from 'zod';
 
 import {SessionType} from "@/types/enums/sessionType";
+import {SalesStartRuleType} from "@/types/enums/salesStartRuleType";
 
 // --- Reusable Atomic Schemas ---
 
@@ -64,6 +65,7 @@ const sessionSeatingMapRequestSchema = z.object({
 export const baseSessionSchema = z.object({
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
+    salesStartRuleType: z.enum([SalesStartRuleType.ROLLING, SalesStartRuleType.IMMEDIATE, SalesStartRuleType.FIXED]),
     salesStartTime: z.iso.datetime({message: "Invalid sales start date format."}),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]).nullable(),
     venueDetails: venueDetailsSchema.optional(),
@@ -83,13 +85,13 @@ export const baseSessionSchema = z.object({
     });
 
 // 2. A session that is "complete" for Step 3.
-// It enforces that a sessionType and valid venueDetails are now present.
 const sessionWithVenueSchema = baseSessionSchema
-    .extend({
-        // Override sessionType to be non-nullable for this validation step
-        sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]),
+    .refine(data => data.sessionType !== null, {
+        message: "A session type (Physical or Online) must be selected.",
+        path: ["sessionType"],
     })
     .refine(data => {
+        // 2. Now, the rest of the refinements can safely assume sessionType is not null.
         if (data.sessionType === SessionType.ONLINE) {
             return data.venueDetails?.onlineLink && z.url().safeParse(data.venueDetails.onlineLink).success;
         }
@@ -100,6 +102,7 @@ const sessionWithVenueSchema = baseSessionSchema
     })
     .refine(data => {
         if (data.sessionType === SessionType.PHYSICAL) {
+            // This is the check for the venue details you mentioned.
             return !!data.venueDetails?.name?.trim();
         }
         return true;

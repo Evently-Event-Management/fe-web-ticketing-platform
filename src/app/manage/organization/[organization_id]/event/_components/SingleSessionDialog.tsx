@@ -66,6 +66,7 @@ export const singleSessionDialogSchema = z.object({
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
             salesStartTime: salesStartTimeObj.toISOString(),
+            salesStartRuleType: data.salesStartRuleType,
             sessionType: null,
         };
     });
