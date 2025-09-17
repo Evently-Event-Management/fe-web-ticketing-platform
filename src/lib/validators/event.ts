@@ -1,7 +1,6 @@
 import {z} from 'zod';
 
 import {SessionType} from "@/types/enums/sessionType";
-import {SalesStartRuleType} from "@/types/enums/salesStartRuleType";
 
 // --- Reusable Atomic Schemas ---
 
@@ -65,7 +64,6 @@ const sessionSeatingMapRequestSchema = z.object({
 export const baseSessionSchema = z.object({
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
-    salesStartRuleType: z.enum([SalesStartRuleType.ROLLING, SalesStartRuleType.IMMEDIATE, SalesStartRuleType.FIXED]),
     salesStartTime: z.iso.datetime({message: "Invalid sales start date format."}),
     sessionType: z.enum([SessionType.PHYSICAL, SessionType.ONLINE]).nullable(),
     venueDetails: venueDetailsSchema.optional(),
@@ -221,6 +219,7 @@ export type CreateEventFormData = z.infer<typeof finalCreateEventSchema>;
 export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
+export type SessionFormData = z.infer<typeof sessionWithSeatingSchema>;
 export type Tier = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;

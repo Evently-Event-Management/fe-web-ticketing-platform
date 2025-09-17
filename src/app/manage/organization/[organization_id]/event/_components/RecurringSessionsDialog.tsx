@@ -81,7 +81,6 @@ export const recurringSessionDialogSchema = z.object({
                 startTime: currentStartTime.toISOString(),
                 sessionType: null,
                 endTime: endTime.toISOString(),
-                salesStartRuleType: data.salesStartRuleType,
                 salesStartTime: salesStartTimeObj.toISOString(),
             });
 
