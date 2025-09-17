@@ -11,7 +11,7 @@ import {
     finalCreateEventSchema,
     step1Schema,
     step2Schema,
-    step3Schema,
+    step3Schema, step4Schema,
 } from "@/lib/validators/event"
 import {useOrganization} from "@/providers/OrganizationProvider"
 import {
@@ -45,6 +45,8 @@ const getValidationSchemaForStep = (step: number): z.ZodSchema<Partial<CreateEve
             return step2Schema
         case 3:
             return step3Schema
+        case 4:
+            return step4Schema
         default:
             return null // No validation needed for the final review step on "Next"
     }
