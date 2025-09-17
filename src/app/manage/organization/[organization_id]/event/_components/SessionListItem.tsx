@@ -136,6 +136,12 @@ export function SessionListItem({ index, onRemoveAction}: {
                         <Edit className="mr-2 h-4 w-4"/>
                         Edit Time
                     </Button>
+                    {hasLocation && (
+                        <Button type="button" variant="outline" size="sm" onClick={() => setIsLocationDialogOpen(true)}>
+                            <Settings className="mr-2 h-4 w-4"/>
+                            Edit Location
+                        </Button>
+                    )}
                     <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => onRemoveAction(index)}>
                         <Trash2 className="h-4 w-4"/>
                     </Button>

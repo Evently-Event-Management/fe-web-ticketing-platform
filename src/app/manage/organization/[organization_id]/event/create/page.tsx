@@ -48,7 +48,7 @@ const getValidationSchemaForStep = (step: number): z.ZodSchema<Partial<CreateEve
         case 4:
             return step4Schema
         default:
-            return null // No validation needed for the final review step on "Next"
+            return null
     }
 }
 
@@ -196,7 +196,7 @@ export default function CreateEventPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-8 px-4">
-            <div className="max-w-4xl mx-auto space-y-8">
+            <div className="max-w-5xl mx-auto space-y-8">
                 <div className="text-center">
                     <h1 className="text-4xl font-bold text-foreground mb-3 text-balance">Create New Event</h1>
                     <p className="text-lg text-muted-foreground">Follow these steps to set up your event perfectly</p>
