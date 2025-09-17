@@ -158,10 +158,12 @@ export const finalCreateEventSchema = step4Schema;
 export type CreateEventFormData = z.infer<typeof finalCreateEventSchema>;
 export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
+export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
 export type Tier = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
+export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 
 
 // --- API Response Schemas ---
