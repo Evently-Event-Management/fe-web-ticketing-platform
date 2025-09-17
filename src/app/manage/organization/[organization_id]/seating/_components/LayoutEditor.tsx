@@ -9,7 +9,6 @@ import 'react-resizable/css/styles.css';
 import {LayoutBlock, BlockType, LayoutData} from '@/types/seatingLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
 import {BrushCleaning, Plus, Save, ZoomIn, ZoomOut} from 'lucide-react';
 
 import {DraggableBlock} from './DraggableBlock';
@@ -21,6 +20,8 @@ interface LayoutEditorProps {
     onSave: (layoutData: LayoutData) => Promise<void>;
     isLoading?: boolean;
     toolboxPlacement?: 'sidebar' | 'header';
+    className?: string; // Add className prop
+    containerHeight?: string; // Add containerHeight prop for the main content area
 }
 
 export function LayoutEditor({
@@ -28,6 +29,8 @@ export function LayoutEditor({
                                  onSave,
                                  isLoading = false,
                                  toolboxPlacement = 'sidebar',
+                                 className,
+                                 containerHeight = 'h-full',
                              }: LayoutEditorProps) {
     const [blocks, setBlocks] = useState<LayoutBlock[]>([]);
     const [selectedBlock, setSelectedBlock] = useState<LayoutBlock | null>(null);
@@ -118,7 +121,7 @@ export function LayoutEditor({
     };
 
     return (
-        <>
+        <div className={`flex flex-col h-full ${className}`}>
             <style>{`
                 .react-resizable-handle {
                     background: hsl(var(--primary));
@@ -178,7 +181,7 @@ export function LayoutEditor({
                     )}
                 </div>
 
-                <div className="flex h-full bg-muted/40" >
+                <div className={`flex bg-muted/40 ${containerHeight}`}>
                     {toolboxPlacement === 'sidebar' && (
                         <aside className="w-64 border-r bg-background p-4 flex flex-col">
                             <div className="flex-grow space-y-4">
@@ -200,7 +203,7 @@ export function LayoutEditor({
 
                     {/* Canvas Wrapper */}
                     <div className="flex-1 relative flex items-center justify-center p-8">
-                        <div className="w-full h-full max-w-5xl max-h-[80vh] relative">
+                        <div className="flex-1 relative flex items-center justify-center h-full">
                             <div
                                 className="w-full h-full bg-background border rounded-lg shadow-lg overflow-auto relative">
                                 <main
@@ -227,13 +230,13 @@ export function LayoutEditor({
 
                             <div
                                 className="absolute bottom-4 right-4 flex items-center gap-2 bg-background p-2 rounded-lg border shadow-md">
-                                <Button variant="ghost" size="icon" onClick={handleZoomOut}>
+                                <Button type={'button'} variant="ghost" size="icon" onClick={handleZoomOut}>
                                     <ZoomOut className="h-4 w-4"/>
                                 </Button>
                                 <span className="text-sm font-medium w-12 text-center">
                                     {Math.round(zoomLevel * 100)}%
                                 </span>
-                                <Button variant="ghost" size="icon" onClick={handleZoomIn}>
+                                <Button type={'button'} variant="ghost" size="icon" onClick={handleZoomIn}>
                                     <ZoomIn className="h-4 w-4"/>
                                 </Button>
                             </div>
@@ -249,6 +252,6 @@ export function LayoutEditor({
                     />
                 </div>
             </DndContext>
-        </>
+        </div>
     );
 }
