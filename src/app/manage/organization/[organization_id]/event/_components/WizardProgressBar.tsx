@@ -33,11 +33,10 @@ export function WizardProgressBar({ currentStep, totalSteps, stepConfig }: Wizar
 
                 {/* Step circles */}
                 <div className="relative flex justify-between">
-                    {stepConfig.map((stepItem, index) => {
+                    {stepConfig.map((stepItem) => {
                         const Icon = stepItem.icon;
                         const isActive = currentStep === stepItem.id;
                         const isCompleted = currentStep > stepItem.id;
-                        const isPending = currentStep < stepItem.id;
 
                         return (
                             <div key={stepItem.id} className="flex flex-col items-center group">
