@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {useFormContext} from 'react-hook-form';
-import {CreateEventFormData, SessionFormData} from '@/lib/validators/event';
+import {CreateEventFormData, SessionWithVenueData} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {format, parseISO} from 'date-fns';
 import {Badge} from '@/components/ui/badge';
@@ -16,7 +16,7 @@ const LocationConfigDialog = dynamic(
 );
 
 // Helper function to display the sales start time
-const getSalesStartTimeDisplay = (session: SessionFormData): string => {
+const getSalesStartTimeDisplay = (session: SessionWithVenueData): string => {
     if (!session || !session.salesStartTime) return "Sales start time not set";
 
     try {
@@ -29,7 +29,7 @@ const getSalesStartTimeDisplay = (session: SessionFormData): string => {
 };
 
 export function SessionListItem({field, index, onRemoveAction}: {
-    field: SessionFormData; // react-hook-form's field type
+    field: SessionWithVenueData; // react-hook-form's field type
     index: number;
     onRemoveAction: (index: number) => void
 }) {
@@ -105,8 +105,7 @@ export function SessionListItem({field, index, onRemoveAction}: {
                 </div>
             </div>
 
-            <TimeConfigDialog index={index} open={isTimeDialogOpen} setOpen={setIsTimeDialogOpen}/>
-            {/* ✅ Corrected: Changed prop name from setOpenAction to setOpen */}
+            <TimeConfigDialog index={index} open={isTimeDialogOpen} setOpenAction={setIsTimeDialogOpen}/>
             <LocationConfigDialog index={index} open={isLocationDialogOpen} setOpenAction={setIsLocationDialogOpen}/>
         </div>
     );
