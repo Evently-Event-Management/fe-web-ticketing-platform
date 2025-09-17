@@ -241,8 +241,6 @@ export function PhysicalConfigView({onSave, initialConfig}: {
             toast.error("Please assign all seats to a tier or mark them as reserved. Standing areas must also have tier assignments.");
             return;
         }
-
-        // All elements are properly assigned, proceed with save
         onSave(currentAssignedLayout);
     };
 
@@ -321,10 +319,12 @@ export function PhysicalConfigView({onSave, initialConfig}: {
         switch (mode) {
             case 'create':
                 return (
-                    <div className={"h-[70vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
+                    <div className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
                         <LayoutEditor
                             onSave={handleSave}
                             initialData={selectedLayout ?? undefined}
+                            toolboxPlacement={'header'}
+                            canvasHeight={'70vh'}
                         />
                     </div>
                 );
