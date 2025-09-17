@@ -256,25 +256,16 @@ export function PhysicalConfigView({onSave, initialConfig}: {
             if (selectedTemplateId) {
                 const data = await updateSeatingLayoutTemplate(selectedTemplateId, request);
                 toast.success(`Layout "${data.name}" updated successfully!`);
-
-                // Only set layout data and change mode on success
                 setSelectedLayout(data.layoutData);
                 setMode("assign");
-
-                // Refresh the templates list to show the updated template
                 await loadTemplates();
             } else {
-                // Creating a new template from scratch
                 console.log("Creating new seating layout template", request);
                 const data = await createSeatingLayoutTemplate(request);
                 toast.success(`Layout "${data.name}" saved successfully!`);
-
-                // Only set layout data and change mode on success
                 setSelectedLayout(data.layoutData);
                 setSelectedTemplateId(data.id);
                 setMode("assign");
-
-                // Refresh the templates list to include the new template
                 await loadTemplates();
             }
         } catch (err) {
