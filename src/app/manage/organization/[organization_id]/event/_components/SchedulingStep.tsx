@@ -5,8 +5,7 @@ import {useState} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
 import {CreateEventFormData, SessionBasicData} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {PlusCircle, Repeat, Trash2,} from 'lucide-react';
+import {PlusCircle, Repeat, Trash2, Calendar} from 'lucide-react';
 import {toast} from 'sonner';
 import {
     RecurringSessionsDialog
@@ -64,70 +63,88 @@ export function SchedulingStep() {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Scheduling & Location</CardTitle>
-                <CardDescription>
-                    Add the dates and times for your event. Each session can have a unique location.
+        <div className="space-y-6">
+            <div className="flex flex-wrap justify-between items-start gap-4">
+                <div>
+                    <h2 className="text-lg font-semibold">Scheduling & Location</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Add the dates and times for your event. Each session can have a unique location.
+                    </p>
+                </div>
+                <div className="flex w-full justify-between">
                     {maxSessions > 0 && (
                         <span className="block mt-1">
-                            Session limit: {fields.length}/{maxSessions}
-                        </span>
+                                Session limit: {fields.length}/{maxSessions}
+                            </span>
                     )}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+                    <div className="flex items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={openSingleSessionDialog}
+                            disabled={hasReachedLimit}
+                            className="shrink-0 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+                        >
+                            <PlusCircle className="mr-2 h-4 w-4"/>
+                            Add Single Session
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={openRecurringSessionsDialog}
+                            disabled={hasReachedLimit}
+                            className="shrink-0 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+                        >
+                            <Repeat className="mr-2 h-4 w-4"/>
+                            Add Recurring Sessions
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-6">
                 {fields.map((field, index) => (
                     <SessionListItem key={field.id} field={field} index={index} onRemoveAction={remove}/>
                 ))}
 
-                <div className="flex flex-wrap gap-2 pt-4 border-t">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={openSingleSessionDialog}
-                        disabled={hasReachedLimit}
-                    >
-                        <PlusCircle className="mr-2 h-4 w-4"/>
-                        Add Single Session
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={openRecurringSessionsDialog}
-                        disabled={hasReachedLimit}
-                    >
-                        <Repeat className="mr-2 h-4 w-4"/>
-                        Add Recurring Sessions
-                    </Button>
-                    {fields.length > 0 && (
-                        <Button type="button" variant="destructive" className="ml-auto" onClick={clearAllSessions}>
-                            <Trash2 className="mr-2 h-4 w-4"/>
-                            Clear All
-                        </Button>
-                    )}
-                </div>
+                {fields.length === 0 && (
+                    <div className="py-8 text-center">
+                        <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
+                        <p className="text-lg text-muted-foreground">
+                            No sessions added yet. Use the buttons above to add sessions to your event.
+                        </p>
+                    </div>
+                )}
 
                 {errors.sessions?.root && (
                     <p className="text-sm font-medium text-destructive">{errors.sessions.root.message}</p>
                 )}
+                {fields.length > 0 && (
+                    <div className={'flex flex-wrap gap-2 w-full justify-end'}>
+                        <Button type="button" variant="outline" onClick={clearAllSessions} className="shrink-0">
+                            <Trash2 className="mr-2 h-4 w-4 text-destructive"/>
+                            Clear All
+                        </Button>
+                    </div>
 
-                <RecurringSessionsDialog
-                    open={isRecurringDialogOpen}
-                    setOpen={setIsRecurringDialogOpen}
-                    onGenerate={handleGenerateSessions}
-                    currentSessionCount={fields.length}
-                    maxSessions={maxSessions}
-                />
+                )}
+            </div>
 
-                <SingleSessionDialog
-                    open={isSingleSessionDialogOpen}
-                    setOpen={setIsSingleSessionDialogOpen}
-                    onAdd={handleAddSingleSession}
-                    currentSessionCount={fields.length}
-                    maxSessions={maxSessions}
-                />
-            </CardContent>
-        </Card>
+            <RecurringSessionsDialog
+                open={isRecurringDialogOpen}
+                setOpen={setIsRecurringDialogOpen}
+                onGenerate={handleGenerateSessions}
+                currentSessionCount={fields.length}
+                maxSessions={maxSessions}
+            />
+
+            <SingleSessionDialog
+                open={isSingleSessionDialogOpen}
+                setOpen={setIsSingleSessionDialogOpen}
+                onAdd={handleAddSingleSession}
+                currentSessionCount={fields.length}
+                maxSessions={maxSessions}
+            />
+        </div>
     );
 }

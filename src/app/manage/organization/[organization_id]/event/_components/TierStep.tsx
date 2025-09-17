@@ -5,8 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import {CreateEventFormData, Tier} from '@/lib/validators/event';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Ticket, Edit, Trash2 } from 'lucide-react';
+import { Ticket, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { TierDialog } from './TierDialog';
 import {
   AlertDialog,
@@ -80,16 +79,28 @@ export function TiersStep() {
   };
 
   return (
-    <Card className="border-none shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Tiers & Pricing</CardTitle>
-        <CardDescription className="text-base">
-          Create different ticket types for your event. You will assign these to seats in a later step.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold">Tiers & Pricing</h2>
+          <p className="text-sm text-muted-foreground">
+            Create different ticket types for your event. You will assign these to seats in a later step.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setDialogOpen(true)}
+          className="shrink-0 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+        >
+          <PlusCircle className="mr-2 h-4 w-4"/>
+          Add New Tier
+        </Button>
+      </div>
+
+      <div className="space-y-6">
         {fields.length === 0 ? (
-          <div className="py-8 text-center">
+          <div className="py-8 text-center border rounded-lg">
             <Ticket className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
             <p className="text-lg text-muted-foreground">
               No tiers added yet. Click &#34;Add Tier&#34; to create your first ticket tier.
@@ -98,12 +109,12 @@ export function TiersStep() {
         ) : (
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {fields.map((field, index) => (
-              <Card key={field.id} className="overflow-hidden flex flex-col">
+              <div key={field.id} className="rounded-lg border overflow-hidden flex flex-col">
                 <div
                   className="h-2"
                   style={{ backgroundColor: field.color || '#6b7280' }}
                 />
-                <CardContent className="p-6 flex-1">
+                <div className="p-6 flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold line-clamp-1">{field.name}</h3>
                     <div className="flex space-x-1">
@@ -144,23 +155,11 @@ export function TiersStep() {
                   <div className="mt-4">
                     <span className="text-2xl font-bold"> LKR {field.price.toFixed(2)}</span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}
-
-        <div className="pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setDialogOpen(true)}
-            className="w-full md:w-auto border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
-          >
-            <PlusCircle className="mr-2 h-4 w-4"/>
-            Add New Tier
-          </Button>
-        </div>
 
         {/* This will display the root error for the tiers array */}
         {errors.tiers?.root && (
@@ -170,7 +169,7 @@ export function TiersStep() {
             </p>
           </div>
         )}
-      </CardContent>
+      </div>
 
       {/* Create Tier Dialog */}
       <TierDialog
@@ -215,6 +214,6 @@ export function TiersStep() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
 }

@@ -11,7 +11,6 @@ import {compressImage} from '@/lib/imageUtils';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
 import {
     Select,
@@ -97,14 +96,14 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
 
     return (
         <div className="space-y-8">
-            {/* ++ Visually Enhanced Cover Photos Section */}
-            <Card className="overflow-hidden">
-                <CardHeader>
-                    <CardTitle>Event Cover Photos</CardTitle>
-                    <CardDescription>Upload up to {maxPhotos} high-quality images that represent your event. This is the
-                        first thing attendees will see.</CardDescription>
-                </CardHeader>
-                <CardContent>
+            {/* Cover Photos Section */}
+            <div className="space-y-4">
+                <div>
+                    <h3 className="text-lg font-semibold">Event Cover Photos</h3>
+                    <p className="text-sm text-muted-foreground">Upload up to {maxPhotos} high-quality images that represent your event. This is the first thing attendees will see.</p>
+                </div>
+
+                <div>
                     {coverFiles.length > 0 ? (
                         <div className="space-y-4">
                             <Carousel plugins={[Autoplay({delay: 4000, stopOnInteraction: true})]}>
@@ -141,7 +140,7 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                             </div>
                         </div>
                     ) : (
-                        // ++ Visually Enhanced Empty State
+                        // Empty State
                         <div
                             className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 text-center cursor-pointer hover:border-primary hover:bg-secondary/50 transition-colors"
                             onClick={() => fileInputRef.current?.click()}
@@ -155,78 +154,79 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                     )}
                     <Input id="picture" type="file" multiple accept="image/*" onChange={handleFileChange}
                            className="hidden" ref={fileInputRef}/>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            {/* ++ Visually Enhanced Event Details Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Event Details</CardTitle>
-                    <CardDescription>Fill in the core information that will appear on your event page.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                    <FormField control={control} name="title" render={({field}) => (
+            {/* Event Details Section */}
+            <div className="space-y-6 border-t pt-6">
+                <div>
+                    <h3 className="text-lg font-semibold">Event Details</h3>
+                    <p className="text-sm text-muted-foreground">Fill in the core information that will appear on your event page.</p>
+                </div>
+
+                <FormField control={control} name="title" render={({field}) => (
+                    <FormItem>
+                        <FormLabel className="text-base">Event Title</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., Annual Tech Conference 2025" {...field} />
+                        </FormControl>
+                        <FormDescription>The main headline for your event.</FormDescription>
+                        <FormMessage/>
+                    </FormItem>)}/>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <FormField control={control} name="categoryId" render={({field}) => (
                         <FormItem>
-                            <FormLabel className="text-base">Event Title</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., Annual Tech Conference 2025" {...field} />
-                            </FormControl>
-                            <FormDescription>The main headline for your event.</FormDescription>
-                            <FormMessage/>
-                        </FormItem>)}/>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormField control={control} name="categoryId" render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select
-                                    onValueChange={(value) => {
-                                        // ✅ Find the full category object to get its name
-                                        let selectedCategoryName: string | undefined;
-                                        for (const parentCat of categories) {
-                                            const subCat = parentCat.subCategories.find(sc => sc.id === value);
-                                            if (subCat) {
-                                                selectedCategoryName = subCat.name;
-                                                break;
-                                            }
+                            <FormLabel>Category</FormLabel>
+                            <Select
+                                onValueChange={(value) => {
+                                    // ✅ Find the full category object to get its name
+                                    let selectedCategoryName: string | undefined;
+                                    for (const parentCat of categories) {
+                                        const subCat = parentCat.subCategories.find(sc => sc.id === value);
+                                        if (subCat) {
+                                            selectedCategoryName = subCat.name;
+                                            break;
                                         }
-                                        // ✅ Set both the ID and the name in the form state
-                                        field.onChange(value);
-                                        setValue('categoryName', selectedCategoryName);
-                                    }}
-                                    defaultValue={field.value}
-                                >
-                                    <FormControl><SelectTrigger><SelectValue
-                                        placeholder="Select a category for your event"/></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {categories.map((parentCat) => (
-                                            <SelectGroup key={parentCat.id}>
-                                                <SelectLabel>{parentCat.name}</SelectLabel>
-                                                {parentCat.subCategories.map((subCat) => (
-                                                    <SelectItem key={subCat.id}
-                                                                value={subCat.id}>{subCat.name}</SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage/>
-                            </FormItem>
-                        )}/>
-                    </div>
-
-                    <FormField control={control} name="description" render={({field}) => (
-                        <FormItem>
-                            <FormLabel className="text-base">Short Description</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="A brief, catchy summary of your event (1-2 sentences)." {...field} />
-                            </FormControl>
-                            <FormDescription>This appears in event listings and search results.</FormDescription>
+                                    }
+                                    // ✅ Set both the ID and the name in the form state
+                                    field.onChange(value);
+                                    setValue('categoryName', selectedCategoryName);
+                                }}
+                                defaultValue={field.value}
+                            >
+                                <FormControl><SelectTrigger><SelectValue
+                                    placeholder="Select a category for your event"/></SelectTrigger></FormControl>
+                                <SelectContent>
+                                    {categories.map((parentCat) => (
+                                        <SelectGroup key={parentCat.id}>
+                                            <SelectLabel>{parentCat.name}</SelectLabel>
+                                            {parentCat.subCategories.map((subCat) => (
+                                                <SelectItem key={subCat.id}
+                                                            value={subCat.id}>{subCat.name}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <FormMessage/>
-                        </FormItem>)}/>
+                        </FormItem>
+                    )}/>
+                </div>
 
-                    {/* The GeminiMarkdownEditor is already well-styled and acts as its own section */}
+                <FormField control={control} name="description" render={({field}) => (
+                    <FormItem>
+                        <FormLabel className="text-base">Short Description</FormLabel>
+                        <FormControl>
+                            <Textarea
+                                placeholder="A brief, catchy summary of your event (1-2 sentences)." {...field} />
+                        </FormControl>
+                        <FormDescription>This appears in event listings and search results.</FormDescription>
+                        <FormMessage/>
+                    </FormItem>)}/>
+
+                {/* The GeminiMarkdownEditor is already well-styled and acts as its own section */}
+                <div className="border-t pt-6">
                     <FormField
                         control={control}
                         name="overview"
@@ -244,9 +244,8 @@ export function CoreDetailsStep({coverFiles, setCoverFilesAction}: CoreDetailsSt
                             </FormItem>
                         )}
                     />
-
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     )
 }
