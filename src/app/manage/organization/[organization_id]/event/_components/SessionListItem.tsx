@@ -54,7 +54,7 @@ const getSalesWindowDuration = (session: SessionWithVenueData): string => {
 };
 
 
-export function SessionListItem({field, index, onRemoveAction}: {
+export function SessionListItem({ index, onRemoveAction}: {
     field: SessionWithVenueData;
     index: number;
     onRemoveAction: (index: number) => void
