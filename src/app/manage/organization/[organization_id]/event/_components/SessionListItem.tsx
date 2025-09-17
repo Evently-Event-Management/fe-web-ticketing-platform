@@ -22,6 +22,7 @@ const getSalesStartTimeDisplay = (session: SessionWithVenueData): string => {
         const salesStartDate = parseISO(session.salesStartTime);
         return `Sales start on ${format(salesStartDate, 'MMM d, yyyy h:mm a')}`;
     } catch (e) {
+        console.error("Error parsing sales start time:", e);
         return "Invalid sales start time";
     }
 };
@@ -49,6 +50,7 @@ const getSalesWindowDuration = (session: SessionWithVenueData): string => {
 
         return `Sales open for ${parts.join(', ')} before session`;
     } catch (e) {
+        console.error("Error calculating sales window duration:", e);
         return "Could not calculate duration";
     }
 };
@@ -62,7 +64,6 @@ export function SessionListItem({ index, onRemoveAction}: {
     const {watch} = useFormContext<CreateEventFormData>();
     const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
     const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
-
     const sessionData = watch(`sessions.${index}`);
 
     if (!sessionData) return null; // Graceful exit on remove

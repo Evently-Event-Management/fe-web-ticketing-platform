@@ -113,11 +113,73 @@ const sessionWithVenueSchema = baseSessionSchema
 
 
 // 3. A session that is "complete" for Step 4.
-// It enforces that layoutData exists and that all seats have a tier.
 const sessionWithSeatingSchema = sessionWithVenueSchema
     .extend({
-        layoutData: sessionSeatingMapRequestSchema,
+        layoutData: sessionSeatingMapRequestSchema.extend({
+            layout: z.object({
+                blocks: z.array(blockSchema).min(1, {message: "Seating layout must be set up."}),
+            }),
+        }),
     })
+    .superRefine((session, ctx) => {
+        // The session object is guaranteed to have layoutData here because of the .extend() above.
+        session.layoutData.layout.blocks.forEach((block, blockIndex) => {
+            let totalSellableItems = 0;
+            session.layoutData.layout.blocks.forEach(block => {
+                if (block.type === 'standing_capacity' && block.capacity) {
+                    totalSellableItems += block.capacity;
+                } else if (block.type === 'seated_grid') {
+                    totalSellableItems += (block.seats?.length || 0);
+                    // Or iterate through rows if seats are nested there
+                    block.rows?.forEach(row => totalSellableItems += row.seats.length);
+                }
+            });
+
+            if (totalSellableItems === 0) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "The layout must contain at least one sellable seat or capacity.",
+                    path: ['layoutData', 'layout', 'blocks'],
+                });
+                // return early if the layout is fundamentally empty
+                return;
+            }
+
+            const checkSeat = (seat: Seat, seatPath: (string | number)[]) => {
+                const hasTier = !!seat.tierId;
+                const isReserved = seat.status === 'RESERVED';
+
+                // The core validation logic: if a seat is not reserved, it must have a tier.
+                if (!hasTier && !isReserved) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        // Provide a clear, actionable error message
+                        message: `Seat '${seat.label}' in block '${block.name}' must be assigned a tier.`,
+                        // Provide a precise path to the field that has the error
+                        path: [...seatPath, 'tierId'],
+                    });
+                }
+            };
+
+            // Scenario 1: Seats are nested inside rows (e.g., for 'seated_grid')
+            if (block.rows) {
+                block.rows.forEach((row, rowIndex) => {
+                    row.seats.forEach((seat, seatIndex) => {
+                        const path = ['layoutData', 'layout', 'blocks', blockIndex, 'rows', rowIndex, 'seats', seatIndex];
+                        checkSeat(seat, path);
+                    });
+                });
+            }
+
+            // Scenario 2: Seats are directly in the block (e.g., for other types)
+            if (block.seats) {
+                block.seats.forEach((seat, seatIndex) => {
+                    const path = ['layoutData', 'layout', 'blocks', blockIndex, 'seats', seatIndex];
+                    checkSeat(seat, path);
+                });
+            }
+        });
+    });
 
 
 // --- Progressive Event Schemas (The Chain) ---
