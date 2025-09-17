@@ -40,13 +40,13 @@ import {Separator} from "@/components/ui/separator";
 const getValidationSchemaForStep = (step: number): z.ZodSchema<Partial<CreateEventFormData>> | null => {
     switch (step) {
         case 1:
-            return step1Schema
+            return step1Schema as z.ZodSchema<Partial<CreateEventFormData>>
         case 2:
-            return step2Schema
+            return step2Schema as z.ZodSchema<Partial<CreateEventFormData>>
         case 3:
-            return step3Schema
+            return step3Schema as z.ZodSchema<Partial<CreateEventFormData>>
         case 4:
-            return step4Schema
+            return step4Schema as z.ZodSchema<Partial<CreateEventFormData>>
         default:
             return null
     }
