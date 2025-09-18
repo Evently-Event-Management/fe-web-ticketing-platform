@@ -5,10 +5,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Monitor, MapPin } from "lucide-react"
-import {SessionFormData} from "@/lib/validators/event";
+import {CreateEventFormData, SessionFormData} from "@/lib/validators/event";
+import {FieldArrayWithId} from "react-hook-form";
 
 interface SessionSelectorProps {
-    sessions: SessionFormData[]
+    sessions: FieldArrayWithId<CreateEventFormData, "sessions", "id">[]
     selectedSessions: string[]
     onSelectionChange: (selectedSessions: string[]) => void
 }
@@ -54,10 +55,10 @@ export function SessionSelector({ sessions, selectedSessions, onSelectionChange 
                         Applicable Sessions
                     </CardTitle>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={selectAll}>
+                        <Button variant="outline" size="sm" onClick={selectAll} type={'button'}>
                             Select All
                         </Button>
-                        <Button variant="outline" size="sm" onClick={selectNone}>
+                        <Button variant="outline" size="sm" onClick={selectNone} type={'button'}>
                             Select None
                         </Button>
                     </div>

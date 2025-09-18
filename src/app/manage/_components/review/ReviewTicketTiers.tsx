@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import {Card, CardContent, CardTitle} from '@/components/ui/card';
-import {Tier} from '@/lib/validators/event';
+import {TierFormData} from '@/lib/validators/event';
 
 interface ReviewTicketTiersProps {
-    tiers: Tier[];
+    tiers: TierFormData[];
 }
 
 export const ReviewTicketTiers: React.FC<ReviewTicketTiersProps> = ({tiers}) => {
@@ -24,7 +24,7 @@ export const ReviewTicketTiers: React.FC<ReviewTicketTiersProps> = ({tiers}) => 
 };
 
 interface TicketTierCardProps {
-    tier: Tier;
+    tier: TierFormData;
 }
 
 export const TicketTierCard: React.FC<TicketTierCardProps> = ({tier}) => {

@@ -5,10 +5,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Ticket } from "lucide-react"
-import {Tier} from "@/lib/validators/event";
+import {CreateEventFormData} from "@/lib/validators/event";
+import {FieldArrayWithId} from "react-hook-form";
 
 interface TierSelectorProps {
-    tiers: Tier[]
+    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[]
     selectedTiers: string[]
     onSelectionChange: (selectedTiers: string[]) => void
 }
@@ -38,10 +39,10 @@ export function TierSelector({ tiers, selectedTiers, onSelectionChange }: TierSe
                         Applicable Tiers
                     </CardTitle>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={selectAll}>
+                        <Button variant="outline" type={'button'} size="sm" onClick={selectAll}>
                             Select All
                         </Button>
-                        <Button variant="outline" size="sm" onClick={selectNone}>
+                        <Button variant="outline"  type={'button'} size="sm" onClick={selectNone}>
                             Select None
                         </Button>
                     </div>

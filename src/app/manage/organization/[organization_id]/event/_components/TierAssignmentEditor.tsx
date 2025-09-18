@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import {useState} from 'react';
-import {Block, Tier} from '@/lib/validators/event';
+import {Block, TierFormData} from '@/lib/validators/event';
 import {SessionSeatingMapRequest, Row, Seat} from '@/lib/validators/event';
 
 import {TierPalette} from './TierPalette';
@@ -11,7 +11,7 @@ import {toast} from 'sonner';
 
 interface TierAssignmentEditorProps {
     layoutData: SessionSeatingMapRequest; // Now receiving the already-prepared layout data
-    tiers: Tier[];
+    tiers: TierFormData[];
     onChange: (layout: SessionSeatingMapRequest) => void;
 }
 

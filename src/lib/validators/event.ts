@@ -18,7 +18,6 @@ export const tierSchema = z.object({
     color: z.string().optional(),
 });
 
-// --- Discount Parameter Schemas ---
 
 export const percentageParamsSchema = z.object({
     percentage: z.number().min(0.1, "Percentage must be greater than 0."),
@@ -35,41 +34,37 @@ export const bogoParamsSchema = z.object({
 });
 
 
-export const discountSchema = z.discriminatedUnion("type", [
-    z.object({
-        code: z.string().min(1, {message: "Discount code cannot be empty."}),
-        type: z.literal(DiscountType.PERCENTAGE),
-        parameters: percentageParamsSchema,
-        maxUsage: z.number().int().min(1).optional().nullable(),
-        isActive: z.boolean().default(true),
-        isPublic: z.boolean().default(false),
-        activeFrom: z.iso.datetime({offset: true}).optional().nullable(),
-        expiresAt: z.iso.datetime({offset: true}).optional().nullable(),
-        applicableTierIds: z.array(z.uuid()).optional(),
+const baseDiscountSchema = z.object({
+    code: z.string().min(1, { message: "Discount code cannot be empty." }),
+    maxUsage: z.number().int().min(1).optional().nullable(),
+    currentUsage: z.number().int().min(0).default(0),
+    isActive: z.boolean().default(true),
+    isPublic: z.boolean().default(false),
+    activeFrom: z.iso.datetime({ offset: true }).optional().nullable(),
+    expiresAt: z.iso.datetime({ offset: true }).optional().nullable(),
+    applicableTierIds: z.array(z.uuid()).min(1, {
+        message: "You must select at least one tier",
     }),
-    z.object({
-        code: z.string().min(1, {message: "Discount code cannot be empty."}),
-        type: z.literal(DiscountType.FLAT_OFF),
-        parameters: flatOffParamsSchema,
-        maxUsage: z.number().int().min(1).optional().nullable(),
-        isActive: z.boolean().default(true),
-        isPublic: z.boolean().default(false),
-        activeFrom: z.iso.datetime({offset: true}).optional().nullable(),
-        expiresAt: z.iso.datetime({offset: true}).optional().nullable(),
-        applicableTierIds: z.array(z.uuid()).optional(),
+    applicableSessionIds: z.array(z.uuid()).min(1, {
+        message: "You must select at least one session",
     }),
-    z.object({
-        code: z.string().min(1, {message: "Discount code cannot be empty."}),
-        type: z.literal(DiscountType.BUY_N_GET_N_FREE),
-        parameters: bogoParamsSchema,
-        maxUsage: z.number().int().min(1).optional().nullable(),
-        isActive: z.boolean().default(true),
-        isPublic: z.boolean().default(false),
-        activeFrom: z.iso.datetime({offset: true}).optional().nullable(),
-        expiresAt: z.iso.datetime({offset: true}).optional().nullable(),
-        applicableTierIds: z.array(z.uuid()).optional(),
-    }),
-])
+});
+
+export const discountSchema = z
+    .discriminatedUnion("type", [
+        baseDiscountSchema.extend({
+            type: z.literal(DiscountType.PERCENTAGE),
+            parameters: percentageParamsSchema,
+        }),
+        baseDiscountSchema.extend({
+            type: z.literal(DiscountType.FLAT_OFF),
+            parameters: flatOffParamsSchema,
+        }),
+        baseDiscountSchema.extend({
+            type: z.literal(DiscountType.BUY_N_GET_N_FREE),
+            parameters: bogoParamsSchema,
+        }),
+    ])
     .superRefine((data, ctx) => {
         const now = new Date();
 
@@ -105,6 +100,7 @@ export const discountSchema = z.discriminatedUnion("type", [
             }
         }
     });
+
 
 
 const venueDetailsSchema = z.object({
@@ -204,7 +200,7 @@ const sessionWithVenueSchema = baseSessionSchema
 
 // 3. A session that is "complete" for Step 4.
 const sessionWithSeatingSchema = sessionWithVenueSchema
-    .extend({
+    .safeExtend({
         layoutData: sessionSeatingMapRequestSchema.extend({
             layout: z.object({
                 blocks: z.array(blockSchema).min(1, {message: "Seating layout must be set up."}),
@@ -282,7 +278,6 @@ export const step1Schema = z.object({
     organizationId: z.uuid(),
     categoryId: z.uuid({message: "Please select a category."}),
     categoryName: z.string().optional().nullable(),
-    discounts: z.array(discountSchema).optional(),
 });
 
 // Step 2 adds the 'tiers' requirement
@@ -302,24 +297,30 @@ export const step4Schema = step3Schema.extend({
         .min(1, {message: "You must schedule at least one session."}),
 });
 
+export const step5Schema = step4Schema.extend({
+    discounts: z.array(discountSchema).optional(),
+})
+
 // The final, complete schema for the entire form submission
-export const finalCreateEventSchema = step4Schema;
+export const finalCreateEventSchema = step5Schema;
 
 
 // --- Type Inference ---
 
-export type CreateEventFormData = z.infer<typeof finalCreateEventSchema>;
+export type CreateEventFormData = z.input<typeof finalCreateEventSchema>;
+export type CreateEventParsed = z.infer<typeof finalCreateEventSchema>;
 export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
 export type SessionFormData = z.infer<typeof sessionWithSeatingSchema>;
-export type Tier = z.infer<typeof tierSchema>;
+export type TierFormData = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Row = z.infer<typeof rowSchema>;
-export type DiscountFormData = z.infer<typeof discountSchema>;
+export type DiscountFormData = z.input<typeof discountSchema>;
+export type DiscountParsed = z.infer<typeof discountSchema>;
 
 
 // --- API Response Schemas ---
