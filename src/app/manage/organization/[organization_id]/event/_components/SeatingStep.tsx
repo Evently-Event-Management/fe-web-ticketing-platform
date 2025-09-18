@@ -4,7 +4,6 @@ import * as React from 'react';
 import {useState, useEffect} from 'react';
 import {useFieldArray, useFormContext} from 'react-hook-form';
 import {CreateEventFormData, SessionSeatingMapRequest} from '@/lib/validators/event';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {
     SessionListItemSeating
 } from "@/app/manage/organization/[organization_id]/event/_components/SessionListItemSeating";
@@ -12,8 +11,7 @@ import {OnlineConfigView} from "@/app/manage/organization/[organization_id]/even
 import {PhysicalConfigView} from "@/app/manage/organization/[organization_id]/event/_components/PhysicalConfigView";
 import {Button} from "@/components/ui/button";
 import {toast} from "sonner";
-import {ArrowLeft} from "lucide-react";
-import {SessionType} from "@/lib/validators/enums";
+import {ChevronLeft, MapPin} from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -21,6 +19,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {SessionType} from "@/types/enums/sessionType";
 
 interface SeatingStepProps {
     onConfigModeChange?: (isInConfigMode: boolean) => void;
@@ -84,52 +83,45 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
         setConfiguringIndex(null);
     };
 
-    // If we're configuring a session, show the full-page configuration view
     if (configuringIndex !== null && currentSession) {
         return (
-            <div className="space-y-4">
-                <div className="">
+            <div className="space-y-8">
+                {/* --- UNIFIED & CLEANED HEADER --- */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b">
+                    <div>
+                        <h2 className="text-xl font-bold tracking-tight">
+                            {currentSession.sessionType === SessionType.ONLINE
+                                ? `Configure Capacity for Session ${configuringIndex + 1}`
+                                : `Configure Seating for Session ${configuringIndex + 1}`}
+                        </h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            {currentSession.sessionType === SessionType.ONLINE
+                                ? "Set the total capacity available for this online session."
+                                : "Choose a layout template, create sections, and assign your tiers."}
+                        </p>
+                    </div>
                     <Button
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => setConfiguringIndex(null)}
-                        className="flex items-center gap-1"
                     >
-                        <ArrowLeft className="h-4 w-4"/>
+                        <ChevronLeft className="mr-2 h-4 w-4"/>
                         Back to Sessions
                     </Button>
-                    <h2 className="text-xl font-semibold">
-                        Configure Seating for Session {configuringIndex + 1}
-                    </h2>
-                    <div></div>
-                    {/* Empty div for flexbox spacing */}
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>
-                            {currentSession.sessionType === SessionType.ONLINE
-                                ? "Online Capacity Configuration"
-                                : "Physical Seating Configuration"}
-                        </CardTitle>
-                        <CardDescription>
-                            {currentSession.sessionType === SessionType.ONLINE
-                                ? "Set the capacity and ticket tier for your online event."
-                                : "Choose a layout template or create a new one, then assign your tiers."}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {currentSession.sessionType === SessionType.ONLINE ? (
-                            <OnlineConfigView onSave={handleSaveConfiguration}/>
-                        ) : (
-                            <PhysicalConfigView
-                                onSave={handleSaveConfiguration}
-                                initialConfig={currentSession.layoutData as SessionSeatingMapRequest}
-                            />
-                        )}
-                    </CardContent>
-                </Card>
+                {/* --- CONFIGURATION COMPONENT --- */}
+                <div>
+                    {currentSession.sessionType === SessionType.ONLINE ? (
+                        <OnlineConfigView onSave={handleSaveConfiguration}/>
+                    ) : (
+                        <PhysicalConfigView
+                            onSave={handleSaveConfiguration}
+                            initialConfig={currentSession.layoutData as SessionSeatingMapRequest}
+                        />
+                    )}
+                </div>
 
-                {/* Apply to all dialog */}
+                {/* --- APPLY TO ALL DIALOG (No changes needed here) --- */}
                 <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
                     <DialogContent>
                         <DialogHeader>
@@ -145,7 +137,8 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
                                 This session only
                             </Button>
                             <Button onClick={applyToAllSessions}>
-                                Apply to all {currentSession.sessionType === SessionType.ONLINE ? 'online' : 'physical'} sessions
+                                Apply to
+                                all {currentSession.sessionType === SessionType.ONLINE ? 'online' : 'physical'} sessions
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -156,27 +149,42 @@ export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
 
     // Otherwise show the session list
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Seating & Tier Assignment</CardTitle>
-                <CardDescription>
-                    Configure the seating layout and assign ticket tiers for each session.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {fields.map((field, index) => (
-                    <SessionListItemSeating
-                        key={field.id}
-                        field={field}
-                        index={index}
-                        onConfigure={() => setConfiguringIndex(index)}
-                    />
-                ))}
+        <div className="space-y-6">
+            <div className="flex flex-wrap justify-between items-start gap-4">
+                <div>
+                    <h2 className="text-lg font-semibold">Seating & Tier Assignment</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Configure the seating layout and assign ticket tiers for each session.
+                    </p>
+                </div>
+            </div>
+
+            <div className="space-y-6">
+                {fields.length > 0 ? (
+                    fields.map((field, index) => (
+                        <SessionListItemSeating
+                            key={field.id}
+                            field={field}
+                            index={index}
+                            onConfigure={() => setConfiguringIndex(index)}
+                        />
+                    ))
+                ) : (
+                    <div className="py-8 text-center border rounded-lg">
+                        <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-4"/>
+                        <p className="text-lg text-muted-foreground">
+                            No sessions available to configure seating.
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Add sessions in the Scheduling step first.
+                        </p>
+                    </div>
+                )}
 
                 {errors.sessions?.root && (
                     <p className="text-sm font-medium text-destructive">{errors.sessions.root.message}</p>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

@@ -1,6 +1,6 @@
 import {Badge} from "@/components/ui/badge";
-import {SessionStatus} from "@/lib/validators/enums";
 import React from "react";
+import {SessionStatus} from "@/types/enums/sessionStatus";
 
 export const SessionStatusBadge: React.FC<{ status: SessionStatus }> = ({ status }) => {
     const statusBadge: { [key in SessionStatus]: string } = {

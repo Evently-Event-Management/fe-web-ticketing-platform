@@ -1,11 +1,11 @@
 import {SeatingBlockDTO, SeatDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {PlusIcon} from "lucide-react";
-import {ReadModelSeatStatus} from "@/lib/validators/enums";
 import {
     getAvailabilityPercentage,
     getStandingAreaTierColor
 } from "@/app/(home-app)/events/[event_id]/_components/utils";
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 
 export const StandingCapacityBlock = ({block, selectedSeats, onSeatSelect}: {
