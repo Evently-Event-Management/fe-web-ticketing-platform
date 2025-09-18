@@ -23,6 +23,7 @@ import {SalesStartRuleType} from "@/types/enums/salesStartRuleType";
 import {z} from "zod";
 
 interface SingleSessionFormValues {
+    id: string;
     startDate: Date;
     startTime: string;
     durationHours: number;
@@ -34,6 +35,7 @@ interface SingleSessionFormValues {
 }
 
 export const singleSessionDialogSchema = z.object({
+    id: z.uuid(),
     startDate: z.date(),
     startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
     durationHours: z.number().min(0.5),
@@ -63,6 +65,7 @@ export const singleSessionDialogSchema = z.object({
         }
 
         return {
+            id: data.id,
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
             salesStartTime: salesStartTimeObj.toISOString(),
@@ -79,6 +82,7 @@ export function SingleSessionDialog({open, setOpen, onAdd, currentSessionCount, 
 }) {
     const {control, handleSubmit, watch, setValue, reset} = useForm<SingleSessionFormValues>({
         defaultValues: {
+            id: crypto.randomUUID(),
             startDate: new Date(),
             startTime: '19:00',
             durationHours: 2,

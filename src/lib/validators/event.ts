@@ -1,6 +1,8 @@
 import {z} from 'zod';
 
 import {SessionType} from "@/types/enums/sessionType";
+import {DiscountType} from "@/types/enums/discountType";
+
 
 // --- Reusable Atomic Schemas ---
 
@@ -15,6 +17,95 @@ export const tierSchema = z.object({
     price: z.number().min(0, {message: "Price must be a positive number."}),
     color: z.string().optional(),
 });
+
+// --- Discount Parameter Schemas ---
+
+export const percentageParamsSchema = z.object({
+    percentage: z.number().min(0.1, "Percentage must be greater than 0."),
+});
+
+export const flatOffParamsSchema = z.object({
+    amount: z.number().min(0.01, "Amount must be greater than 0."),
+    currency: z.string().min(3, "Currency code is required.").max(3, "Currency code is invalid."),
+});
+
+export const bogoParamsSchema = z.object({
+    buyQuantity: z.number().int().min(1, "Buy quantity must be at least 1."),
+    getQuantity: z.number().int().min(1, "Get quantity must be at least 1."),
+});
+
+
+export const discountSchema = z.discriminatedUnion("type", [
+    z.object({
+        code: z.string().min(1, {message: "Discount code cannot be empty."}),
+        type: z.literal(DiscountType.PERCENTAGE),
+        parameters: percentageParamsSchema,
+        maxUsage: z.number().int().min(1).optional().nullable(),
+        isActive: z.boolean().default(true),
+        isPublic: z.boolean().default(false),
+        activeFrom: z.iso.datetime({offset: true}).optional().nullable(),
+        expiresAt: z.iso.datetime({offset: true}).optional().nullable(),
+        applicableTierIds: z.array(z.uuid()).optional(),
+    }),
+    z.object({
+        code: z.string().min(1, {message: "Discount code cannot be empty."}),
+        type: z.literal(DiscountType.FLAT_OFF),
+        parameters: flatOffParamsSchema,
+        maxUsage: z.number().int().min(1).optional().nullable(),
+        isActive: z.boolean().default(true),
+        isPublic: z.boolean().default(false),
+        activeFrom: z.iso.datetime({offset: true}).optional().nullable(),
+        expiresAt: z.iso.datetime({offset: true}).optional().nullable(),
+        applicableTierIds: z.array(z.uuid()).optional(),
+    }),
+    z.object({
+        code: z.string().min(1, {message: "Discount code cannot be empty."}),
+        type: z.literal(DiscountType.BUY_N_GET_N_FREE),
+        parameters: bogoParamsSchema,
+        maxUsage: z.number().int().min(1).optional().nullable(),
+        isActive: z.boolean().default(true),
+        isPublic: z.boolean().default(false),
+        activeFrom: z.iso.datetime({offset: true}).optional().nullable(),
+        expiresAt: z.iso.datetime({offset: true}).optional().nullable(),
+        applicableTierIds: z.array(z.uuid()).optional(),
+    }),
+])
+    .superRefine((data, ctx) => {
+        const now = new Date();
+
+        if (data.activeFrom) {
+            const activeFromDate = new Date(data.activeFrom);
+            if (activeFromDate <= now) {
+                ctx.addIssue({
+                    path: ["activeFrom"],
+                    code: z.ZodIssueCode.custom,
+                    message: "Active from date must be in the future.",
+                });
+            }
+        }
+
+        if (data.expiresAt) {
+            const expiresAtDate = new Date(data.expiresAt);
+            if (expiresAtDate <= now) {
+                ctx.addIssue({
+                    path: ["expiresAt"],
+                    code: z.ZodIssueCode.custom,
+                    message: "Expiry date must be in the future.",
+                });
+            }
+        }
+
+        if (data.activeFrom && data.expiresAt) {
+            if (new Date(data.expiresAt) <= new Date(data.activeFrom)) {
+                ctx.addIssue({
+                    path: ["expiresAt"],
+                    code: z.ZodIssueCode.custom,
+                    message: "Expiry date must be after the active from date.",
+                });
+            }
+        }
+    });
+
 
 const venueDetailsSchema = z.object({
     name: z.string().optional(),
@@ -62,6 +153,7 @@ const sessionSeatingMapRequestSchema = z.object({
 // 1. The most basic session, as created in the dialogs.
 // It has optional fields and only universal time-based rules.
 export const baseSessionSchema = z.object({
+    id: z.uuid(),
     startTime: z.iso.datetime({message: "Invalid start date format."}),
     endTime: z.iso.datetime({message: "Invalid end date format."}),
     salesStartTime: z.iso.datetime({message: "Invalid sales start date format."}),
@@ -190,6 +282,7 @@ export const step1Schema = z.object({
     organizationId: z.uuid(),
     categoryId: z.uuid({message: "Please select a category."}),
     categoryName: z.string().optional().nullable(),
+    discounts: z.array(discountSchema).optional(),
 });
 
 // Step 2 adds the 'tiers' requirement
