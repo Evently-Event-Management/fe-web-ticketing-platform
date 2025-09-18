@@ -73,6 +73,7 @@ export function TimeConfigDialog({index, open, setOpenAction}: {
         }
     } catch (e) {
         // Handle cases where date strings are not yet valid
+        console.error("Error calculating durations:", e);
         isDurationInvalid = true;
         isSalesWindowInvalid = true;
     }

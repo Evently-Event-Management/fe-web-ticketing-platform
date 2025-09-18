@@ -319,6 +319,7 @@ export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Row = z.infer<typeof rowSchema>;
+export type DiscountFormData = z.infer<typeof discountSchema>;
 
 
 // --- API Response Schemas ---
