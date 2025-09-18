@@ -3,7 +3,7 @@ import {format, parseISO} from 'date-fns';
 import {Calendar, Clock, LinkIcon, MapPin, Tag} from 'lucide-react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from "@/components/ui/accordion";
 import {Badge} from '@/components/ui/badge';
-import {SessionFormData, Tier} from '@/lib/validators/event';
+import {SessionFormData, TierFormData} from '@/lib/validators/event';
 import dynamic from "next/dynamic";
 import {SessionType} from "@/types/enums/sessionType";
 
@@ -14,7 +14,7 @@ const SeatingInformation = dynamic(
 
 interface ReviewSessionsProps {
     sessions: SessionFormData[];
-    tiers: Tier[];
+    tiers: TierFormData[];
 }
 
 export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions, tiers}) => {
@@ -39,7 +39,7 @@ export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions, tiers})
 
 interface SessionAccordionItemProps {
     session: SessionFormData;
-    tiers: Tier[];
+    tiers: TierFormData[];
     index: number;
 }
 

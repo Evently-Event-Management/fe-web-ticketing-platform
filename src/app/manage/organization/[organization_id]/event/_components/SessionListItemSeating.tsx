@@ -12,6 +12,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {SessionType} from "@/types/enums/sessionType";
 
@@ -65,41 +66,43 @@ export function SessionListItemSeating({field, index, onConfigure}: {
     const metadata = getLayoutMetadata();
 
     return (
-        <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
-            <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                    {isOnline ? <Users className="h-5 w-5"/> : <Armchair className="h-5 w-5"/>}
+        <Card>
+            <CardContent className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                        {isOnline ? <Users className="h-5 w-5"/> : <Armchair className="h-5 w-5"/>}
+                    </div>
+                    <div className="space-y-1">
+                        <p className="font-medium">Session {index + 1} <span
+                            className="text-xs text-muted-foreground">({isOnline ? 'Online' : 'Physical'})</span></p>
+                        <p className="text-sm text-muted-foreground">
+                            {format(parseISO(field.startTime), "PPP p")}
+                        </p>
+                        {isConfigured && metadata && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Info className="h-3 w-3"/>
+                                {metadata}
+                            </div>
+                        )}
+                    </div>
+                    <Badge variant={badgeVariant}>
+                        {!isConfigured && <AlertCircle className="mr-1 h-3 w-3"/>}
+                        {badgeText}
+                    </Badge>
                 </div>
-                <div className="space-y-1">
-                    <p className="font-medium">Session {index + 1} <span
-                        className="text-xs text-muted-foreground">({isOnline ? 'Online' : 'Physical'})</span></p>
-                    <p className="text-sm text-muted-foreground">
-                        {format(parseISO(field.startTime), "PPP p")}
-                    </p>
-                    {isConfigured && metadata && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Info className="h-3 w-3"/>
-                            {metadata}
-                        </div>
-                    )}
-                </div>
-                <Badge variant={badgeVariant}>
-                    {!isConfigured && <AlertCircle className="mr-1 h-3 w-3"/>}
-                    {badgeText}
-                </Badge>
-            </div>
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button type="button" variant="outline" onClick={onConfigure}>
-                            {isConfigured ? "Edit Configuration" : "Configure Seating"}
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        {isConfigured ? "Modify the existing seating layout" : "Set up seating or capacity"}
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        </div>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button type="button" variant="outline" onClick={onConfigure}>
+                                {isConfigured ? "Edit Configuration" : "Configure Seating"}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {isConfigured ? "Modify the existing seating layout" : "Set up seating or capacity"}
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </CardContent>
+        </Card>
     );
 }

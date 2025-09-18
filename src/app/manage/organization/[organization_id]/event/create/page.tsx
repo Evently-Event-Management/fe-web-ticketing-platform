@@ -28,7 +28,7 @@ import {
 import {createEvent} from "@/lib/actions/eventActions"
 import {useRouter} from "next/navigation"
 import type {z} from "zod"
-import {FileText, Ticket, Calendar, MapPin, Eye, ChevronLeft, ChevronRight, Check} from "lucide-react"
+import {FileText, Ticket, Calendar, MapPin, Eye, ChevronLeft, ChevronRight, Check, Percent} from "lucide-react"
 import {CoreDetailsStep} from "@/app/manage/organization/[organization_id]/event/_components/CoreDetailsStep";
 import {TiersStep} from "@/app/manage/organization/[organization_id]/event/_components/TierStep";
 import {SchedulingStep} from "@/app/manage/organization/[organization_id]/event/_components/SchedulingStep";
@@ -36,6 +36,7 @@ import {SeatingStep} from "@/app/manage/organization/[organization_id]/event/_co
 import {ReviewStep} from "@/app/manage/organization/[organization_id]/event/_components/ReviewStep";
 import {WizardProgressBar} from "@/app/manage/organization/[organization_id]/event/_components/WizardProgressBar";
 import {Separator} from "@/components/ui/separator";
+import DiscountStep from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-step";
 
 const getValidationSchemaForStep = (step: number): z.ZodSchema<Partial<CreateEventFormData>> | null => {
     switch (step) {
@@ -48,7 +49,7 @@ const getValidationSchemaForStep = (step: number): z.ZodSchema<Partial<CreateEve
         case 4:
             return step4Schema as z.ZodSchema<Partial<CreateEventFormData>>
         default:
-            return null
+            return finalCreateEventSchema
     }
 }
 
@@ -79,6 +80,12 @@ const stepConfig = [
     },
     {
         id: 5,
+        title: "Discounts",
+        description: "Create and manage discount codes",
+        icon: Percent
+    },
+    {
+        id: 6,
         title: "Review",
         description: "Review and submit your event",
         icon: Eye,
@@ -94,7 +101,7 @@ export default function CreateEventPage() {
     const router = useRouter()
 
     const {organization: activeOrganization} = useOrganization()
-    const totalSteps = 5
+    const totalSteps = stepConfig.length
 
     const methods = useForm<CreateEventFormData>({
         resolver: zodResolver(finalCreateEventSchema),
@@ -154,7 +161,22 @@ export default function CreateEventPage() {
 
         try {
             // Call the API to create the event
-            const response = await createEvent(data, coverFiles)
+            const validationResult = finalCreateEventSchema.safeParse(data)
+            if (!validationResult.success) {
+                const {fieldErrors} = validationResult.error.flatten()
+                Object.entries(fieldErrors).forEach(([fieldName, messages]) => {
+                    if (messages) {
+                        methods.setError(fieldName as Path<CreateEventFormData>, {
+                            type: "manual",
+                            message: messages.join(", "),
+                        })
+                        toast.error(messages.join(", "))
+                    }
+                })
+                throw new Error("Validation failed. Please check the form for errors.")
+            }
+
+            const response = await createEvent(validationResult.data, coverFiles)
 
             toast.dismiss(loadingToast)
             toast.success("Event submitted successfully!")
@@ -188,6 +210,8 @@ export default function CreateEventPage() {
             case 4:
                 return <SeatingStep onConfigModeChange={setInConfigMode}/>
             case 5:
+                return <DiscountStep />
+            case 6:
                 return <ReviewStep coverFiles={coverFiles}/>
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>

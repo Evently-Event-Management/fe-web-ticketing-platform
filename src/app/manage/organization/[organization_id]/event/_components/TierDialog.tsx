@@ -8,31 +8,31 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
-import {Tier, tierSchema} from "@/lib/validators/event";
+import {TierFormData, tierSchema} from "@/lib/validators/event";
 
 
 interface TierDialogProps {
     open: boolean;
     setOpen: (open: boolean) => void;
-    onSave: (tier: Tier) => void;
+    onSave: (tier: TierFormData) => void;
     initialValues?: { name: string, price: number, color: string };
     mode: 'create' | 'edit';
 }
 
 export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDialogProps) {
-    const defaultValues: Tier = {
+    const defaultValues: TierFormData = {
         id: crypto.randomUUID(),
         name: '',
         price: 0,
         color: '#8B5CF6' // Default purple color
     };
 
-    const form = useForm<Tier>({
+    const form = useForm<TierFormData>({
         resolver: zodResolver(tierSchema),
         defaultValues: initialValues || defaultValues
     });
 
-    const handleSubmit = (tier: Tier) => {
+    const handleSubmit = (tier: TierFormData) => {
         onSave(tier);
         setOpen(false);
         form.reset();

@@ -43,7 +43,7 @@ export default function RootLayout({
                 <TooltipProvider delayDuration={500}>
                     {children}
                 </TooltipProvider>
-                <Toaster/>
+                <Toaster position={'top-right'}/>
             </ThemeProvider>
         </AuthProvider>
         </body>

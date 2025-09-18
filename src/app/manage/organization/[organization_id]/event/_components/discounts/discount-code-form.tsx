@@ -1,99 +1,98 @@
 "use client"
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CalendarIcon, Percent, DollarSign, Gift } from "lucide-react"
-import { discountSchema, type DiscountFormData } from "@/lib/validators/event"
-import { TierSelector } from "./tier-selector"
-import { SessionSelector } from "./session-selector"
+import {useState} from "react"
+import {FieldArrayWithId, useForm} from "react-hook-form"
+import {z} from "zod"
+import {zodResolver} from "@hookform/resolvers/zod"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Switch} from "@/components/ui/switch"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {CalendarIcon, Percent, DollarSign, Gift} from "lucide-react"
+import {CreateEventFormData, DiscountParsed, discountSchema} from "@/lib/validators/event"
+import {TierSelector} from "./tier-selector"
+import {SessionSelector} from "./session-selector"
 import {DiscountType} from "@/types/enums/discountType";
-
-// Mock data - replace with actual data from your API
-const mockTiers = [
-    { id: "1", name: "VIP", price: 299, color: "#FFD700" },
-    { id: "2", name: "Premium", price: 199, color: "#C0C0C0" },
-    { id: "3", name: "Standard", price: 99, color: "#CD7F32" },
-    { id: "4", name: "Basic", price: 49, color: "#808080" },
-]
-
-const mockSessions = [
-    {
-        id: "1",
-        startTime: "2024-12-25T19:00:00Z",
-        endTime: "2024-12-25T22:00:00Z",
-        sessionType: "PHYSICAL" as const,
-    },
-    {
-        id: "2",
-        startTime: "2024-12-26T14:00:00Z",
-        endTime: "2024-12-26T17:00:00Z",
-        sessionType: "ONLINE" as const,
-    },
-    {
-        id: "3",
-        startTime: "2024-12-27T20:00:00Z",
-        endTime: "2024-12-27T23:00:00Z",
-        sessionType: "PHYSICAL" as const,
-    },
-]
+import {toast} from "sonner";
 
 interface DiscountCodeFormProps {
+    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
+    sessions: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
+    onSave: (discount: DiscountParsed) => void,
     isQuickCreate?: boolean
 }
 
-export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProps) {
-    const [selectedTiers, setSelectedTiers] = useState<string[]>(mockTiers.map((t) => t.id))
-    const [selectedSessions, setSelectedSessions] = useState<string[]>(mockSessions.map((s) => s.id))
-    const [discountType, setDiscountType] = useState<DiscountType>(DiscountType.PERCENTAGE)
-
-    const form = useForm<DiscountFormData>({
+export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave}: DiscountCodeFormProps) {
+    const form = useForm<z.input<typeof discountSchema>>({
         resolver: zodResolver(discountSchema),
         defaultValues: {
             code: "",
             type: DiscountType.PERCENTAGE,
-            parameters: { percentage: 10 },
+            parameters: {percentage: 10},
             maxUsage: null,
             isActive: true,
             isPublic: false,
             activeFrom: null,
             expiresAt: null,
-            applicableTierIds: selectedTiers,
+            applicableTierIds: tiers.map((t) => t.id),
+            applicableSessionIds: sessions.map((s) => s.id),
         },
     })
 
-    const onSubmit = (data: DiscountFormData) => {
-        console.log("Discount Code Data:", {
-            ...data,
-            applicableTierIds: selectedTiers,
-            applicableSessions: selectedSessions,
-        })
+    const selectedTiers = form.watch("applicableTierIds");
+    const selectedSessions = form.watch("applicableSessionIds");
+    const discountType = form.watch('type')
+
+    const onSubmit = (data: z.input<typeof discountSchema>) => {
+        // We use our local state for tiers/sessions, not the form state
+        console.log(`Submitting form with data2:`, data);
+        const validatedResult = discountSchema.safeParse(data);
+
+        if (!validatedResult.success) {
+            validatedResult.error.issues.forEach((issue) => toast.error(issue.message));
+            return;
+        }
+
+        onSave(validatedResult.data as DiscountParsed)
+
+        // ✅ UX IMPROVEMENT: Reset the local form for the next entry
+        form.reset({
+            code: "",
+            type: DiscountType.PERCENTAGE,
+            parameters: {percentage: 10},
+            maxUsage: null,
+            isActive: true,
+            isPublic: false,
+            activeFrom: null,
+            expiresAt: null,
+        });
     }
+
+    const onError = (errors: any) => {
+        console.error("React Hook Form validation failed:", errors);
+        // You can add a generic toast here if you want
+        toast.error("Please fix the highlighted errors in the form.");
+    };
 
     const getDiscountIcon = (type: DiscountType) => {
         switch (type) {
             case DiscountType.PERCENTAGE:
-                return <Percent className="h-4 w-4" />
+                return <Percent className="h-4 w-4"/>
             case DiscountType.FLAT_OFF:
-                return <DollarSign className="h-4 w-4" />
+                return <DollarSign className="h-4 w-4"/>
             case DiscountType.BUY_N_GET_N_FREE:
-                return <Gift className="h-4 w-4" />
+                return <Gift className="h-4 w-4"/>
             default:
-                return <Percent className="h-4 w-4" />
+                return <Percent className="h-4 w-4"/>
         }
     }
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-6">
             {!isQuickCreate && (
                 <>
-                    {/* Basic Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -121,41 +120,40 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                                     <Select
                                         value={discountType}
                                         onValueChange={(value: DiscountType) => {
-                                            setDiscountType(value)
                                             form.setValue("type", value)
                                             // Reset parameters based on type
                                             switch (value) {
                                                 case DiscountType.PERCENTAGE:
-                                                    form.setValue("parameters", { percentage: 10 })
+                                                    form.setValue("parameters", {percentage: 10})
                                                     break
                                                 case DiscountType.FLAT_OFF:
-                                                    form.setValue("parameters", { amount: 10 })
+                                                    form.setValue("parameters", {amount: 10, currency: "USD"})
                                                     break
                                                 case DiscountType.BUY_N_GET_N_FREE:
-                                                    form.setValue("parameters", { buyQuantity: 2, getQuantity: 1 })
+                                                    form.setValue("parameters", {buyQuantity: 2, getQuantity: 1})
                                                     break
                                             }
                                         }}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value={DiscountType.PERCENTAGE}>
                                                 <div className="flex items-center gap-2">
-                                                    <Percent className="h-4 w-4" />
+                                                    <Percent className="h-4 w-4"/>
                                                     Percentage Off
                                                 </div>
                                             </SelectItem>
                                             <SelectItem value={DiscountType.FLAT_OFF}>
                                                 <div className="flex items-center gap-2">
-                                                    <DollarSign className="h-4 w-4" />
+                                                    <DollarSign className="h-4 w-4"/>
                                                     Fixed Amount Off
                                                 </div>
                                             </SelectItem>
                                             <SelectItem value={DiscountType.BUY_N_GET_N_FREE}>
                                                 <div className="flex items-center gap-2">
-                                                    <Gift className="h-4 w-4" />
+                                                    <Gift className="h-4 w-4"/>
                                                     Buy N Get N Free
                                                 </div>
                                             </SelectItem>
@@ -189,7 +187,16 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                                             min="0.01"
                                             step="0.01"
                                             placeholder="10.00"
-                                            onChange={(e) => form.setValue("parameters.amount", Number(e.target.value))}
+                                            onChange={(e) => {
+                                                const current = form.getValues("parameters") as {
+                                                    amount?: number;
+                                                    currency?: string
+                                                }
+                                                form.setValue("parameters", {
+                                                    amount: Number(e.target.value),
+                                                    currency: current?.currency || "USD"
+                                                })
+                                            }}
                                         />
                                     </div>
                                 )}
@@ -226,7 +233,7 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <CalendarIcon className="h-4 w-4" />
+                                <CalendarIcon className="h-4 w-4"/>
                                 Usage & Validity
                             </CardTitle>
                         </CardHeader>
@@ -239,7 +246,7 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                                         type="number"
                                         min="1"
                                         placeholder="Unlimited"
-                                        {...form.register("maxUsage", { valueAsNumber: true })}
+                                        {...form.register("maxUsage", {valueAsNumber: true})}
                                     />
                                 </div>
 
@@ -277,13 +284,15 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                     </Card>
 
                     {/* Applicable Tiers */}
-                    <TierSelector tiers={mockTiers} selectedTiers={selectedTiers} onSelectionChange={setSelectedTiers} />
+                    <TierSelector tiers={tiers} selectedTiers={selectedTiers} onSelectionChange={
+                        (newSelection) => form.setValue("applicableTierIds", newSelection, {shouldValidate: true})
+                    }/>
 
                     {/* Applicable Sessions */}
                     <SessionSelector
-                        sessions={mockSessions}
+                        sessions={sessions}
                         selectedSessions={selectedSessions}
-                        onSelectionChange={setSelectedSessions}
+                        onSelectionChange={(newSelection) => form.setValue("applicableSessionIds", newSelection, {shouldValidate: true})}
                     />
                 </>
             )}
@@ -292,13 +301,14 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="quick-code">Discount Code</Label>
-                        <Input id="quick-code" placeholder="e.g., SAVE20" {...form.register("code")} className="uppercase" />
+                        <Input id="quick-code" placeholder="e.g., SAVE20" {...form.register("code")}
+                               className="uppercase"/>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="quick-type">Type</Label>
-                        <Select value={discountType} onValueChange={(value: DiscountType) => setDiscountType(value)}>
+                        <Select value={discountType} onValueChange={(value: DiscountType) => form.setValue("type", value)}>
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue/>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={DiscountType.PERCENTAGE}>Percentage Off</SelectItem>
@@ -324,7 +334,16 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
                                 min="0.01"
                                 step="0.01"
                                 placeholder="10.00"
-                                onChange={(e) => form.setValue("parameters.amount", Number(e.target.value))}
+                                onChange={(e) => {
+                                    const current = form.getValues("parameters") as {
+                                        amount?: number;
+                                        currency?: string
+                                    }
+                                    form.setValue("parameters", {
+                                        amount: Number(e.target.value),
+                                        currency: current?.currency || "USD"
+                                    })
+                                }}
                             />
                         )}
                     </div>
@@ -333,10 +352,10 @@ export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProp
 
             {/* Submit Button */}
             <div className="flex justify-end">
-                <Button type="submit" size="lg" className="min-w-32">
+                <Button type="button" size="lg" className="min-w-32" onClick={form.handleSubmit(onSubmit, onError)}>
                     {isQuickCreate ? "Quick Create" : "Create Discount Code"}
                 </Button>
             </div>
-        </form>
+        </div>
     )
 }

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import {CreateEventFormData, Tier} from '@/lib/validators/event';
+import {CreateEventFormData, TierFormData} from '@/lib/validators/event';
 import { Button } from '@/components/ui/button';
 import { Ticket, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { TierDialog } from './TierDialog';
@@ -45,11 +45,11 @@ export function TiersStep() {
     initialRenderRef.current = false;
   }, [append, fields.length]);
 
-  const handleCreateTier = (tier: Tier) => {
+  const handleCreateTier = (tier: TierFormData) => {
     append(tier);
   };
 
-  const handleEditTier = (tier: Tier) => {
+  const handleEditTier = (tier: TierFormData) => {
     if (editingIndex !== null) {
       update(editingIndex, {
         ...fields[editingIndex],
