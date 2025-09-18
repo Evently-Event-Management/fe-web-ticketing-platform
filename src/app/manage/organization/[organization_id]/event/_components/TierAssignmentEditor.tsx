@@ -83,10 +83,8 @@ export function TierAssignmentEditor({layoutData, tiers, onChange}: TierAssignme
                 // Apply the selected tier to all seats
                 for (const row of block.rows) {
                     for (const seat of row.seats) {
-                        if (seat.status !== 'RESERVED') {
-                            seat.tierId = selectedTierId;
-                            seat.status = 'AVAILABLE';
-                        }
+                        seat.tierId = selectedTierId;
+                        seat.status = 'AVAILABLE';
                     }
                 }
                 const tierName = tiers.find(t => t.id === selectedTierId)?.name;

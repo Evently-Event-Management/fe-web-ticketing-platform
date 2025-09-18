@@ -2,9 +2,9 @@ import {SeatDTO, SeatingBlockDTO} from "@/types/event";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {cn} from "@/lib/utils";
-import {ReadModelSeatStatus} from "@/lib/validators/enums";
 import {TooltipContent, TooltipTrigger, Tooltip} from "@/components/ui/tooltip";
 import {Lock, X, Clock} from "lucide-react";
+import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 
 export const SeatedGridBlock = ({block, selectedSeats, onSeatSelect}: {
     block: SeatingBlockDTO;
