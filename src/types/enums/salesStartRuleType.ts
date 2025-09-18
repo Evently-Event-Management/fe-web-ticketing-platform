@@ -3,4 +3,3 @@ export enum SalesStartRuleType {
     ROLLING = 'ROLLING',
     FIXED = 'FIXED',
 }
-
