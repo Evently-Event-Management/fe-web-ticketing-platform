@@ -36,7 +36,7 @@ export function TiersStep() {
   useEffect(() => {
     if (initialRenderRef.current && fields.length === 0) {
       append({
-        id: `default_tier_${Date.now()}`,
+        id: crypto.randomUUID(),
         name: 'General Admission',
         price: 0,
         color: '#3B82F6' // Blue color

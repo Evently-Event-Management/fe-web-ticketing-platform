@@ -78,6 +78,7 @@ export const recurringSessionDialogSchema = z.object({
             }
 
             sessions.push({
+                id: crypto.randomUUID(),
                 startTime: currentStartTime.toISOString(),
                 sessionType: null,
                 endTime: endTime.toISOString(),

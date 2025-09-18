@@ -21,7 +21,7 @@ interface TierDialogProps {
 
 export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDialogProps) {
     const defaultValues: Tier = {
-        id: `temp_tier_${Date.now()}`,
+        id: crypto.randomUUID(),
         name: '',
         price: 0,
         color: '#8B5CF6' // Default purple color
