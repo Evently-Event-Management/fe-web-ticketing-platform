@@ -14,7 +14,7 @@ interface TierSelectorProps {
     onSelectionChange: (selectedTiers: string[]) => void
 }
 
-export function TierSelector({ tiers, selectedTiers, onSelectionChange }: TierSelectorProps) {
+export function TierSelector({ tiers, selectedTiers = [], onSelectionChange }: TierSelectorProps) {
     const handleTierToggle = (tierId: string) => {
         const newSelection = selectedTiers.includes(tierId)
             ? selectedTiers.filter((id) => id !== tierId)
