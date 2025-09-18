@@ -1,0 +1,342 @@
+"use client"
+
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CalendarIcon, Percent, DollarSign, Gift } from "lucide-react"
+import { discountSchema, type DiscountFormData } from "@/lib/validators/event"
+import { TierSelector } from "./tier-selector"
+import { SessionSelector } from "./session-selector"
+import {DiscountType} from "@/types/enums/discountType";
+
+// Mock data - replace with actual data from your API
+const mockTiers = [
+    { id: "1", name: "VIP", price: 299, color: "#FFD700" },
+    { id: "2", name: "Premium", price: 199, color: "#C0C0C0" },
+    { id: "3", name: "Standard", price: 99, color: "#CD7F32" },
+    { id: "4", name: "Basic", price: 49, color: "#808080" },
+]
+
+const mockSessions = [
+    {
+        id: "1",
+        startTime: "2024-12-25T19:00:00Z",
+        endTime: "2024-12-25T22:00:00Z",
+        sessionType: "PHYSICAL" as const,
+    },
+    {
+        id: "2",
+        startTime: "2024-12-26T14:00:00Z",
+        endTime: "2024-12-26T17:00:00Z",
+        sessionType: "ONLINE" as const,
+    },
+    {
+        id: "3",
+        startTime: "2024-12-27T20:00:00Z",
+        endTime: "2024-12-27T23:00:00Z",
+        sessionType: "PHYSICAL" as const,
+    },
+]
+
+interface DiscountCodeFormProps {
+    isQuickCreate?: boolean
+}
+
+export function DiscountCodeForm({ isQuickCreate = false }: DiscountCodeFormProps) {
+    const [selectedTiers, setSelectedTiers] = useState<string[]>(mockTiers.map((t) => t.id))
+    const [selectedSessions, setSelectedSessions] = useState<string[]>(mockSessions.map((s) => s.id))
+    const [discountType, setDiscountType] = useState<DiscountType>(DiscountType.PERCENTAGE)
+
+    const form = useForm<DiscountFormData>({
+        resolver: zodResolver(discountSchema),
+        defaultValues: {
+            code: "",
+            type: DiscountType.PERCENTAGE,
+            parameters: { percentage: 10 },
+            maxUsage: null,
+            isActive: true,
+            isPublic: false,
+            activeFrom: null,
+            expiresAt: null,
+            applicableTierIds: selectedTiers,
+        },
+    })
+
+    const onSubmit = (data: DiscountFormData) => {
+        console.log("Discount Code Data:", {
+            ...data,
+            applicableTierIds: selectedTiers,
+            applicableSessions: selectedSessions,
+        })
+    }
+
+    const getDiscountIcon = (type: DiscountType) => {
+        switch (type) {
+            case DiscountType.PERCENTAGE:
+                return <Percent className="h-4 w-4" />
+            case DiscountType.FLAT_OFF:
+                return <DollarSign className="h-4 w-4" />
+            case DiscountType.BUY_N_GET_N_FREE:
+                return <Gift className="h-4 w-4" />
+            default:
+                return <Percent className="h-4 w-4" />
+        }
+    }
+
+    return (
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {!isQuickCreate && (
+                <>
+                    {/* Basic Information */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                {getDiscountIcon(discountType)}
+                                Basic Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="code">Discount Code *</Label>
+                                    <Input
+                                        id="code"
+                                        placeholder="e.g., SAVE20, EARLY2024"
+                                        {...form.register("code")}
+                                        className="uppercase"
+                                    />
+                                    {form.formState.errors.code && (
+                                        <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="type">Discount Type *</Label>
+                                    <Select
+                                        value={discountType}
+                                        onValueChange={(value: DiscountType) => {
+                                            setDiscountType(value)
+                                            form.setValue("type", value)
+                                            // Reset parameters based on type
+                                            switch (value) {
+                                                case DiscountType.PERCENTAGE:
+                                                    form.setValue("parameters", { percentage: 10 })
+                                                    break
+                                                case DiscountType.FLAT_OFF:
+                                                    form.setValue("parameters", { amount: 10 })
+                                                    break
+                                                case DiscountType.BUY_N_GET_N_FREE:
+                                                    form.setValue("parameters", { buyQuantity: 2, getQuantity: 1 })
+                                                    break
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value={DiscountType.PERCENTAGE}>
+                                                <div className="flex items-center gap-2">
+                                                    <Percent className="h-4 w-4" />
+                                                    Percentage Off
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value={DiscountType.FLAT_OFF}>
+                                                <div className="flex items-center gap-2">
+                                                    <DollarSign className="h-4 w-4" />
+                                                    Fixed Amount Off
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value={DiscountType.BUY_N_GET_N_FREE}>
+                                                <div className="flex items-center gap-2">
+                                                    <Gift className="h-4 w-4" />
+                                                    Buy N Get N Free
+                                                </div>
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            {/* Discount Parameters */}
+                            <div className="space-y-4">
+                                {discountType === DiscountType.PERCENTAGE && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="percentage">Percentage (%)</Label>
+                                        <Input
+                                            id="percentage"
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            placeholder="10"
+                                            onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value))}
+                                        />
+                                    </div>
+                                )}
+
+                                {discountType === DiscountType.FLAT_OFF && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="amount">Amount ($)</Label>
+                                        <Input
+                                            id="amount"
+                                            type="number"
+                                            min="0.01"
+                                            step="0.01"
+                                            placeholder="10.00"
+                                            onChange={(e) => form.setValue("parameters.amount", Number(e.target.value))}
+                                        />
+                                    </div>
+                                )}
+
+                                {discountType === DiscountType.BUY_N_GET_N_FREE && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="buyQuantity">Buy Quantity</Label>
+                                            <Input
+                                                id="buyQuantity"
+                                                type="number"
+                                                min="1"
+                                                placeholder="2"
+                                                onChange={(e) => form.setValue("parameters.buyQuantity", Number(e.target.value))}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="getQuantity">Get Free Quantity</Label>
+                                            <Input
+                                                id="getQuantity"
+                                                type="number"
+                                                min="1"
+                                                placeholder="1"
+                                                onChange={(e) => form.setValue("parameters.getQuantity", Number(e.target.value))}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Usage & Validity */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4" />
+                                Usage & Validity
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="maxUsage">Max Usage (Optional)</Label>
+                                    <Input
+                                        id="maxUsage"
+                                        type="number"
+                                        min="1"
+                                        placeholder="Unlimited"
+                                        {...form.register("maxUsage", { valueAsNumber: true })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="activeFrom">Active From (Optional)</Label>
+                                    <Input id="activeFrom" type="datetime-local" {...form.register("activeFrom")} />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="expiresAt">Expires At (Optional)</Label>
+                                    <Input id="expiresAt" type="datetime-local" {...form.register("expiresAt")} />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        id="isActive"
+                                        checked={form.watch("isActive")}
+                                        onCheckedChange={(checked) => form.setValue("isActive", checked)}
+                                    />
+                                    <Label htmlFor="isActive">Active</Label>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        id="isPublic"
+                                        checked={form.watch("isPublic")}
+                                        onCheckedChange={(checked) => form.setValue("isPublic", checked)}
+                                    />
+                                    <Label htmlFor="isPublic">Public (Visible to all users)</Label>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Applicable Tiers */}
+                    <TierSelector tiers={mockTiers} selectedTiers={selectedTiers} onSelectionChange={setSelectedTiers} />
+
+                    {/* Applicable Sessions */}
+                    <SessionSelector
+                        sessions={mockSessions}
+                        selectedSessions={selectedSessions}
+                        onSelectionChange={setSelectedSessions}
+                    />
+                </>
+            )}
+
+            {isQuickCreate && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="quick-code">Discount Code</Label>
+                        <Input id="quick-code" placeholder="e.g., SAVE20" {...form.register("code")} className="uppercase" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="quick-type">Type</Label>
+                        <Select value={discountType} onValueChange={(value: DiscountType) => setDiscountType(value)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={DiscountType.PERCENTAGE}>Percentage Off</SelectItem>
+                                <SelectItem value={DiscountType.FLAT_OFF}>Fixed Amount Off</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="quick-value">Value</Label>
+                        {discountType === DiscountType.PERCENTAGE ? (
+                            <Input
+                                id="quick-value"
+                                type="number"
+                                min="1"
+                                max="100"
+                                placeholder="20"
+                                onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value))}
+                            />
+                        ) : (
+                            <Input
+                                id="quick-value"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                placeholder="10.00"
+                                onChange={(e) => form.setValue("parameters.amount", Number(e.target.value))}
+                            />
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+                <Button type="submit" size="lg" className="min-w-32">
+                    {isQuickCreate ? "Quick Create" : "Create Discount Code"}
+                </Button>
+            </div>
+        </form>
+    )
+}
