@@ -67,14 +67,10 @@ export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave
             isPublic: false,
             activeFrom: null,
             expiresAt: null,
+            applicableTierIds: tiers.map((t) => t.id),
+            applicableSessionIds: sessions.map((s) => s.id),
         });
     }
-
-    const onError = (errors: any) => {
-        console.error("React Hook Form validation failed:", errors);
-        // You can add a generic toast here if you want
-        toast.error("Please fix the highlighted errors in the form.");
-    };
 
     const getDiscountIcon = (type: DiscountType) => {
         switch (type) {
@@ -352,7 +348,7 @@ export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave
 
             {/* Submit Button */}
             <div className="flex justify-end">
-                <Button type="button" size="lg" className="min-w-32" onClick={form.handleSubmit(onSubmit, onError)}>
+                <Button type="button" size="lg" className="min-w-32" onClick={form.handleSubmit(onSubmit )}>
                     {isQuickCreate ? "Quick Create" : "Create Discount Code"}
                 </Button>
             </div>

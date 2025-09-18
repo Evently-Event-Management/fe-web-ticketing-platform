@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Monitor, MapPin } from "lucide-react"
-import {CreateEventFormData, SessionFormData} from "@/lib/validators/event";
+import {CreateEventFormData} from "@/lib/validators/event";
 import {FieldArrayWithId} from "react-hook-form";
 
 interface SessionSelectorProps {
@@ -14,7 +14,7 @@ interface SessionSelectorProps {
     onSelectionChange: (selectedSessions: string[]) => void
 }
 
-export function SessionSelector({ sessions, selectedSessions, onSelectionChange }: SessionSelectorProps) {
+export function SessionSelector({ sessions, selectedSessions =[], onSelectionChange }: SessionSelectorProps) {
     const handleSessionToggle = (sessionId: string) => {
         const newSelection = selectedSessions.includes(sessionId)
             ? selectedSessions.filter((id) => id !== sessionId)
