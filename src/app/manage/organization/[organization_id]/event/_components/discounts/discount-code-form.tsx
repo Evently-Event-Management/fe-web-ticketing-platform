@@ -186,8 +186,11 @@ export function DiscountCodeForm({
                                             min="1"
                                             max="100"
                                             placeholder="10"
-                                            onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value))}
+                                            onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value), {shouldValidate: true})}
                                         />
+                                        {form.formState.errors.parameters && (
+                                            <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
+                                        )}
                                     </div>
                                 )}
 
@@ -208,9 +211,12 @@ export function DiscountCodeForm({
                                                 form.setValue("parameters", {
                                                     amount: Number(e.target.value),
                                                     currency: current?.currency || "USD"
-                                                })
+                                                }, {shouldValidate: true})
                                             }}
                                         />
+                                        {form.formState.errors.parameters && (
+                                            <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
+                                        )}
                                     </div>
                                 )}
 
@@ -223,8 +229,11 @@ export function DiscountCodeForm({
                                                 type="number"
                                                 min="1"
                                                 placeholder="2"
-                                                onChange={(e) => form.setValue("parameters.buyQuantity", Number(e.target.value))}
+                                                onChange={(e) => form.setValue("parameters.buyQuantity", Number(e.target.value), {shouldValidate: true})}
                                             />
+                                            {form.formState.errors.parameters && (
+                                                <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="getQuantity">Get Free Quantity</Label>
@@ -233,8 +242,11 @@ export function DiscountCodeForm({
                                                 type="number"
                                                 min="1"
                                                 placeholder="1"
-                                                onChange={(e) => form.setValue("parameters.getQuantity", Number(e.target.value))}
+                                                onChange={(e) => form.setValue("parameters.getQuantity", Number(e.target.value), {shouldValidate: true})}
                                             />
+                                            {form.formState.errors.parameters && (
+                                                <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -261,6 +273,9 @@ export function DiscountCodeForm({
                                         placeholder="Unlimited"
                                         {...form.register("maxUsage", {valueAsNumber: true})}
                                     />
+                                    {form.formState.errors.maxUsage && (
+                                        <p className="text-sm text-destructive">{form.formState.errors.maxUsage.message}</p>
+                                    )}
                                 </div>
 
                                 <Controller
@@ -280,6 +295,9 @@ export function DiscountCodeForm({
                                                 }}
                                                 ref={field.ref}
                                             />
+                                            {form.formState.errors.activeFrom && (
+                                                <p className="text-sm text-destructive">{form.formState.errors.activeFrom.message}</p>
+                                            )}
                                         </div>
                                     )}
                                 />
@@ -301,6 +319,9 @@ export function DiscountCodeForm({
                                                 }}
                                                 ref={field.ref}
                                             />
+                                            {form.formState.errors.expiresAt && (
+                                                <p className="text-sm text-destructive">{form.formState.errors.expiresAt.message}</p>
+                                            )}
                                         </div>
                                     )}
                                 />
@@ -332,6 +353,9 @@ export function DiscountCodeForm({
                     <TierSelector tiers={tiers} selectedTiers={selectedTiers} onSelectionChange={
                         (newSelection) => form.setValue("applicableTierIds", newSelection, {shouldValidate: true})
                     }/>
+                    {form.formState.errors.applicableTierIds && (
+                        <p className="text-sm text-destructive">{form.formState.errors.applicableTierIds.message}</p>
+                    )}
 
                     {/* Applicable Sessions */}
                     <SessionSelector
@@ -339,6 +363,9 @@ export function DiscountCodeForm({
                         selectedSessions={selectedSessions}
                         onSelectionChange={(newSelection) => form.setValue("applicableSessionIds", newSelection, {shouldValidate: true})}
                     />
+                    {form.formState.errors.applicableSessionIds && (
+                        <p className="text-sm text-destructive">{form.formState.errors.applicableSessionIds.message}</p>
+                    )}
                 </>
             )}
 
@@ -348,6 +375,9 @@ export function DiscountCodeForm({
                         <Label htmlFor="quick-code">Discount Code</Label>
                         <Input id="quick-code" placeholder="e.g., SAVE20" {...form.register("code")}
                                className="uppercase"/>
+                        {form.formState.errors.code && (
+                            <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="quick-type">Type</Label>
@@ -365,32 +395,42 @@ export function DiscountCodeForm({
                     <div className="space-y-2">
                         <Label htmlFor="quick-value">Value</Label>
                         {discountType === DiscountType.PERCENTAGE ? (
-                            <Input
-                                id="quick-value"
-                                type="number"
-                                min="1"
-                                max="100"
-                                placeholder="20"
-                                onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value))}
-                            />
+                            <>
+                                <Input
+                                    id="quick-value"
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    placeholder="20"
+                                    onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value), {shouldValidate: true})}
+                                />
+                                {form.formState.errors.parameters && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
+                                )}
+                            </>
                         ) : (
-                            <Input
-                                id="quick-value"
-                                type="number"
-                                min="0.01"
-                                step="0.01"
-                                placeholder="10.00"
-                                onChange={(e) => {
-                                    const current = form.getValues("parameters") as {
-                                        amount?: number;
-                                        currency?: string
-                                    }
-                                    form.setValue("parameters", {
-                                        amount: Number(e.target.value),
-                                        currency: current?.currency || "USD"
-                                    })
-                                }}
-                            />
+                            <>
+                                <Input
+                                    id="quick-value"
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    placeholder="10.00"
+                                    onChange={(e) => {
+                                        const current = form.getValues("parameters") as {
+                                            amount?: number;
+                                            currency?: string
+                                        }
+                                        form.setValue("parameters", {
+                                            amount: Number(e.target.value),
+                                            currency: current?.currency || "USD"
+                                        }, {shouldValidate: true})
+                                    }}
+                                />
+                                {form.formState.errors.parameters && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
