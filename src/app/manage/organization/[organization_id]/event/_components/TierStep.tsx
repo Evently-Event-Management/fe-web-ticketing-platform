@@ -186,6 +186,7 @@ export function TiersStep() {
           setOpen={setEditDialogOpen}
           onSave={handleEditTier}
           initialValues={{
+              id: fields[editingIndex].id,
             name: fields[editingIndex].name,
             price: fields[editingIndex].price,
             color: fields[editingIndex].color || '#8B5CF6'

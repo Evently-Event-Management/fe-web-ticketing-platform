@@ -112,6 +112,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
                 onDelete={handleDeleteDiscount}
                 onToggleStatus={handleToggleStatus}
                 onEdit={handleGoToEditView}
+                filters={false}
             />
         </div>
     );
