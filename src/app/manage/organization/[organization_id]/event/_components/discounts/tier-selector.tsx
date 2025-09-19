@@ -64,10 +64,10 @@ export function TierSelector({ tiers, selectedTiers = [], onSelectionChange }: T
                                 <div className="w-4 h-4 rounded-full border" style={{ backgroundColor: tier.color }} />
                                 <div className="flex-1">
                                     <div className="font-medium">{tier.name}</div>
-                                    <div className="text-sm text-muted-foreground">${tier.price}</div>
+                                    <div className="text-sm text-muted-foreground">LKR {tier.price}</div>
                                 </div>
                                 <Badge variant="secondary" className="text-xs">
-                                    ${tier.price}
+                                    LKR {tier.price}
                                 </Badge>
                             </div>
                         </div>
