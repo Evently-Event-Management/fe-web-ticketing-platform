@@ -264,19 +264,32 @@ export function DiscountCodeForm({
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="maxUsage">Max Usage (Optional)</Label>
-                                    <Input
-                                        id="maxUsage"
-                                        type="number"
-                                        min="1"
-                                        placeholder="Unlimited"
-                                        {...form.register("maxUsage", {valueAsNumber: true})}
-                                    />
-                                    {form.formState.errors.maxUsage && (
-                                        <p className="text-sm text-destructive">{form.formState.errors.maxUsage.message}</p>
+                                <Controller
+                                    name="maxUsage"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="maxUsage">Max Usage (Optional)</Label>
+                                            <Input
+                                                id="maxUsage"
+                                                type="number"
+                                                min="1"
+                                                placeholder="Unlimited"
+                                                ref={field.ref}
+                                                name={field.name}
+                                                onBlur={field.onBlur}
+                                                value={field.value ?? ""}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    field.onChange(value === "" ? null : parseInt(value, 10));
+                                                }}
+                                            />
+                                            {form.formState.errors.maxUsage && (
+                                                <p className="text-sm text-destructive">{form.formState.errors.maxUsage.message}</p>
+                                            )}
+                                        </div>
                                     )}
-                                </div>
+                                />
 
                                 <Controller
                                     name="activeFrom"

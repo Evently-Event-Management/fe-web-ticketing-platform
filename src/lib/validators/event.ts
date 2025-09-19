@@ -36,7 +36,7 @@ export const bogoParamsSchema = z.object({
 
 const baseDiscountSchema = z.object({
     code: z.string().min(1, { message: "Discount code cannot be empty." }).transform(val => val.toUpperCase()),
-    maxUsage: z.number().int().min(1).optional().nullable(),
+    maxUsage: z.number().int().min(1).nullable().optional(),
     currentUsage: z.number().int().min(0).default(0),
     isActive: z.boolean().default(true),
     isPublic: z.boolean().default(false),
