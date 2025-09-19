@@ -1,7 +1,7 @@
 "use client"
 
 import {useEffect} from "react"
-import {Controller, FieldArrayWithId, useForm} from "react-hook-form"
+import {Controller, useForm} from "react-hook-form"
 import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
@@ -11,7 +11,12 @@ import {Label} from "@/components/ui/label"
 import {Switch} from "@/components/ui/switch"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {CalendarIcon, Percent, DollarSign, Gift} from "lucide-react"
-import {CreateEventFormData, DiscountParsed, discountSchema} from "@/lib/validators/event"
+import {
+    DiscountParsed,
+    discountSchema,
+    SessionParsed,
+    TierParsed
+} from "@/lib/validators/event"
 import {TierSelector} from "./tier-selector"
 import {SessionSelector} from "./session-selector"
 import {DiscountType} from "@/types/enums/discountType";
@@ -19,8 +24,8 @@ import {toast} from "sonner";
 import {formatToDateTimeLocalString} from "@/lib/utils";
 
 interface DiscountCodeFormProps {
-    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
-    sessions: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
+    tiers: TierParsed[],
+    sessions: SessionParsed[],
     onSave: (discount: DiscountParsed) => void,
     isQuickCreate?: boolean,
     isEditing?: boolean,
@@ -38,6 +43,7 @@ export function DiscountCodeForm({
     const form = useForm<z.input<typeof discountSchema>>({
         resolver: zodResolver(discountSchema),
         defaultValues: {
+            id: crypto.randomUUID(),
             code: "",
             type: DiscountType.PERCENTAGE,
             parameters: {percentage: 10},
@@ -76,6 +82,7 @@ export function DiscountCodeForm({
 
         // ✅ UX IMPROVEMENT: Reset the local form for the next entry
         form.reset({
+            id: crypto.randomUUID(),
             code: "",
             type: DiscountType.PERCENTAGE,
             parameters: {percentage: 10},

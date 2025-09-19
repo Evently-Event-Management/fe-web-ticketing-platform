@@ -17,10 +17,10 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-    const { control } = useFormContext<CreateEventFormData>();
+    const { control, watch } = useFormContext<CreateEventFormData>();
 
-    const { fields: tierFields } = useFieldArray({ control, name: "tiers" });
-    const { fields: sessionFields } = useFieldArray({ control, name: "sessions" });
+    const tiers = watch("tiers");
+    const sessions = watch("sessions");
 
     // ✅ Destructure all necessary functions from useFieldArray
     const { fields: discountFields, append, remove, update } = useFieldArray({
@@ -30,7 +30,6 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
 
     useEffect(() => {
         if (onConfigModeChange) {
-            console.log("onConfigModeChange", onConfigModeChange);
             onConfigModeChange(view !== 'list');
         }
     }, [onConfigModeChange, view])
@@ -75,8 +74,8 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
             : undefined;
         return (
             <FullDiscountFormView
-                tiers={tierFields}
-                sessions={sessionFields}
+                tiers={tiers}
+                sessions={sessions}
                 onSave={(discount) => {
                     if (view === 'edit' && editingIndex !== null) {
                         handleUpdateDiscount(editingIndex, discount);
@@ -107,8 +106,8 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
             </div>
             <DiscountList
                 discounts={discountFields}
-                tiers={tierFields}
-                sessions={sessionFields}
+                tiers={tiers}
+                sessions={sessions}
                 onDelete={handleDeleteDiscount}
                 onToggleStatus={handleToggleStatus}
                 onEdit={handleGoToEditView}

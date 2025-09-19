@@ -21,9 +21,10 @@ interface DiscountCardProps {
     index: number,
     tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
     sessions?: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
-    onDelete: (index: number) => void,
-    onToggleStatus: (index: number) => void,
-    onEdit: (index: number) => void,
+    onDelete?: (index: number) => void,
+    onToggleStatus?: (index: number) => void,
+    onEdit?: (index: number) => void,
+    isReadOnly?: boolean,
 }
 
 // --- Helper Functions ---
@@ -51,7 +52,16 @@ const getDiscountValue = (discount: DiscountParsed) => {
     }
 }
 
-export function DiscountCard({discount, index, tiers, sessions, onDelete, onToggleStatus, onEdit}: DiscountCardProps) {
+export function DiscountCard({
+                                 discount,
+                                 index,
+                                 tiers,
+                                 sessions,
+                                 onDelete,
+                                 onToggleStatus,
+                                 onEdit,
+                                 isReadOnly
+                             }: DiscountCardProps) {
 
     const getTierNames = (tierIds?: string[]) => {
         const ids = tierIds || [];
@@ -81,9 +91,9 @@ export function DiscountCard({discount, index, tiers, sessions, onDelete, onTogg
         <Card key={discount.id} className="hover:shadow-md transition-shadow gap-4">
             <CardHeader className="flex items-start justify-between py-0">
                 <div className="flex items-center gap-4 flex-1">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                            {getDiscountIcon(discount.type)}
-                        </div>
+                    <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+                        {getDiscountIcon(discount.type)}
+                    </div>
                     <div className="flex-1 ">
                         <div className="flex items-center gap-3">
                             <h3 className="text-lg font-semibold">{discount.code}</h3>
@@ -111,34 +121,38 @@ export function DiscountCard({discount, index, tiers, sessions, onDelete, onTogg
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Switch
-                        checked={discount.isActive}
-                        onCheckedChange={() => onToggleStatus(index)}
-                    />
+                    {!isReadOnly && onToggleStatus && (
+                        <Switch
+                            checked={discount.isActive}
+                            onCheckedChange={() => onToggleStatus(index)}
+                        />
+                    )}
                     <Button type={'button'} variant="outline" size="sm"
                             onClick={() => copyToClipboard(discount.code)}>
                         <Copy className="h-4 w-4"/>
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <MoreHorizontal className="h-4 w-4"/>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => onEdit(index)}>
-                                <Edit className="h-4 w-4 mr-2"/>
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="text-destructive"
-                                onSelect={() => onDelete(index)}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2"/>
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {!isReadOnly && onEdit && onDelete && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <MoreHorizontal className="h-4 w-4"/>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => onEdit(index)}>
+                                    <Edit className="h-4 w-4 mr-2"/>
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="text-destructive"
+                                    onSelect={() => onDelete(index)}
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2"/>
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
             </CardHeader>
             <CardContent className="">
