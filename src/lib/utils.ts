@@ -101,3 +101,24 @@ export function formatISODuration(duration: string): string {
     }
     return "Less than an hour";
 }
+
+export const formatToDateTimeLocalString = (dateInput: string | null | undefined): string => {
+    if (!dateInput) return "";
+    try {
+        const date = new Date(dateInput);
+        if (isNaN(date.getTime())) return "";
+
+        const pad = (num: number) => num.toString().padStart(2, '0');
+
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1); // Month is 0-indexed
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (e) {
+        console.error("Error formatting date to datetime-local:", e);
+        return "";
+    }
+};

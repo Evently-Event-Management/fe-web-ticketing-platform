@@ -35,13 +35,13 @@ export const bogoParamsSchema = z.object({
 
 
 const baseDiscountSchema = z.object({
-    code: z.string().min(1, { message: "Discount code cannot be empty." }),
+    code: z.string().min(1, { message: "Discount code cannot be empty." }).transform(val => val.toUpperCase()),
     maxUsage: z.number().int().min(1).optional().nullable(),
     currentUsage: z.number().int().min(0).default(0),
     isActive: z.boolean().default(true),
     isPublic: z.boolean().default(false),
-    activeFrom: z.iso.datetime({ offset: true }).optional().nullable(),
-    expiresAt: z.iso.datetime({ offset: true }).optional().nullable(),
+    activeFrom: z.iso.datetime({ offset: true }).nullable(),
+    expiresAt: z.iso.datetime({ offset: true }).nullable(),
     applicableTierIds: z.array(z.uuid()).min(1, {
         message: "You must select at least one tier",
     }),

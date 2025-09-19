@@ -7,6 +7,7 @@ import {Badge} from "@/components/ui/badge"
 import {Input} from "@/components/ui/input"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Switch} from "@/components/ui/switch"
+import { format } from "date-fns";
 import {
     Search,
     Filter,
@@ -26,13 +27,18 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 import {DiscountType} from "@/types/enums/discountType";
 import {CreateEventFormData, TierFormData} from "@/lib/validators/event";
 import {FieldArrayWithId} from "react-hook-form";
+import {toast} from "sonner";
 
 interface DiscountListProps {
     tiers: TierFormData[],
-    discounts: FieldArrayWithId<CreateEventFormData, "discounts", "id">[]
+    discounts: FieldArrayWithId<CreateEventFormData, "discounts", "id">[],
+    onDelete: (index: number) => void,
+    onToggleStatus: (index: number) => void,
+    onEdit: (index: number) => void,
 }
 
-export function DiscountList({tiers, discounts }: DiscountListProps) {
+
+export function DiscountList({tiers, discounts, onDelete, onToggleStatus, onEdit }: DiscountListProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterType, setFilterType] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
@@ -67,12 +73,7 @@ export function DiscountList({tiers, discounts }: DiscountListProps) {
     }
 
     const copyToClipboard = (code: string) => {
-        navigator.clipboard.writeText(code)
-    }
-
-    const toggleDiscountStatus = (id: string) => {
-        // Handle status toggle
-        console.log("Toggle status for discount:", id)
+        navigator.clipboard.writeText(code).then(() => toast.success("Copied to clipboard"))
     }
 
     const filteredCodes = discounts.filter((code) => {
@@ -85,6 +86,7 @@ export function DiscountList({tiers, discounts }: DiscountListProps) {
 
         return matchesSearch && matchesType && matchesStatus
     })
+
 
     return (
         <div className="space-y-6">
@@ -137,7 +139,7 @@ export function DiscountList({tiers, discounts }: DiscountListProps) {
 
             {/* Discount Codes List */}
             <div className="grid gap-4">
-                {filteredCodes.map((discount) => (
+                {filteredCodes.map((discount, index) => (
                     <Card key={discount.id} className="hover:shadow-md transition-shadow p-0">
                         <CardContent className="p-6">
                             <div className="flex items-start justify-between">
@@ -171,19 +173,25 @@ export function DiscountList({tiers, discounts }: DiscountListProps) {
                                             {getDiscountValue(discount.type, discount.parameters)}
                                         </p>
 
-                                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                            {
-                                                discount.maxUsage && (
-                                                    <div className="flex items-center gap-1">
-                                                        <Users className="h-4 w-4" />
-                                                        {discount.maxUsage} uses
-                                                    </div>
-                                                )
-                                            }
+                                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                                            {discount.maxUsage && (
+                                                <div className="flex items-center gap-1">
+                                                    <Users className="h-4 w-4" />
+                                                    <span>{discount.maxUsage} use limit</span>
+                                                </div>
+                                            )}
+
+                                            {discount.activeFrom && (
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-4 w-4" />
+                                                    <span>Activates {format(new Date(discount.activeFrom as string), 'MMM d, p')}</span>
+                                                </div>
+                                            )}
+
                                             {discount.expiresAt && (
                                                 <div className="flex items-center gap-1">
-                                                    <Calendar className="h-4 w-4"/>
-                                                    Expires {new Date(discount.expiresAt).toLocaleDateString()}
+                                                    <Calendar className="h-4 w-4" />
+                                                    <span>Expires {format(new Date(discount.expiresAt as string), 'MMM d, p')}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -200,24 +208,29 @@ export function DiscountList({tiers, discounts }: DiscountListProps) {
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <Switch checked={discount.isActive}
-                                            onCheckedChange={() => toggleDiscountStatus(discount.id)}/>
-                                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(discount.code)}>
+                                    <Switch
+                                        checked={discount.isActive}
+                                        onCheckedChange={() => onToggleStatus(index)}
+                                    />
+                                    <Button type={'button'} variant="outline" size="sm" onClick={() => copyToClipboard(discount.code)}>
                                         <Copy className="h-4 w-4"/>
                                     </Button>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" size="sm">
-                                                <MoreHorizontal className="h-4 w-4"/>
+                                                <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem>
-                                                <Edit className="h-4 w-4 mr-2"/>
+                                            <DropdownMenuItem onSelect={() => onEdit(index)}>
+                                                <Edit className="h-4 w-4 mr-2" />
                                                 Edit
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem className="text-destructive">
-                                                <Trash2 className="h-4 w-4 mr-2"/>
+                                            <DropdownMenuItem
+                                                className="text-destructive"
+                                                onSelect={() => onDelete(index)}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" />
                                                 Delete
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -235,7 +248,7 @@ export function DiscountList({tiers, discounts }: DiscountListProps) {
                         <div className="text-muted-foreground">
                             <Search className="h-12 w-12 mx-auto mb-4 opacity-50"/>
                             <p className="text-lg font-medium mb-2">No discount codes found</p>
-                            <p className="text-sm">Try adjusting your search or filter criteria</p>
+                            <p className="text-sm">Try adjusting your search or filter criteria or creating some</p>
                         </div>
                     </CardContent>
                 </Card>

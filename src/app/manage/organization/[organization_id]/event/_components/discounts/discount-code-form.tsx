@@ -1,7 +1,7 @@
 "use client"
 
-import {useState} from "react"
-import {FieldArrayWithId, useForm} from "react-hook-form"
+import {useEffect} from "react"
+import {Controller, FieldArrayWithId, useForm} from "react-hook-form"
 import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
@@ -16,15 +16,25 @@ import {TierSelector} from "./tier-selector"
 import {SessionSelector} from "./session-selector"
 import {DiscountType} from "@/types/enums/discountType";
 import {toast} from "sonner";
+import {formatToDateTimeLocalString} from "@/lib/utils";
 
 interface DiscountCodeFormProps {
     tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
     sessions: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
     onSave: (discount: DiscountParsed) => void,
-    isQuickCreate?: boolean
+    isQuickCreate?: boolean,
+    isEditing?: boolean,
+    initialData?: DiscountParsed,
 }
 
-export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave}: DiscountCodeFormProps) {
+export function DiscountCodeForm({
+                                     isQuickCreate = false,
+                                     tiers,
+                                     sessions,
+                                     onSave,
+                                     initialData,
+                                     isEditing
+                                 }: DiscountCodeFormProps) {
     const form = useForm<z.input<typeof discountSchema>>({
         resolver: zodResolver(discountSchema),
         defaultValues: {
@@ -41,9 +51,16 @@ export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave
         },
     })
 
+    useEffect(() => {
+        if (initialData) {
+            form.reset(initialData);
+        }
+    }, [initialData, form.reset, form]);
+
     const selectedTiers = form.watch("applicableTierIds");
     const selectedSessions = form.watch("applicableSessionIds");
     const discountType = form.watch('type')
+
 
     const onSubmit = (data: z.input<typeof discountSchema>) => {
         // We use our local state for tiers/sessions, not the form state
@@ -246,15 +263,47 @@ export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave
                                     />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="activeFrom">Active From (Optional)</Label>
-                                    <Input id="activeFrom" type="datetime-local" {...form.register("activeFrom")} />
-                                </div>
+                                <Controller
+                                    name="activeFrom"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="activeFrom">Active From (Optional)</Label>
+                                            <Input
+                                                id="activeFrom"
+                                                type="datetime-local"
+                                                value={formatToDateTimeLocalString(field.value as string | null)}
+                                                onChange={(e) => {
+                                                    const rawValue = e.target.value;
+                                                    const processedValue = rawValue ? new Date(rawValue).toISOString() : null;
+                                                    field.onChange(processedValue);
+                                                }}
+                                                ref={field.ref}
+                                            />
+                                        </div>
+                                    )}
+                                />
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="expiresAt">Expires At (Optional)</Label>
-                                    <Input id="expiresAt" type="datetime-local" {...form.register("expiresAt")} />
-                                </div>
+                                <Controller
+                                    name="expiresAt"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="expiresAt">Expires At (Optional)</Label>
+                                            <Input
+                                                id="expiresAt"
+                                                type="datetime-local"
+                                                value={formatToDateTimeLocalString(field.value as string | null)}
+                                                onChange={(e) => {
+                                                    const rawValue = e.target.value;
+                                                    const processedValue = rawValue ? new Date(rawValue).toISOString() : null;
+                                                    field.onChange(processedValue);
+                                                }}
+                                                ref={field.ref}
+                                            />
+                                        </div>
+                                    )}
+                                />
                             </div>
 
                             <div className="flex items-center justify-between">
@@ -302,7 +351,8 @@ export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="quick-type">Type</Label>
-                        <Select value={discountType} onValueChange={(value: DiscountType) => form.setValue("type", value)}>
+                        <Select value={discountType}
+                                onValueChange={(value: DiscountType) => form.setValue("type", value)}>
                             <SelectTrigger>
                                 <SelectValue/>
                             </SelectTrigger>
@@ -348,8 +398,11 @@ export function DiscountCodeForm({isQuickCreate = false, tiers, sessions, onSave
 
             {/* Submit Button */}
             <div className="flex justify-end">
-                <Button type="button" size="lg" className="min-w-32" onClick={form.handleSubmit(onSubmit )}>
-                    {isQuickCreate ? "Quick Create" : "Create Discount Code"}
+                <Button type="button" size="lg" className="min-w-32" onClick={form.handleSubmit(onSubmit, onError => {
+                    console.log("Form submission errors:", onError);
+                    toast.error("Please fix the errors in the form before submitting.");
+                })}>
+                    {isQuickCreate ? "Quick Create" : (isEditing ? "Save Changes" : "Create Discount Code")}
                 </Button>
             </div>
         </div>
