@@ -108,6 +108,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
             <DiscountList
                 discounts={discountFields}
                 tiers={tierFields}
+                sessions={sessionFields}
                 onDelete={handleDeleteDiscount}
                 onToggleStatus={handleToggleStatus}
                 onEdit={handleGoToEditView}
