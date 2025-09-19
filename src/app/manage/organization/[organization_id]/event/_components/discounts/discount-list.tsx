@@ -1,14 +1,14 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter } from "lucide-react"
-import { DiscountType } from "@/types/enums/discountType";
-import { CreateEventFormData } from "@/lib/validators/event";
-import { FieldArrayWithId } from "react-hook-form";
-import { DiscountCard } from "./discount-card"; // ✅ Import the new component
+import {useMemo, useState} from "react"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
+import {Input} from "@/components/ui/input"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Search, Filter} from "lucide-react"
+import {DiscountType} from "@/types/enums/discountType";
+import {CreateEventFormData} from "@/lib/validators/event";
+import {FieldArrayWithId} from "react-hook-form";
+import {DiscountCard} from "./discount-card"; // ✅ Import the new component
 
 interface DiscountListProps {
     tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
@@ -17,9 +17,18 @@ interface DiscountListProps {
     onDelete: (index: number) => void,
     onToggleStatus: (index: number) => void,
     onEdit: (index: number) => void,
+    filters?: boolean,
 }
 
-export function DiscountList({ tiers, sessions, discounts, onDelete, onToggleStatus, onEdit }: DiscountListProps) {
+export function DiscountList({
+                                 tiers,
+                                 sessions,
+                                 discounts,
+                                 onDelete,
+                                 onToggleStatus,
+                                 onEdit,
+                                 filters = true
+                             }: DiscountListProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterType, setFilterType] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
@@ -39,51 +48,53 @@ export function DiscountList({ tiers, sessions, discounts, onDelete, onToggleSta
 
     return (
         <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Filter className="h-4 w-4"/>
-                        Filters
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1">
-                            <div className="relative">
-                                <Search
-                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
-                                <Input
-                                    placeholder="Search discount codes..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10"
-                                />
+            {filters && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Filter className="h-4 w-4"/>
+                            Filters
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                                <div className="relative">
+                                    <Search
+                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                                    <Input
+                                        placeholder="Search discount codes..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
                             </div>
+                            <Select value={filterType} onValueChange={setFilterType}>
+                                <SelectTrigger className="w-full md:w-48">
+                                    <SelectValue placeholder="Filter by type"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Types</SelectItem>
+                                    <SelectItem value={DiscountType.PERCENTAGE}>Percentage</SelectItem>
+                                    <SelectItem value={DiscountType.FLAT_OFF}>Fixed Amount</SelectItem>
+                                    <SelectItem value={DiscountType.BUY_N_GET_N_FREE}>BOGO</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={filterStatus} onValueChange={setFilterStatus}>
+                                <SelectTrigger className="w-full md:w-48">
+                                    <SelectValue placeholder="Filter by status"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <Select value={filterType} onValueChange={setFilterType}>
-                            <SelectTrigger className="w-full md:w-48">
-                                <SelectValue placeholder="Filter by type"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Types</SelectItem>
-                                <SelectItem value={DiscountType.PERCENTAGE}>Percentage</SelectItem>
-                                <SelectItem value={DiscountType.FLAT_OFF}>Fixed Amount</SelectItem>
-                                <SelectItem value={DiscountType.BUY_N_GET_N_FREE}>BOGO</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={filterStatus} onValueChange={setFilterStatus}>
-                            <SelectTrigger className="w-full md:w-48">
-                                <SelectValue placeholder="Filter by status"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="grid gap-4">
                 {/* ✅ The mapping logic is now much cleaner */}

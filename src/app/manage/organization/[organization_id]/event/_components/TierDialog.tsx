@@ -9,33 +9,42 @@ import {Input} from '@/components/ui/input';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
 import {TierFormData, tierSchema} from "@/lib/validators/event";
+import {useEffect, useMemo} from "react";
 
 
 interface TierDialogProps {
     open: boolean;
     setOpen: (open: boolean) => void;
     onSave: (tier: TierFormData) => void;
-    initialValues?: { name: string, price: number, color: string };
+    initialValues?: { name: string, price: number, color: string, id: string };
     mode: 'create' | 'edit';
 }
 
 export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDialogProps) {
-    const defaultValues: TierFormData = {
+    const defaultValues: TierFormData = useMemo(() => ({
         id: crypto.randomUUID(),
         name: '',
         price: 0,
-        color: '#8B5CF6' // Default purple color
-    };
+        color: '#8B5CF6'
+    }), []);
+
 
     const form = useForm<TierFormData>({
         resolver: zodResolver(tierSchema),
-        defaultValues: initialValues || defaultValues
+        defaultValues
     });
+
+
+    useEffect(() => {
+        if (open) {
+            form.reset(initialValues || defaultValues);
+        }
+    },  [open, initialValues, defaultValues, form]);
 
     const handleSubmit = (tier: TierFormData) => {
         onSave(tier);
         setOpen(false);
-        form.reset();
+        form.reset(defaultValues);
     };
 
     return (
