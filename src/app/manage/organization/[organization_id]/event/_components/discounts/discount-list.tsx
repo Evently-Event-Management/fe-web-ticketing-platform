@@ -13,11 +13,12 @@ import {DiscountCard} from "./discount-card"; // ✅ Import the new component
 interface DiscountListProps {
     tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
     sessions?: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
-    discounts: FieldArrayWithId<CreateEventFormData, "discounts", "id">[],
-    onDelete: (index: number) => void,
-    onToggleStatus: (index: number) => void,
-    onEdit: (index: number) => void,
+    discounts?: FieldArrayWithId<CreateEventFormData, "discounts", "id">[],
+    onDelete?: (index: number) => void,
+    onToggleStatus?: (index: number) => void,
+    onEdit?: (index: number) => void,
     filters?: boolean,
+    isReadOnly?: boolean, // ✅ New prop
 }
 
 export function DiscountList({
@@ -27,13 +28,15 @@ export function DiscountList({
                                  onDelete,
                                  onToggleStatus,
                                  onEdit,
-                                 filters = true
+                                 filters = true,
+                                    isReadOnly = false
                              }: DiscountListProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterType, setFilterType] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
 
     const filteredCodes = useMemo(() => {
+        if (!discounts) return []
         return discounts.filter((code) => {
             if (!code) return false;
             const matchesSearch = code.code.toLowerCase().includes(searchTerm.toLowerCase())
@@ -99,7 +102,7 @@ export function DiscountList({
             <div className="grid gap-4">
                 {/* ✅ The mapping logic is now much cleaner */}
                 {filteredCodes.map((discount) => {
-                    const originalIndex = discounts.findIndex(d => d.id === discount.id);
+                    const originalIndex = (discounts || []).findIndex(d => d.id === discount.id);
                     if (originalIndex === -1) return null; // Safety check
                     return (
                         <DiscountCard
@@ -111,6 +114,7 @@ export function DiscountList({
                             onDelete={onDelete}
                             onToggleStatus={onToggleStatus}
                             onEdit={onEdit}
+                            isReadOnly={isReadOnly}
                         />
                     )
                 })}
@@ -121,8 +125,12 @@ export function DiscountList({
                     <CardContent className="py-12 text-center">
                         <div className="text-muted-foreground">
                             <Search className="h-12 w-12 mx-auto mb-4 opacity-50"/>
-                            <p className="text-lg font-medium mb-2">No discount codes found</p>
-                            <p className="text-sm">Try adjusting your filters or creating a new discount.</p>
+                            <p className="text-lg font-medium mb-2">
+                                {filters ? "No discount codes match your filters." : "No discount codes available."}
+                            </p>
+                            <p className="text-sm">
+                                {filters ? "Try adjusting your search or filter criteria." : "Create discount codes to offer special promotions for your event."}
+                            </p>
                         </div>
                     </CardContent>
                 </Card>

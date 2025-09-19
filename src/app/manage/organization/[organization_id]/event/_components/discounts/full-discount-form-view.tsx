@@ -3,12 +3,11 @@
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { DiscountCodeForm } from "./discount-code-form"
-import {CreateEventFormData, DiscountParsed} from "@/lib/validators/event";
-import {FieldArrayWithId} from "react-hook-form";
+import { DiscountParsed, SessionParsed, TierParsed} from "@/lib/validators/event";
 
 interface FullDiscountFormViewProps {
-    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
-    sessions: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
+    tiers: TierParsed[],
+    sessions: SessionParsed[],
     onSave: (discount: DiscountParsed) => void,
     onBack: () => void,
     isEditing?: boolean,

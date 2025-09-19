@@ -35,6 +35,7 @@ export const bogoParamsSchema = z.object({
 
 
 const baseDiscountSchema = z.object({
+    id: z.uuid(),
     code: z.string().min(1, { message: "Discount code cannot be empty." }).transform(val => val.toUpperCase()),
     maxUsage: z.number().int().min(1).nullable().optional(),
     currentUsage: z.number().int().min(0).default(0),
@@ -312,8 +313,10 @@ export type CreateEventParsed = z.infer<typeof finalCreateEventSchema>;
 export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
-export type SessionFormData = z.infer<typeof sessionWithSeatingSchema>;
-export type TierFormData = z.infer<typeof tierSchema>;
+export type SessionFormData = z.input<typeof sessionWithSeatingSchema>;
+export type SessionParsed = z.infer<typeof sessionWithSeatingSchema>;
+export type TierFormData = z.input<typeof tierSchema>;
+export type TierParsed = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
