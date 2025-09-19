@@ -1,32 +1,94 @@
 'use client';
 
-import {
-    DiscountCodeForm
-} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-code-form";
-import { DiscountList } from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
+import { DiscountList } from "./discount-list";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import {CreateEventFormData, DiscountParsed} from "@/lib/validators/event";
+import {CreateEventFormData, DiscountParsed, discountSchema} from "@/lib/validators/event";
+import {useEffect, useState} from "react";
+import { FullDiscountFormView } from "./full-discount-form-view";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
-export default function DiscountStep() {
+interface DiscountStepProps {
+    onConfigModeChange?: (isInConfigMode: boolean) => void;
+}
+
+export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
+    // ✅ State to manage the view and which discount is being edited
+    const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
     const { control } = useFormContext<CreateEventFormData>();
 
-    const { fields: tierFields } = useFieldArray({
-        control,
-        name: "tiers",
-    });
+    const { fields: tierFields } = useFieldArray({ control, name: "tiers" });
+    const { fields: sessionFields } = useFieldArray({ control, name: "sessions" });
 
-    const { fields: sessionFields } = useFieldArray({
-        control,
-        name: "sessions",
-    });
-
-    const { fields: discountFields, append } = useFieldArray({
+    // ✅ Destructure all necessary functions from useFieldArray
+    const { fields: discountFields, append, remove, update } = useFieldArray({
         control,
         name: "discounts",
     });
 
-    const handleAddDiscount = (discount: DiscountParsed)=> {
+    useEffect(() => {
+        if (onConfigModeChange) {
+            console.log("onConfigModeChange", onConfigModeChange);
+            onConfigModeChange(view !== 'list');
+        }
+    }, [onConfigModeChange, view])
+
+    // --- Event Handlers ---
+
+    const handleAddDiscount = (discount: DiscountParsed) => {
         append(discount);
+        setView('list');
+    }
+
+    // ✅ New handler for updating an existing discount
+    const handleUpdateDiscount = (index: number, discount: DiscountParsed) => {
+        update(index, discount);
+        setView('list'); // Return to the list after updating
+        setEditingIndex(null);
+    }
+
+    // ✅ New handler for deleting a discount
+    const handleDeleteDiscount = (index: number) => {
+        remove(index);
+    }
+
+    // ✅ New handler for toggling the 'isActive' status
+    const handleToggleStatus = (index: number) => {
+        const discount = discountFields[index];
+        update(index, { ...discount, isActive: !discount.isActive });
+    }
+
+    // ✅ New handler to switch to the edit view
+    const handleGoToEditView = (index: number) => {
+        setEditingIndex(index);
+        setView('edit');
+    }
+
+    // --- Conditional Rendering ---
+
+    if (view === 'create' || view === 'edit') {
+
+        const dataToEdit = view === 'edit' && editingIndex !== null
+            ? discountSchema.parse(discountFields[editingIndex])
+            : undefined;
+        return (
+            <FullDiscountFormView
+                tiers={tierFields}
+                sessions={sessionFields}
+                onSave={(discount) => {
+                    if (view === 'edit' && editingIndex !== null) {
+                        handleUpdateDiscount(editingIndex, discount);
+                    } else {
+                        handleAddDiscount(discount);
+                    }
+                }}
+                onBack={() => setView('list')}
+                isEditing={view === 'edit'}
+                initialData={view === 'edit' && editingIndex !== null ? dataToEdit : undefined}
+            />
+        )
     }
 
     return (
@@ -35,12 +97,21 @@ export default function DiscountStep() {
                 <div>
                     <h2 className="text-lg font-semibold">Discount Codes</h2>
                     <p className="text-sm text-muted-foreground">
-                        Create and configure discount codes for your events.
+                        Create and manage discount codes for your events.
                     </p>
                 </div>
+                <Button onClick={() => setView('create')}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create Discount
+                </Button>
             </div>
-            <DiscountList discounts={discountFields} tiers={tierFields}/>
-            <DiscountCodeForm tiers={tierFields} sessions={sessionFields} onSave={handleAddDiscount} />
+            <DiscountList
+                discounts={discountFields}
+                tiers={tierFields}
+                onDelete={handleDeleteDiscount}
+                onToggleStatus={handleToggleStatus}
+                onEdit={handleGoToEditView}
+            />
         </div>
     );
 }

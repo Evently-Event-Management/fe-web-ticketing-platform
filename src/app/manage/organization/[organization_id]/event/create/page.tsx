@@ -210,9 +210,9 @@ export default function CreateEventPage() {
             case 4:
                 return <SeatingStep onConfigModeChange={setInConfigMode}/>
             case 5:
-                return <DiscountStep />
+                return <DiscountStep onConfigModeChange={setInConfigMode}/>
             case 6:
-                return <ReviewStep coverFiles={coverFiles}/>
+                return <ReviewStep coverFiles={coverFiles} />
             default:
                 return <CoreDetailsStep coverFiles={coverFiles} setCoverFilesAction={setCoverFiles}/>
         }
