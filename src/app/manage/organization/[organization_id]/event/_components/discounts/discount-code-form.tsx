@@ -1,6 +1,7 @@
 "use client"
 
 import {useEffect} from "react"
+import {formatCurrency} from "@/lib/utils"
 import {Controller, useForm} from "react-hook-form"
 import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -147,7 +148,7 @@ export function DiscountCodeForm({
                                                     form.setValue("parameters", {percentage: 10})
                                                     break
                                                 case DiscountType.FLAT_OFF:
-                                                    form.setValue("parameters", {amount: 10, currency: "USD"})
+                                                    form.setValue("parameters", {amount: 1000, currency: "LKR"})
                                                     break
                                                 case DiscountType.BUY_N_GET_N_FREE:
                                                     form.setValue("parameters", {buyQuantity: 2, getQuantity: 1})
@@ -203,13 +204,13 @@ export function DiscountCodeForm({
 
                                 {discountType === DiscountType.FLAT_OFF && (
                                     <div className="space-y-2">
-                                        <Label htmlFor="amount">Amount ($)</Label>
+                                        <Label htmlFor="amount">Amount (LKR)</Label>
                                         <Input
                                             id="amount"
                                             type="number"
                                             min="0.01"
                                             step="0.01"
-                                            placeholder="10.00"
+                                            placeholder="1000.00"
                                             onChange={(e) => {
                                                 const current = form.getValues("parameters") as {
                                                     amount?: number;
@@ -217,7 +218,7 @@ export function DiscountCodeForm({
                                                 }
                                                 form.setValue("parameters", {
                                                     amount: Number(e.target.value),
-                                                    currency: current?.currency || "USD"
+                                                    currency: "LKR"
                                                 }, {shouldValidate: true})
                                             }}
                                         />
@@ -413,7 +414,7 @@ export function DiscountCodeForm({
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="quick-value">Value</Label>
+                        <Label htmlFor="quick-value">{discountType === DiscountType.PERCENTAGE ? 'Percentage (%)' : 'Amount (LKR)'}</Label>
                         {discountType === DiscountType.PERCENTAGE ? (
                             <>
                                 <Input
@@ -435,7 +436,7 @@ export function DiscountCodeForm({
                                     type="number"
                                     min="0.01"
                                     step="0.01"
-                                    placeholder="10.00"
+                                    placeholder="1000.00"
                                     onChange={(e) => {
                                         const current = form.getValues("parameters") as {
                                             amount?: number;
@@ -443,7 +444,7 @@ export function DiscountCodeForm({
                                         }
                                         form.setValue("parameters", {
                                             amount: Number(e.target.value),
-                                            currency: current?.currency || "USD"
+                                            currency: "LKR"
                                         }, {shouldValidate: true})
                                     }}
                                 />

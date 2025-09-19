@@ -4,6 +4,7 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Switch} from "@/components/ui/switch"
+import {formatCurrency} from "@/lib/utils"
 import {
     Edit, Trash2, Copy, Eye, EyeOff, Percent, DollarSign, Gift,
     Calendar, Users, MoreHorizontal,
@@ -46,7 +47,7 @@ const getDiscountValue = (discount: DiscountParsed) => {
         case DiscountType.PERCENTAGE:
             return `${discount.parameters.percentage}% OFF`;
         case DiscountType.FLAT_OFF:
-            return `$${discount.parameters.amount} OFF`;
+            return `${formatCurrency(discount.parameters.amount, 'LKR')} OFF`;
         case DiscountType.BUY_N_GET_N_FREE:
             return `Buy ${discount.parameters.buyQuantity}, Get ${discount.parameters.getQuantity} Free`;
     }
