@@ -33,6 +33,11 @@ interface DiscountCodeFormProps {
     initialData?: DiscountParsed,
 }
 
+type PercentageParams = { type: DiscountType.PERCENTAGE, percentage: number };
+type FlatOffParams = { type: DiscountType.FLAT_OFF, amount: number, currency: string };
+type BogoParams = { type: DiscountType.BUY_N_GET_N_FREE, buyQuantity: number, getQuantity: number };
+
+
 export function DiscountCodeForm({
                                      isQuickCreate = false,
                                      tiers,
@@ -47,7 +52,7 @@ export function DiscountCodeForm({
             id: crypto.randomUUID(),
             code: "",
             type: DiscountType.PERCENTAGE,
-            parameters: {percentage: 10},
+            parameters: {type: DiscountType.PERCENTAGE, percentage: 10},
             maxUsage: null,
             isActive: true,
             isPublic: false,
@@ -67,6 +72,7 @@ export function DiscountCodeForm({
     const selectedTiers = form.watch("applicableTierIds");
     const selectedSessions = form.watch("applicableSessionIds");
     const discountType = form.watch('type')
+    const parameters = form.watch('parameters');
 
 
     const onSubmit = (data: z.input<typeof discountSchema>) => {
@@ -145,13 +151,24 @@ export function DiscountCodeForm({
                                             // Reset parameters based on type
                                             switch (value) {
                                                 case DiscountType.PERCENTAGE:
-                                                    form.setValue("parameters", {percentage: 10})
+                                                    form.setValue("parameters", {
+                                                        percentage: 10,
+                                                        type: DiscountType.PERCENTAGE
+                                                    })
                                                     break
                                                 case DiscountType.FLAT_OFF:
-                                                    form.setValue("parameters", {amount: 1000, currency: "LKR"})
+                                                    form.setValue("parameters", {
+                                                        amount: 1000,
+                                                        currency: "LKR",
+                                                        type: DiscountType.FLAT_OFF
+                                                    })
                                                     break
                                                 case DiscountType.BUY_N_GET_N_FREE:
-                                                    form.setValue("parameters", {buyQuantity: 2, getQuantity: 1})
+                                                    form.setValue("parameters", {
+                                                        buyQuantity: 2,
+                                                        getQuantity: 1,
+                                                        type: DiscountType.BUY_N_GET_N_FREE
+                                                    })
                                                     break
                                             }
                                         }}
@@ -194,8 +211,11 @@ export function DiscountCodeForm({
                                             min="1"
                                             max="100"
                                             placeholder="10"
-                                            onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value), {shouldValidate: true})}
-                                        />
+                                            value={(parameters as PercentageParams)?.percentage || ''}
+                                            onChange={(e) => form.setValue("parameters", {
+                                                type: DiscountType.PERCENTAGE,
+                                                percentage: Number(e.target.value) || 0
+                                            }, {shouldValidate: true})}/>
                                         {form.formState.errors.parameters && (
                                             <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                         )}
@@ -211,14 +231,12 @@ export function DiscountCodeForm({
                                             min="0.01"
                                             step="0.01"
                                             placeholder="1000.00"
+                                            value={(parameters as FlatOffParams)?.amount || ''}
                                             onChange={(e) => {
-                                                const current = form.getValues("parameters") as {
-                                                    amount?: number;
-                                                    currency?: string
-                                                }
                                                 form.setValue("parameters", {
                                                     amount: Number(e.target.value),
-                                                    currency: "LKR"
+                                                    currency: "LKR",
+                                                    type: DiscountType.FLAT_OFF
                                                 }, {shouldValidate: true})
                                             }}
                                         />
@@ -237,8 +255,12 @@ export function DiscountCodeForm({
                                                 type="number"
                                                 min="1"
                                                 placeholder="2"
-                                                onChange={(e) => form.setValue("parameters.buyQuantity", Number(e.target.value), {shouldValidate: true})}
-                                            />
+                                                value={(parameters as BogoParams)?.buyQuantity || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    type: DiscountType.BUY_N_GET_N_FREE,
+                                                    buyQuantity: Number(e.target.value) || 0,
+                                                    getQuantity: (parameters as BogoParams)?.getQuantity || 1
+                                                }, {shouldValidate: true})}/>
                                             {form.formState.errors.parameters && (
                                                 <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                             )}
@@ -250,8 +272,12 @@ export function DiscountCodeForm({
                                                 type="number"
                                                 min="1"
                                                 placeholder="1"
-                                                onChange={(e) => form.setValue("parameters.getQuantity", Number(e.target.value), {shouldValidate: true})}
-                                            />
+                                                value={(parameters as BogoParams)?.getQuantity || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    type: DiscountType.BUY_N_GET_N_FREE,
+                                                    buyQuantity: (parameters as BogoParams)?.buyQuantity || 1,
+                                                    getQuantity: Number(e.target.value) || 0
+                                                }, {shouldValidate: true})}/>
                                             {form.formState.errors.parameters && (
                                                 <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                             )}
@@ -275,7 +301,7 @@ export function DiscountCodeForm({
                                 <Controller
                                     name="maxUsage"
                                     control={form.control}
-                                    render={({ field }) => (
+                                    render={({field}) => (
                                         <div className="space-y-2">
                                             <Label htmlFor="maxUsage">Max Usage (Optional)</Label>
                                             <Input
@@ -302,7 +328,7 @@ export function DiscountCodeForm({
                                 <Controller
                                     name="activeFrom"
                                     control={form.control}
-                                    render={({ field }) => (
+                                    render={({field}) => (
                                         <div className="space-y-2">
                                             <Label htmlFor="activeFrom">Active From (Optional)</Label>
                                             <Input
@@ -326,7 +352,7 @@ export function DiscountCodeForm({
                                 <Controller
                                     name="expiresAt"
                                     control={form.control}
-                                    render={({ field }) => (
+                                    render={({field}) => (
                                         <div className="space-y-2">
                                             <Label htmlFor="expiresAt">Expires At (Optional)</Label>
                                             <Input
@@ -414,7 +440,8 @@ export function DiscountCodeForm({
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="quick-value">{discountType === DiscountType.PERCENTAGE ? 'Percentage (%)' : 'Amount (LKR)'}</Label>
+                        <Label
+                            htmlFor="quick-value">{discountType === DiscountType.PERCENTAGE ? 'Percentage (%)' : 'Amount (LKR)'}</Label>
                         {discountType === DiscountType.PERCENTAGE ? (
                             <>
                                 <Input
@@ -423,8 +450,11 @@ export function DiscountCodeForm({
                                     min="1"
                                     max="100"
                                     placeholder="20"
-                                    onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value), {shouldValidate: true})}
-                                />
+                                    value={(parameters as PercentageParams)?.percentage || ''}
+                                    onChange={(e) => form.setValue("parameters", {
+                                        type: DiscountType.PERCENTAGE,
+                                        percentage: Number(e.target.value) || 0
+                                    }, {shouldValidate: true})}/>
                                 {form.formState.errors.parameters && (
                                     <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                 )}
@@ -437,14 +467,12 @@ export function DiscountCodeForm({
                                     min="0.01"
                                     step="0.01"
                                     placeholder="1000.00"
+                                    value={(parameters as FlatOffParams)?.amount || ''}
                                     onChange={(e) => {
-                                        const current = form.getValues("parameters") as {
-                                            amount?: number;
-                                            currency?: string
-                                        }
                                         form.setValue("parameters", {
                                             amount: Number(e.target.value),
-                                            currency: "LKR"
+                                            currency: "LKR",
+                                            type: DiscountType.FLAT_OFF
                                         }, {shouldValidate: true})
                                     }}
                                 />
