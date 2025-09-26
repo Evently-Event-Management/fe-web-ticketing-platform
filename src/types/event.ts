@@ -28,12 +28,14 @@ export interface EventThumbnailDTO {
         city: string; // Extracted for display
     };
     startingPrice: number | null;
-    discounts: {
-        parameters: DiscountParameters,
+    discounts: DiscountThumbnailDTO[] | null;
+}
+
+export interface DiscountThumbnailDTO {
+    parameters: DiscountParameters,
         expiresAt: string | null;
-        maxUsage: number | null;
-        currentUsage: number | null;
-    }[] | null;
+    maxUsage: number | null;
+    currentUsage: number | null;
 }
 
 
