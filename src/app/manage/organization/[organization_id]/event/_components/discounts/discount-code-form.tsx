@@ -51,7 +51,6 @@ export function DiscountCodeForm({
         defaultValues: {
             id: crypto.randomUUID(),
             code: "",
-            type: DiscountType.PERCENTAGE,
             parameters: {type: DiscountType.PERCENTAGE, percentage: 10},
             maxUsage: null,
             isActive: true,
@@ -71,7 +70,7 @@ export function DiscountCodeForm({
 
     const selectedTiers = form.watch("applicableTierIds");
     const selectedSessions = form.watch("applicableSessionIds");
-    const discountType = form.watch('type')
+    const discountType = form.watch('parameters.type')
     const parameters = form.watch('parameters');
 
 
@@ -91,8 +90,7 @@ export function DiscountCodeForm({
         form.reset({
             id: crypto.randomUUID(),
             code: "",
-            type: DiscountType.PERCENTAGE,
-            parameters: {percentage: 10},
+            parameters: {percentage: 10, type: DiscountType.PERCENTAGE},
             maxUsage: null,
             isActive: true,
             isPublic: false,
@@ -147,8 +145,6 @@ export function DiscountCodeForm({
                                     <Select
                                         value={discountType}
                                         onValueChange={(value: DiscountType) => {
-                                            form.setValue("type", value)
-                                            // Reset parameters based on type
                                             switch (value) {
                                                 case DiscountType.PERCENTAGE:
                                                     form.setValue("parameters", {
@@ -429,7 +425,29 @@ export function DiscountCodeForm({
                     <div className="space-y-2">
                         <Label htmlFor="quick-type">Type</Label>
                         <Select value={discountType}
-                                onValueChange={(value: DiscountType) => form.setValue("type", value)}>
+                                onValueChange={(value: DiscountType) => {
+                                    switch (value) {
+                                        case DiscountType.PERCENTAGE:
+                                            form.setValue("parameters", {
+                                                percentage: 10,
+                                                type: DiscountType.PERCENTAGE
+                                            })
+                                            break
+                                        case DiscountType.FLAT_OFF:
+                                            form.setValue("parameters", {
+                                                amount: 1000,
+                                                currency: "LKR",
+                                                type: DiscountType.FLAT_OFF
+                                            })
+                                            break
+                                        default:
+                                            form.setValue("parameters", {
+                                                percentage: 10,
+                                                type: DiscountType.PERCENTAGE
+                                            })
+                                            break
+                                    }
+                                }}>
                             <SelectTrigger>
                                 <SelectValue/>
                             </SelectTrigger>

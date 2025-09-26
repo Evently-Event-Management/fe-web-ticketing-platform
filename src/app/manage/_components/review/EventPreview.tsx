@@ -6,6 +6,7 @@ import {EventOverview} from "@/app/manage/_components/review/EventOverview";
 import {ReviewTicketTiers} from "@/app/manage/_components/review/ReviewTicketTiers";
 import {ReviewSessions} from "@/app/manage/_components/review/ReviewSessions";
 import {Separator} from "@/components/ui/separator";
+import {DiscountReview} from "@/app/manage/organization/[organization_id]/event/_components/discounts/review-discounts";
 
 export const EventPreview = ({event, organization}: { event: EventDetailDTO, organization: OrganizationResponse }) => {
     return (
@@ -31,6 +32,10 @@ export const EventPreview = ({event, organization}: { event: EventDetailDTO, org
             <Separator className={'border-3 my-2'}/>
 
             <ReviewSessions sessions={event.sessions} tiers={event.tiers}/>
+
+            <Separator className={'border-3 my-2'}/>
+
+            <DiscountReview tiers={event.tiers} sessions={event.sessions} discounts={event.discounts} />
         </div>
     );
 };

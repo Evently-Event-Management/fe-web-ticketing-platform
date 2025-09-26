@@ -43,7 +43,7 @@ const getDiscountIcon = (type: DiscountType) => {
 }
 
 const getDiscountValue = (discount: DiscountParsed) => {
-    switch (discount.type) {
+    switch (discount.parameters.type) {
         case DiscountType.PERCENTAGE:
             return `${discount.parameters.percentage}% OFF`;
         case DiscountType.FLAT_OFF:
@@ -93,7 +93,7 @@ export function DiscountCard({
             <CardHeader className="flex items-start justify-between py-0">
                 <div className="flex items-center gap-4 flex-1">
                     <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                        {getDiscountIcon(discount.type)}
+                        {getDiscountIcon(discount.parameters.type)}
                     </div>
                     <div className="flex-1 ">
                         <div className="flex items-center gap-3">

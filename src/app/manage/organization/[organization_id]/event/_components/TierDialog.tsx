@@ -37,6 +37,9 @@ export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDia
 
     useEffect(() => {
         if (open) {
+            console.log('Initial values:', initialValues);
+            console.log('Default values:', defaultValues);
+            console.log('Resetting form with values:', initialValues || defaultValues);
             form.reset(initialValues || defaultValues);
         }
     },  [open, initialValues, defaultValues, form]);

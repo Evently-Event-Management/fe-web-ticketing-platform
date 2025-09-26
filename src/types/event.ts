@@ -1,6 +1,7 @@
 import {SessionType} from "@/types/enums/sessionType";
 import {SessionStatus} from "@/types/enums/sessionStatus";
 import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
+import {DiscountParameters} from "@/lib/validators/event";
 
 export interface EventResponseDTO {
     id: string;
@@ -26,7 +27,13 @@ export interface EventThumbnailDTO {
         venueName: string;
         city: string; // Extracted for display
     };
-    startingPrice: number | null; // Use number for price, can be null if not available
+    startingPrice: number | null;
+    discounts: {
+        parameters: DiscountParameters,
+        expiresAt: string | null;
+        maxUsage: number | null;
+        currentUsage: number | null;
+    }[] | null;
 }
 
 
