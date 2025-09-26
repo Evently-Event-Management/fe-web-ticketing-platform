@@ -44,31 +44,20 @@ export function EventCard({event, className}: EventCardProps) {
 
         if (activeDiscounts.length === 0) return null
 
-        // Prioritize percentage discounts, then flat off, then BOGO
+        // Prioritize BOGO, then percentage, then flat off
+        const priority = {
+            [DiscountType.BUY_N_GET_N_FREE]: 0,
+            [DiscountType.PERCENTAGE]: 1,
+            [DiscountType.FLAT_OFF]: 2,
+        }
+
         const sortedDiscounts = activeDiscounts.sort((a, b) => {
-            if (a.parameters.type === DiscountType.PERCENTAGE && b.parameters.type !== DiscountType.PERCENTAGE) return -1
-            if (b.parameters.type === DiscountType.PERCENTAGE && a.parameters.type !== DiscountType.PERCENTAGE) return 1
-            return 0
+            const aPriority = priority[a.parameters.type] ?? 99
+            const bPriority = priority[b.parameters.type] ?? 99
+            return aPriority - bPriority
         })
 
         return sortedDiscounts[0]
-    }
-
-    const getTimeRemaining = (expiryDate: string) => {
-        const now = new Date()
-        const end = new Date(expiryDate)
-        const diff = end.getTime() - now.getTime()
-
-        if (diff <= 0) return "Expired"
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-        if (days > 1) return `Ends in ${days} days`
-        if (days === 1) return `Ends in 1 day`
-        if (hours > 0) return `Ends in ${hours}h ${minutes}m`
-        return `Ends in ${minutes}m`
     }
 
     const renderDiscountBadge = (discount: DiscountThumbnailDTO) => {
@@ -177,14 +166,6 @@ export function EventCard({event, className}: EventCardProps) {
                         Details
                     </Button>
                 </div>
-
-                {bestDiscount && bestDiscount.expiresAt && (
-                    <div className="pt-4 border-t border-border/50 text-center">
-                        <p className="text-xs font-semibold text-destructive animate-pulse">
-                            {getTimeRemaining(bestDiscount.expiresAt)}
-                        </p>
-                    </div>
-                )}
             </CardContent>
         </Card>
     )
