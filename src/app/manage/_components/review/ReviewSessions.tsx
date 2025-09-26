@@ -52,7 +52,7 @@ const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({session, ind
     return (
         <AccordionItem
             value={`item-${index}`}
-            className="border rounded-lg mb-4 overflow-hidden"
+            className="mb-4 overflow-hidden bg-card border rounded-lg"
         >
             <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40">
                 <div className="flex items-center justify-between w-full">

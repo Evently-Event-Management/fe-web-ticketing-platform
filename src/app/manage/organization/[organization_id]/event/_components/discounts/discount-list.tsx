@@ -40,7 +40,7 @@ export function DiscountList({
         return discounts.filter((code) => {
             if (!code) return false;
             const matchesSearch = code.code.toLowerCase().includes(searchTerm.toLowerCase())
-            const matchesType = filterType === "all" || code.type === filterType
+            const matchesType = filterType === "all" || code.parameters.type === filterType
             const matchesStatus =
                 filterStatus === "all" ||
                 (filterStatus === "active" && code.isActive) ||

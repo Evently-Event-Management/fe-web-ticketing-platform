@@ -12,13 +12,14 @@ const positionSchema = z.object({
 })
 
 export const tierSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     name: z.string().min(1, {message: "Tier name cannot be empty."}),
     price: z.number().min(0, {message: "Price must be a positive number."}),
     color: z.string().optional(),
 });
 
 
+// Schemas for each parameter type (these are correct as you have them)
 export const percentageParamsSchema = z.object({
     type: z.literal(DiscountType.PERCENTAGE),
     percentage: z.number().min(0.1, "Percentage must be greater than 0."),
@@ -36,7 +37,7 @@ export const bogoParamsSchema = z.object({
     getQuantity: z.number().int().min(1, "Get quantity must be at least 1."),
 });
 
-
+// The base schema for a discount (this is also correct)
 const baseDiscountSchema = z.object({
     id: z.uuid(),
     code: z.string().min(1, { message: "Discount code cannot be empty." }).transform(val => val.toUpperCase()),
@@ -54,22 +55,21 @@ const baseDiscountSchema = z.object({
     }),
 });
 
-export const discountSchema = z
-    .discriminatedUnion("type", [
-        baseDiscountSchema.extend({
-            type: z.literal(DiscountType.PERCENTAGE),
-            parameters: percentageParamsSchema,
-        }),
-        baseDiscountSchema.extend({
-            type: z.literal(DiscountType.FLAT_OFF),
-            parameters: flatOffParamsSchema,
-        }),
-        baseDiscountSchema.extend({
-            type: z.literal(DiscountType.BUY_N_GET_N_FREE),
-            parameters: bogoParamsSchema,
-        }),
-    ])
+// ✅ STEP 1: Create a discriminated union specifically for the parameters.
+const discountParametersUnionSchema = z.discriminatedUnion("type", [
+    percentageParamsSchema,
+    flatOffParamsSchema,
+    bogoParamsSchema,
+]);
+
+// ✅ STEP 2: Use the new union inside your main discount schema.
+export const discountSchema = baseDiscountSchema
+    .extend({
+        // The 'parameters' field can be one of the shapes in our new union.
+        parameters: discountParametersUnionSchema,
+    })
     .superRefine((data, ctx) => {
+        // Your superRefine logic remains exactly the same.
         const now = new Date();
 
         if (data.activeFrom) {
@@ -327,6 +327,7 @@ export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSc
 export type Row = z.infer<typeof rowSchema>;
 export type DiscountFormData = z.input<typeof discountSchema>;
 export type DiscountParsed = z.infer<typeof discountSchema>;
+export type DiscountParameters = z.infer<typeof discountParametersUnionSchema>;
 
 
 // --- API Response Schemas ---
@@ -380,6 +381,7 @@ export const eventDetailSchema = z.object({
     updatedAt: z.iso.datetime(),
     tiers: z.array(tierSchema),
     sessions: z.array(sessionDetailSchema),
+    discounts: z.array(discountSchema).optional(),
 });
 
 // --- Type Inference for API Responses ---
