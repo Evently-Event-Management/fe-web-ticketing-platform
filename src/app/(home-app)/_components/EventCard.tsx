@@ -41,8 +41,8 @@ export function EventCard({ event, className }: EventCardProps) {
         const now = new Date();
         const activeDiscounts = event.discounts.filter((discount) => {
             if (discount.expiresAt && new Date(discount.expiresAt) < now) return false;
-            if (discount.maxUsage && discount.currentUsage && discount.currentUsage >= discount.maxUsage) return false;
-            return true;
+            return !(discount.maxUsage && discount.currentUsage && discount.currentUsage >= discount.maxUsage);
+
         });
 
         if (activeDiscounts.length === 0) return null
@@ -182,7 +182,7 @@ export function EventCard({ event, className }: EventCardProps) {
                             <TooltipProvider delayDuration={200}>
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold cursor-help">
+                                        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold cursor-help dark:bg-emerald-600 dark:hover:bg-emerald-700">
                                             <Tag className="w-3 h-3 mr-1.5" />
                                             {renderDiscountBadgeText(bestDiscount)}
                                         </Badge>
