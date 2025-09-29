@@ -116,16 +116,16 @@ export function DiscountCard({
                     <div className="flex-1 ">
                         <div className="flex items-center gap-3">
                             <h3 className="text-lg font-semibold">{discount.code}</h3>
-                            <Badge variant={discount.isActive ? "default" : "secondary"}>
-                                {discount.isActive ? "Active" : "Inactive"}
+                            <Badge variant={discount.active ? "default" : "secondary"}>
+                                {discount.active ? "Active" : "Inactive"}
                             </Badge>
-                            {discount.isPublic && (
+                            {discount.public && (
                                 <Badge variant="outline">
                                     <Eye className="h-3 w-3 mr-1"/>
                                     Public
                                 </Badge>
                             )}
-                            {!discount.isPublic && (
+                            {!discount.public && (
                                 <Badge variant="outline">
                                     <EyeOff className="h-3 w-3 mr-1"/>
                                     Private
@@ -142,7 +142,7 @@ export function DiscountCard({
                 <div className="flex items-center gap-2">
                     {!isReadOnly && onToggleStatus && (
                         <Switch
-                            checked={discount.isActive}
+                            checked={discount.active}
                             onCheckedChange={() => onToggleStatus(index)}
                         />
                     )}

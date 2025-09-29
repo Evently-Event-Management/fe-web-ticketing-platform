@@ -43,8 +43,8 @@ export function DiscountList({
             const matchesType = filterType === "all" || code.parameters.type === filterType
             const matchesStatus =
                 filterStatus === "all" ||
-                (filterStatus === "active" && code.isActive) ||
-                (filterStatus === "inactive" && !code.isActive)
+                (filterStatus === "active" && code.active) ||
+                (filterStatus === "inactive" && !code.active)
             return matchesSearch && matchesType && matchesStatus
         })
     }, [discounts, searchTerm, filterType, filterStatus])
