@@ -43,13 +43,31 @@ const getDiscountIcon = (type: DiscountType) => {
 }
 
 const getDiscountValue = (discount: DiscountParsed) => {
-    switch (discount.parameters.type) {
-        case DiscountType.PERCENTAGE:
-            return `${discount.parameters.percentage}% OFF`;
-        case DiscountType.FLAT_OFF:
-            return `${formatCurrency(discount.parameters.amount, 'LKR')} OFF`;
+    const { parameters } = discount;
+
+    switch (parameters.type) {
+        case DiscountType.PERCENTAGE: {
+            // ✅ Builds a clearer, more readable string
+            const parts = [`${parameters.percentage}% OFF`];
+            if (parameters.minSpend) {
+                parts.push(`on orders over ${formatCurrency(parameters.minSpend, 'LKR')}`);
+            }
+            if (parameters.maxDiscount) {
+                parts.push(`(up to ${formatCurrency(parameters.maxDiscount, 'LKR')})`);
+            }
+            return parts.join(' ');
+        }
+        case DiscountType.FLAT_OFF: {
+            // ✅ Builds a clearer, more readable string
+            const parts = [`${formatCurrency(parameters.amount, parameters.currency)} OFF`];
+            if (parameters.minSpend) {
+                parts.push(`on orders over ${formatCurrency(parameters.minSpend, parameters.currency)}`);
+            }
+            return parts.join(' ');
+        }
         case DiscountType.BUY_N_GET_N_FREE:
-            return `Buy ${discount.parameters.buyQuantity}, Get ${discount.parameters.getQuantity} Free`;
+            // This format is already quite clear
+            return `Buy ${parameters.buyQuantity}, Get ${parameters.getQuantity} Free`;
     }
 }
 
