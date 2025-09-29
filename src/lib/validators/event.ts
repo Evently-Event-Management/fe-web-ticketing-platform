@@ -23,12 +23,15 @@ export const tierSchema = z.object({
 export const percentageParamsSchema = z.object({
     type: z.literal(DiscountType.PERCENTAGE),
     percentage: z.number().min(0.1, "Percentage must be greater than 0."),
+    minSpend: z.number().positive("Minimum spend must be a positive number.").optional().nullable(),
+    maxDiscount: z.number().positive("Maximum discount must be a positive number.").optional().nullable(),
 });
 
 export const flatOffParamsSchema = z.object({
     type: z.literal(DiscountType.FLAT_OFF),
     amount: z.number().min(0.01, "Amount must be greater than 0."),
     currency: z.string().min(3, "Currency code is required.").max(3, "Currency code is invalid."),
+    minSpend: z.number().positive("Minimum spend must be a positive number.").optional().nullable(),
 });
 
 export const bogoParamsSchema = z.object({
