@@ -44,7 +44,7 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
         }
 
         setIsGenerating(true);
-        toast.loading("AI is crafting your content...");
+        const t = toast.loading("AI is crafting your content...");
 
         try {
             const request = {
@@ -57,19 +57,13 @@ export function GeminiMarkdownEditor({value, onChange, getValues, organizationNa
 
             const response = await getOverview(request);
             onChange(response.markdownContent);
-
-            toast.dismiss();
-            toast.success("✨ AI magic complete!", {
-                description: "Your content is ready! Review and customize as needed.",
-                duration: 5000,
-            });
+            toast.success("Overview generated successfully!", {id: t});
 
             setIsDialogOpen(false);
             setPrompt('');
         } catch (error) {
             console.error(error);
-            toast.dismiss();
-            toast.error("Oops! The AI had a hiccup. Please try again.");
+            toast.error("Failed to generate content. Please try again.", {id: t});
         } finally {
             setIsGenerating(false);
         }

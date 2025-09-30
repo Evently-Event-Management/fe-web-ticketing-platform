@@ -8,8 +8,13 @@ import {useParams, useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import TicketItemView from '@/components/ui/TicketItemView';
 import {SelectedSeat} from "@/types/event";
+import { Tag, XCircle } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { getDiscountByCode } from "@/lib/actions/public/eventActions"; // Assumed server action
+import { DiscountDTO } from "@/types/event";
+import { applyDiscount } from "@/lib/discountUtils"; // Import the new utility
 
-export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
+export const SelectionSummary = ({ selectedSeats, onSeatRemove }: {
     selectedSeats: SelectedSeat[],
     onSeatRemove: (seatId: string) => void
 }) => {
@@ -19,20 +24,39 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
     const eventId = params.event_id as string;
     const sessionId = params.session_id as string;
 
-    const totalPrice = selectedSeats.reduce((total, seat) => total + seat.tier.price, 0);
+    // ✅ ADDED: State for discount logic
+    const [discountCodeInput, setDiscountCodeInput] = useState('');
+    const [appliedDiscount, setAppliedDiscount] = useState<DiscountDTO | null>(null);
+    const [isLoadingDiscount, setIsLoadingDiscount] = useState(false);
 
-    const handleOpenDialog = () => {
-        setDialogOpen(true);
+    const subtotal = selectedSeats.reduce((total, seat) => total + seat.tier.price, 0);
+
+    // ✅ ADDED: Calculate final price using the business logic utility
+    const { finalPrice, discountAmount, error: discountError } = applyDiscount(subtotal, appliedDiscount, selectedSeats);
+
+    const handleApplyDiscount = async () => {
+        if (!discountCodeInput) return;
+        setIsLoadingDiscount(true);
+        setAppliedDiscount(null); // Clear previous discount if trying a new one
+        try {
+            const result = await getDiscountByCode(eventId, sessionId, discountCodeInput);
+            if (result) {
+                setAppliedDiscount(result);
+                toast.success(`Discount "${result.code}" applied!`);
+            } else {
+                toast.error("Invalid or inapplicable discount code.");
+            }
+        } catch (e) {
+            toast.error("Failed to apply discount.");
+        } finally {
+            setIsLoadingDiscount(false);
+        }
     };
 
-    const handleCloseDialog = () => {
-        setDialogOpen(false);
-    };
-
-    const handleOrderSuccess = (orderId: string) => {
-        toast.success("Order created successfully!");
-        setDialogOpen(false);
-        router.push(`/orders/${orderId}`);
+    const handleRemoveDiscount = () => {
+        setAppliedDiscount(null);
+        setDiscountCodeInput('');
+        toast.info("Discount removed.");
     };
 
     return (
@@ -75,33 +99,72 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
                         </div>
                     )}
                 </CardContent>
-                <CardFooter className="flex-col items-stretch gap-3">
-                    <div className="flex justify-between items-baseline">
-                        <span className="text-lg font-medium text-muted-foreground">Total</span>
-                        <span className="text-2xl font-bold tracking-tight text-foreground">
-                            {new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(totalPrice)}
+                <CardFooter className="flex-col items-stretch gap-4 pt-4">
+                    {/* ✅ ADDED: Discount Code Input Section */}
+                    <div className="space-y-2">
+                        {appliedDiscount ? (
+                            <div className="flex justify-between items-center text-sm p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                                <div className="flex items-center gap-2 font-semibold text-green-700 dark:text-green-400">
+                                    <Tag className="h-4 w-4"/>
+                                    <span>Code "{appliedDiscount.code}" Applied</span>
+                                </div>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
+                                    <XCircle className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    type="text"
+                                    placeholder="Enter discount code"
+                                    value={discountCodeInput}
+                                    onChange={(e) => setDiscountCodeInput(e.target.value.toUpperCase())}
+                                    className="uppercase"
+                                    disabled={selectedSeats.length === 0}
+                                />
+                                <Button onClick={handleApplyDiscount} disabled={!discountCodeInput || isLoadingDiscount || selectedSeats.length === 0}>
+                                    {isLoadingDiscount ? "..." : "Apply"}
+                                </Button>
+                            </div>
+                        )}
+                        {discountError && <p className="text-xs text-destructive">{discountError}</p>}
+                    </div>
+
+                    {/* ✅ UPDATED: Price breakdown */}
+                    <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                            <span>Subtotal</span>
+                            <span>{new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(subtotal)}</span>
+                        </div>
+                        {appliedDiscount && (
+                            <div className="flex justify-between text-green-600 dark:text-green-400">
+                                <span>Discount</span>
+                                <span>-{new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(discountAmount)}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex justify-between items-baseline pt-2 border-t">
+                        <span className="text-lg font-medium">Total</span>
+                        <span className="text-2xl font-bold tracking-tight">
+                            {new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(finalPrice)}
                         </span>
                     </div>
-                    <Button
-                        size="lg"
-                        disabled={selectedSeats.length === 0}
-                        onClick={handleOpenDialog}
-                    >
+
+                    <Button size="lg" disabled={selectedSeats.length === 0} onClick={() => setDialogOpen(true)}>
                         Proceed to Checkout
                     </Button>
-                    <span className="text-xs text-muted-foreground">
-                        Discount codes coming soon.
-                    </span>
                 </CardFooter>
             </Card>
 
             <OrderConfirmationDialog
                 isOpen={dialogOpen}
-                onClose={handleCloseDialog}
+                onClose={() => setDialogOpen(false)}
                 selectedSeats={selectedSeats}
                 eventId={eventId}
                 sessionId={sessionId}
-                onSuccess={handleOrderSuccess}
+                appliedDiscount={appliedDiscount} // Pass the applied discount
+                onSuccess={(orderId) => router.push(`/orders/${orderId}`)}
             />
         </>
     );
