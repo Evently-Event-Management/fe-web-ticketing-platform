@@ -6,16 +6,17 @@ import {Skeleton} from "@/components/ui/skeleton";
 import EventCarousel from "@/components/EventCarousel";
 import TiersSection from "@/app/(home-app)/events/[event_id]/_components/TiersSection";
 import {Separator} from "@/components/ui/separator";
-import {Card} from "@/components/ui/card";
+import {Card, CardContent} from "@/components/ui/card";
+import {OffersCarousel} from "@/app/(home-app)/events/[event_id]/_components/OffersCarousel";
 
 // A new component for the sticky right-side panel
 const TicketActionPanel: React.FC<{ tiers: EventBasicInfoDTO['tiers'] }> = ({tiers}) => {
     return (
-        <div className="lg:sticky lg:top-24">
-            <Card className="border rounded-2xl shadow-lg">
-                <div className="p-6">
+        <div className="">
+            <Card>
+                <CardContent>
                     {tiers && tiers.length > 0 && <TiersSection tiers={tiers}/>}
-                </div>
+                </CardContent>
             </Card>
         </div>
     );
@@ -79,8 +80,9 @@ export const EventHero: React.FC<{ event: EventBasicInfoDTO, viewCount?: number 
             </div>
 
             {/* Right Column: Ticket Panel */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-6">
                 <TicketActionPanel tiers={tiers}/>
+                <OffersCarousel items={event.availableDiscounts} />
             </div>
         </div>
     );
