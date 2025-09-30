@@ -4,7 +4,7 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Switch} from "@/components/ui/switch"
-import {formatCurrency, getDiscountValue} from "@/lib/utils"
+import {formatCurrency} from "@/lib/utils"
 import {
     Edit, Trash2, Copy, Eye, EyeOff, Percent, DollarSign, Gift,
     Calendar, Users, MoreHorizontal,
@@ -15,6 +15,7 @@ import {CreateEventFormData, DiscountParsed} from "@/lib/validators/event";
 import {FieldArrayWithId} from "react-hook-form";
 import {toast} from "sonner";
 import {format} from "date-fns";
+import {getDiscountValue} from "@/lib/discountUtils";
 
 // --- Component Props ---
 interface DiscountCardProps {

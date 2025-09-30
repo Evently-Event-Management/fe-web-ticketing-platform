@@ -1,5 +1,7 @@
-import { DiscountDTO, SelectedSeat } from "@/types/event";
-import { DiscountType } from "@/types/enums/discountType";
+import {DiscountDTO, SelectedSeat} from "@/types/event";
+import {DiscountType} from "@/types/enums/discountType";
+import {DiscountParameters} from "@/lib/validators/event";
+import {formatCurrency} from "@/lib/utils";
 
 interface DiscountResult {
     finalPrice: number;
@@ -83,3 +85,27 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
     const finalPrice = Math.max(0, subtotal - discountAmount);
     return { finalPrice, discountAmount, description };
 };
+
+export const getDiscountValue = (parameters: DiscountParameters) => {
+    switch (parameters.type) {
+        case DiscountType.PERCENTAGE: {
+            const parts = [`${parameters.percentage}% OFF`];
+            if (parameters.minSpend) {
+                parts.push(`on orders over ${formatCurrency(parameters.minSpend, 'LKR')}`);
+            }
+            if (parameters.maxDiscount) {
+                parts.push(`(up to ${formatCurrency(parameters.maxDiscount, 'LKR')})`);
+            }
+            return parts.join(' ');
+        }
+        case DiscountType.FLAT_OFF: {
+            const parts = [`${formatCurrency(parameters.amount, parameters.currency)} OFF`];
+            if (parameters.minSpend) {
+                parts.push(`on orders over ${formatCurrency(parameters.minSpend, parameters.currency)}`);
+            }
+            return parts.join(' ');
+        }
+        case DiscountType.BUY_N_GET_N_FREE:
+            return `Buy ${parameters.buyQuantity}, Get ${parameters.getQuantity} Free`;
+    }
+}

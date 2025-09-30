@@ -16,7 +16,8 @@ import { applyDiscount } from "@/lib/discountUtils"; // Import the new utility
 
 export const SelectionSummary = ({ selectedSeats, onSeatRemove }: {
     selectedSeats: SelectedSeat[],
-    onSeatRemove: (seatId: string) => void
+    onSeatRemove: (seatId: string) => void,
+    publicDiscounts: DiscountDTO[] | []
 }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const router = useRouter();

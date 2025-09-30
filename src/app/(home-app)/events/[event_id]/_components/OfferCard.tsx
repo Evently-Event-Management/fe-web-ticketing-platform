@@ -4,8 +4,9 @@ import type React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { type DiscountThumbnailDTO } from "@/types/event" // Adjust this import path
 import { Percent, DollarSign, Gift, Calendar, Users } from "lucide-react"
-import {formatCurrency, getDiscountValue} from "@/lib/utils"
-import {DiscountType} from "@/types/enums/discountType"; // Adjust this import path
+import {formatCurrency} from "@/lib/utils"
+import {DiscountType} from "@/types/enums/discountType";
+import {getDiscountValue} from "@/lib/discountUtils"; // Adjust this import path
 
 // --- Component Props ---
 interface OfferCardProps {
