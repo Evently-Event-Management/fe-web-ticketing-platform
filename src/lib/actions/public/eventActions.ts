@@ -1,4 +1,4 @@
-import {EventThumbnailDTO, SessionInfoBasicDTO} from "@/types/event";
+import {DiscountDTO, EventThumbnailDTO, SessionInfoBasicDTO} from "@/types/event";
 import {PaginatedResponse} from "@/types/paginatedResponse";
 
 const API_BASE_PATH = `${process.env.NEXT_PUBLIC_API_BASE_URL}/event-query/v1/events`;
@@ -120,6 +120,44 @@ export async function getEventSessionsInRange({
 
     if (!res.ok) {
         throw new Error(`Failed to fetch event sessions in range: ${res.status}`);
+    }
+
+    return await res.json();
+}
+
+export async function getPublicDiscounts(eventId: string, sessionId: string): Promise<DiscountDTO> {
+    const url = `${API_BASE_PATH}/${eventId}/sessions/${sessionId}/discounts/public`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        cache: "no-store"
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch public discounts: ${res.status}`);
+    }
+
+    return await res.json();
+}
+
+export async function getDiscountByCode(eventId: string, sessionId: string, code: string): Promise<DiscountDTO | null> {
+    const url = `${API_BASE_PATH}/${eventId}/sessions/${sessionId}/discounts/code/${code}`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        cache: "no-store"
+    });
+
+    if (res.status === 404) {
+        return null; // Discount code not found
+    }
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch discount by code: ${res.status}`);
     }
 
     return await res.json();

@@ -2,12 +2,12 @@ import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {ShoppingCart, Armchair} from 'lucide-react';
-import {SelectedSeat} from './SessionBooking';
 import {useState} from 'react';
 import OrderConfirmationDialog from '@/components/ui/OrderConfirmationDialog';
 import {useParams, useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import TicketItemView from '@/components/ui/TicketItemView';
+import {SelectedSeat} from "@/types/event";
 
 export const SelectionSummary = ({selectedSeats, onSeatRemove}: {
     selectedSeats: SelectedSeat[],
