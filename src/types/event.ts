@@ -33,9 +33,22 @@ export interface EventThumbnailDTO {
 
 export interface DiscountThumbnailDTO {
     parameters: DiscountParameters,
-        expiresAt: string | null;
+    expiresAt: string | null;
     maxUsage: number | null;
     currentUsage: number | null;
+}
+
+export interface DiscountDTO {
+    id: string;
+    code: string;
+    parameters: DiscountParameters;
+    activeFrom: string | null;
+    expiresAt: string | null;
+    maxUsage: number | null;
+    currentUsage: number | null;
+    active: boolean;
+    public: boolean;
+    applicableTierIds: string[];
 }
 
 
@@ -121,3 +134,14 @@ export interface SessionSeatingMapDTO {
         blocks: SeatingBlockDTO[];
     };
 }
+
+
+export type SelectedSeat = SeatDTO & {
+    tier: {
+        id: string;
+        name: string;
+        price: number;
+        color: string;
+    };
+    blockName: string;
+};

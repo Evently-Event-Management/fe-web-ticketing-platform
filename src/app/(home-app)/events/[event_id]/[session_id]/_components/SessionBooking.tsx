@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {SeatDTO, SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
+import {DiscountDTO, SeatDTO, SelectedSeat, SessionInfoBasicDTO, SessionSeatingMapDTO} from "@/types/event";
 import {getSessionSeatingMap} from "@/lib/actions/public/SessionActions";
 import {Skeleton} from "@/components/ui/skeleton";
 import {SelectionSummary} from "./SelectionSummery";
@@ -14,22 +14,13 @@ import {useAuth} from "@/providers/AuthProvider";
 import Notice from "@/components/ui/Notice";
 import {SessionType} from "@/types/enums/sessionType";
 import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
+import {getPublicDiscounts} from "@/lib/actions/public/eventActions";
 
-// This type definition remains the same as it's used for props
-export type SelectedSeat = SeatDTO & {
-    tier: {
-        id: string;
-        name: string;
-        price: number;
-        color: string;
-    };
-    blockName: string;
-};
-
-export default function SessionBooking({session}: { session: SessionInfoBasicDTO }) {
+export default function SessionBooking({session, eventId}: { session: SessionInfoBasicDTO, eventId: string }) {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const {isAuthenticated} = useAuth()
+    const [publicDiscounts, setPublicDiscounts] = useState<DiscountDTO | []>([]);
 
     // --- CHANGE #1: Store only the IDs of selected seats ---
     // This creates a single source of truth for all seat data: the `seatingMap`.
@@ -44,6 +35,14 @@ export default function SessionBooking({session}: { session: SessionInfoBasicDTO
                 .finally(() => setIsLoading(false));
         }
     }, [session.id]);
+
+    useEffect(() => {
+        if (eventId && session.id) {
+            getPublicDiscounts(eventId, session.id)
+                .then(data => setPublicDiscounts(data))
+                .catch(err => console.error("Failed to fetch public discounts", err))
+        }
+    }, [eventId, session.id]);
 
     // --- CHANGE #2: A stable, efficient callback for handling SSE updates ---
     // Updated to handle seats both in rows and directly under blocks

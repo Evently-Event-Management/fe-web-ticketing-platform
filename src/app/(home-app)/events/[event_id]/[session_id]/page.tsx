@@ -18,7 +18,7 @@ const Page = async ({params}: { params: Promise<{ session_id: string, event_id: 
     return (
         <>
             <SessionDetailsHeader session={sessionSummary} eventId={event_id}/>
-            <SessionBooking session={sessionSummary}/>
+            <SessionBooking session={sessionSummary} eventId={event_id}/>
         </>
     );
 }
