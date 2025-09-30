@@ -125,7 +125,7 @@ export async function getEventSessionsInRange({
     return await res.json();
 }
 
-export async function getPublicDiscounts(eventId: string, sessionId: string): Promise<DiscountDTO> {
+export async function getPublicDiscounts(eventId: string, sessionId: string): Promise<DiscountDTO[]> {
     const url = `${API_BASE_PATH}/${eventId}/sessions/${sessionId}/discounts/public`;
     const res = await fetch(url, {
         method: "GET",

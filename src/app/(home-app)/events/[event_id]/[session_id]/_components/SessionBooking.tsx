@@ -20,7 +20,7 @@ export default function SessionBooking({session, eventId}: { session: SessionInf
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const {isAuthenticated} = useAuth()
-    const [publicDiscounts, setPublicDiscounts] = useState<DiscountDTO | []>([]);
+    const [publicDiscounts, setPublicDiscounts] = useState<DiscountDTO[] | []>([]);
 
     // --- CHANGE #1: Store only the IDs of selected seats ---
     // This creates a single source of truth for all seat data: the `seatingMap`.
@@ -246,6 +246,7 @@ export default function SessionBooking({session, eventId}: { session: SessionInf
                         <SelectionSummary
                             selectedSeats={selectedSeatsData}
                             onSeatRemove={(seatId) => setSelectedSeatIds(prev => prev.filter(id => id !== seatId))}
+                            publicDiscounts={publicDiscounts}
                         />
                     </div>
                 </div>
