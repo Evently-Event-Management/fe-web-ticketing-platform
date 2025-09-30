@@ -60,10 +60,7 @@ export function OfferCard({ item }: OfferCardProps) {
     const isExpiring = item.expiresAt && isExpiringSoon(item.expiresAt);
 
     return (
-        <div
-            className="h-full"
-        >
-            <Card className="flex flex-col h-full bg-card/80 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow border-border/50">
+            <Card className="gap-4">
                 {/* Header */}
                 <CardHeader>
                     <div className="flex items-center gap-3">
@@ -120,6 +117,5 @@ export function OfferCard({ item }: OfferCardProps) {
                     )}
                 </CardContent>
             </Card>
-        </div>
     );
 }
