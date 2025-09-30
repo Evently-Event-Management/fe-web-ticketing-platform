@@ -1,6 +1,7 @@
 import {clsx, type ClassValue} from "clsx"
 import {twMerge} from "tailwind-merge"
-import {SessionParsed, TierFormData} from "@/lib/validators/event";
+import {DiscountParameters, SessionParsed, TierFormData} from "@/lib/validators/event";
+import {DiscountType} from "@/types/enums/discountType";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -122,3 +123,28 @@ export const formatToDateTimeLocalString = (dateInput: string | null | undefined
         return "";
     }
 };
+
+
+export const getDiscountValue = (parameters: DiscountParameters) => {
+    switch (parameters.type) {
+        case DiscountType.PERCENTAGE: {
+            const parts = [`${parameters.percentage}% OFF`];
+            if (parameters.minSpend) {
+                parts.push(`on orders over ${formatCurrency(parameters.minSpend, 'LKR')}`);
+            }
+            if (parameters.maxDiscount) {
+                parts.push(`(up to ${formatCurrency(parameters.maxDiscount, 'LKR')})`);
+            }
+            return parts.join(' ');
+        }
+        case DiscountType.FLAT_OFF: {
+            const parts = [`${formatCurrency(parameters.amount, parameters.currency)} OFF`];
+            if (parameters.minSpend) {
+                parts.push(`on orders over ${formatCurrency(parameters.minSpend, parameters.currency)}`);
+            }
+            return parts.join(' ');
+        }
+        case DiscountType.BUY_N_GET_N_FREE:
+            return `Buy ${parameters.buyQuantity}, Get ${parameters.getQuantity} Free`;
+    }
+}

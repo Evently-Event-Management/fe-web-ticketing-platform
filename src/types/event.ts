@@ -61,6 +61,7 @@ export interface EventBasicInfoDTO {
         price: number;
         color: string;
     }[];
+    availableDiscounts: DiscountThumbnailDTO[];
 }
 
 

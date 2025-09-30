@@ -4,7 +4,7 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button"
 import {Switch} from "@/components/ui/switch"
-import {formatCurrency} from "@/lib/utils"
+import {formatCurrency, getDiscountValue} from "@/lib/utils"
 import {
     Edit, Trash2, Copy, Eye, EyeOff, Percent, DollarSign, Gift,
     Calendar, Users, MoreHorizontal,
@@ -39,35 +39,6 @@ const getDiscountIcon = (type: DiscountType) => {
             return <Gift className="h-5 w-5"/>;
         default:
             return <Percent className="h-5 w-5"/>;
-    }
-}
-
-const getDiscountValue = (discount: DiscountParsed) => {
-    const { parameters } = discount;
-
-    switch (parameters.type) {
-        case DiscountType.PERCENTAGE: {
-            // ✅ Builds a clearer, more readable string
-            const parts = [`${parameters.percentage}% OFF`];
-            if (parameters.minSpend) {
-                parts.push(`on orders over ${formatCurrency(parameters.minSpend, 'LKR')}`);
-            }
-            if (parameters.maxDiscount) {
-                parts.push(`(up to ${formatCurrency(parameters.maxDiscount, 'LKR')})`);
-            }
-            return parts.join(' ');
-        }
-        case DiscountType.FLAT_OFF: {
-            // ✅ Builds a clearer, more readable string
-            const parts = [`${formatCurrency(parameters.amount, parameters.currency)} OFF`];
-            if (parameters.minSpend) {
-                parts.push(`on orders over ${formatCurrency(parameters.minSpend, parameters.currency)}`);
-            }
-            return parts.join(' ');
-        }
-        case DiscountType.BUY_N_GET_N_FREE:
-            // This format is already quite clear
-            return `Buy ${parameters.buyQuantity}, Get ${parameters.getQuantity} Free`;
     }
 }
 
@@ -134,7 +105,7 @@ export function DiscountCard({
                         </div>
 
                         <p className="text-sm font-medium text-primary">
-                            {getDiscountValue(discount as DiscountParsed)}
+                            {getDiscountValue(discount.parameters)}
                         </p>
                     </div>
                 </div>
