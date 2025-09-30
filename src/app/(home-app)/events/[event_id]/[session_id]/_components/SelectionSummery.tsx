@@ -106,7 +106,7 @@ export const SelectionSummary = ({ selectedSeats, onSeatRemove }: {
                             <div className="flex justify-between items-center text-sm p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
                                 <div className="flex items-center gap-2 font-semibold text-green-700 dark:text-green-400">
                                     <Tag className="h-4 w-4"/>
-                                    <span>Code "{appliedDiscount.code}" Applied</span>
+                                    <span>Code &#34;{appliedDiscount.code}&#34; Applied</span>
                                 </div>
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
                                     <XCircle className="h-4 w-4"/>
