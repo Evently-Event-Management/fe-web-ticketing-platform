@@ -46,36 +46,45 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
+            {/* ✅ UPDATED: Made the dialog wider */}
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Apply a Discount</DialogTitle>
+                    <DialogTitle className="text-xl">Apply a Discount</DialogTitle>
                     <DialogDescription>
-                        Enter a code below or choose from one of the available public offers.
+                        Enter a code or choose from one of the available public offers below.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-2">
-                    <div className="flex items-center gap-2">
-                        <Input
-                            placeholder="ENTER CODE"
-                            value={codeInput}
-                            onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-                            className="uppercase"
-                        />
-                        <Button onClick={handleValidateCode} disabled={!codeInput || isLoading}>
-                            {isLoading ? "..." : "Apply"}
-                        </Button>
+
+                {/* ✅ UPDATED: Two-column grid layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
+                    {/* Column 1: Manual Input */}
+                    <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-foreground">Have a code?</h4>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                placeholder="ENTER CODE"
+                                value={codeInput}
+                                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                                className="uppercase"
+                            />
+                            <Button onClick={handleValidateCode} disabled={!codeInput || isLoading}>
+                                {isLoading ? "..." : "Apply"}
+                            </Button>
+                        </div>
                     </div>
 
+                    {/* Column 2: Public Offers */}
                     {publicDiscounts.length > 0 && (
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-muted-foreground">Available Public Offers</h4>
-                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <div className="space-y-3">
+                            <h4 className="text-sm font-medium text-foreground">Available Public Offers</h4>
+                            <div className="space-y-2 max-h-64 overflow-y-auto pr-3 -mr-3 border-l md:border-l-0 md:border-t pt-4 md:pt-0 pl-4 md:pl-0">
                                 {publicDiscounts.map(discount => (
                                     <DiscountDisplayCard
                                         key={discount.id}
                                         discount={discount}
-                                        onApply={() => {
-                                            onApplyDiscount(discount);
+                                        onApply={(applied) => {
+                                            onApplyDiscount(applied);
+                                            toast.success(`Discount "${applied.code}" applied!`);
                                             onClose();
                                         }}
                                         isApplied={appliedDiscount?.id === discount.id}
