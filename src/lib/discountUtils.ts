@@ -36,12 +36,18 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
 
     let discountAmount = 0;
     let description = "";
+    let error: string | undefined;
 
     switch (discount.parameters.type) {
         case DiscountType.FLAT_OFF: {
-            // ✅ FIX: Check for minSpend inside the case block where the type is known.
+            // Check for minSpend inside the case block where the type is known.
             if (discount.parameters.minSpend && subtotal < discount.parameters.minSpend) {
-                return { finalPrice: subtotal, discountAmount: 0, description: null, error: `A minimum spend of ${discount.parameters.minSpend} is required.` };
+                return {
+                    finalPrice: subtotal,
+                    discountAmount: 0,
+                    description: null,
+                    error: `A minimum spend of ${formatCurrency(discount.parameters.minSpend, discount.parameters.currency || 'LKR')} is required.`
+                };
             }
 
             discountAmount = discount.parameters.amount || 0;
@@ -50,9 +56,14 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
         }
 
         case DiscountType.PERCENTAGE: {
-            // ✅ FIX: Check for minSpend inside the case block.
+            // Check for minSpend inside the case block.
             if (discount.parameters.minSpend && subtotal < discount.parameters.minSpend) {
-                return { finalPrice: subtotal, discountAmount: 0, description: null, error: `A minimum spend of ${discount.parameters.minSpend} is required.` };
+                return {
+                    finalPrice: subtotal,
+                    discountAmount: 0,
+                    description: null,
+                    error: `A minimum spend of ${formatCurrency(discount.parameters.minSpend, 'LKR')} is required.`
+                };
             }
 
             let calculatedDiscount = subtotal * ((discount.parameters.percentage || 0) / 100);
@@ -68,6 +79,16 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
             // This type doesn't have minSpend, so we don't check for it.
             const { buyQuantity, getQuantity } = discount.parameters;
 
+            // Ensure we have sufficient applicable items
+            if (applicableSeats.length < buyQuantity) {
+                return {
+                    finalPrice: subtotal,
+                    discountAmount: 0,
+                    description: null,
+                    error: `You need at least ${buyQuantity} eligible items to use this discount.`
+                };
+            }
+
             const sortedApplicableSeats = [...applicableSeats].sort((a, b) => a.tier.price - b.tier.price);
 
             const numEligibleItems = sortedApplicableSeats.length;
@@ -80,6 +101,11 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
             description = `Buy ${buyQuantity}, Get ${getQuantity} Free`;
             break;
         }
+    }
+
+    // If there's an error, don't apply the discount
+    if (error) {
+        return { finalPrice: subtotal, discountAmount: 0, description: null, error };
     }
 
     const finalPrice = Math.max(0, subtotal - discountAmount);
