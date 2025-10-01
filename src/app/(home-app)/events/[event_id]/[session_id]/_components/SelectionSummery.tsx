@@ -1,10 +1,10 @@
 "use client";
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {ShoppingCart, Armchair, Tag, XCircle} from 'lucide-react';
+import {ShoppingCart, Armchair, Tag, XCircle, AlertCircle} from 'lucide-react';
 import {SelectedSeat, DiscountDTO} from "@/types/event";
 import {useParams, useRouter} from 'next/navigation';
 import {toast} from 'sonner';
@@ -21,17 +21,44 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
     const [orderDialogOpen, setOrderDialogOpen] = useState(false);
     const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
     const [appliedDiscount, setAppliedDiscount] = useState<DiscountDTO | null>(null);
+    const [discountError, setDiscountError] = useState<string | null>(null);
     const router = useRouter();
     const params = useParams();
     const eventId = params.event_id as string;
     const sessionId = params.session_id as string;
 
     const subtotal = selectedSeats.reduce((total, seat) => total + seat.tier.price, 0);
-    const {finalPrice, discountAmount} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
+    const {finalPrice, discountAmount, error} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
+
+    // Check discount validity whenever cart changes
+    useEffect(() => {
+        if (appliedDiscount) {
+            const {error} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
+            if (error) {
+                setDiscountError(error);
+            } else {
+                setDiscountError(null);
+            }
+        }
+    }, [selectedSeats, subtotal, appliedDiscount]);
 
     const handleRemoveDiscount = () => {
         setAppliedDiscount(null);
+        setDiscountError(null);
         toast.info("Discount removed.");
+    };
+
+    const handleApplyDiscount = (discount: DiscountDTO) => {
+        // Check if discount can be applied
+        const {error} = applyDiscount(subtotal, discount, selectedSeats);
+        if (error) {
+            setDiscountError(error);
+            toast.error(error);
+        } else {
+            setDiscountError(null);
+            setAppliedDiscount(discount);
+            toast.success(`Discount "${discount.code}" applied!`);
+        }
     };
 
     return (
@@ -75,14 +102,36 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
                 <CardFooter className="flex-col items-stretch gap-4 pt-4">
                     {/* Discount section */}
                     {appliedDiscount ? (
-                        <div className="flex justify-between items-center text-sm p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
-                            <div className="flex items-center gap-2 font-semibold text-green-700 dark:text-green-400">
-                                <Tag className="h-4 w-4"/>
-                                <span>Code &#34;{appliedDiscount.code}&#34; Applied</span>
+                        <div className="space-y-2">
+                            <div className={`flex justify-between items-center text-sm p-2 rounded-md ${
+                                discountError 
+                                    ? "bg-red-50 dark:bg-red-900/20" 
+                                    : "bg-green-50 dark:bg-green-900/20"
+                            }`}>
+                                <div className="flex items-center gap-2 font-semibold">
+                                    <Tag className={`h-4 w-4 ${
+                                        discountError 
+                                            ? "text-red-700 dark:text-red-400" 
+                                            : "text-green-700 dark:text-green-400"
+                                    }`} />
+                                    <span className={discountError
+                                        ? "text-red-700 dark:text-red-400"
+                                        : "text-green-700 dark:text-green-400"
+                                    }>
+                                        Code &#34;{appliedDiscount.code}&#34; {discountError ? "Invalid" : "Applied"}
+                                    </span>
+                                </div>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
+                                    <XCircle className="h-4 w-4" />
+                                </Button>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
-                                <XCircle className="h-4 w-4"/>
-                            </Button>
+
+                            {discountError && (
+                                <div className="text-xs text-red-600 dark:text-red-400 flex items-start gap-1.5">
+                                    <AlertCircle className="h-3 w-3 mt-0.5" />
+                                    <span>{discountError}</span>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <Button variant="link" className="p-0 h-auto justify-start" onClick={() => setDiscountDialogOpen(true)}>
@@ -95,7 +144,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
                             <span>Subtotal</span>
                             <span>{new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(subtotal)}</span>
                         </div>
-                        {appliedDiscount && (
+                        {appliedDiscount && !discountError && (
                             <div className="flex justify-between text-green-600 dark:text-green-400">
                                 <span>Discount</span>
                                 <span>-{new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(discountAmount)}</span>
@@ -105,7 +154,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
                     <div className="flex justify-between items-baseline pt-2 border-t">
                         <span className="text-lg font-medium">Total</span>
                         <span className="text-2xl font-bold tracking-tight">
-                            {new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(finalPrice)}
+                            {new Intl.NumberFormat('en-LK', {style: 'currency', currency: 'LKR'}).format(discountError ? subtotal : finalPrice)}
                         </span>
                     </div>
                     <Button size="lg" disabled={selectedSeats.length === 0} onClick={() => setOrderDialogOpen(true)}>
@@ -116,7 +165,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
             <DiscountDialog
                 isOpen={discountDialogOpen}
                 onClose={() => setDiscountDialogOpen(false)}
-                onApplyDiscount={(discount) => setAppliedDiscount(discount)}
+                onApplyDiscount={handleApplyDiscount}
                 publicDiscounts={publicDiscounts}
                 appliedDiscount={appliedDiscount}
                 eventId={eventId}
@@ -128,7 +177,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
                 selectedSeats={selectedSeats}
                 eventId={eventId}
                 sessionId={sessionId}
-                appliedDiscount={appliedDiscount}
+                appliedDiscount={discountError ? null : appliedDiscount}
                 onSuccess={(orderId) => router.push(`/orders/${orderId}`)}
             />
         </>
