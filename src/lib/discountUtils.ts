@@ -84,7 +84,6 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
         }
 
         case DiscountType.BUY_N_GET_N_FREE: {
-            // This type doesn't have minSpend, so we don't check for it.
             const { buyQuantity, getQuantity } = discount.parameters;
 
             // Ensure we have sufficient applicable items

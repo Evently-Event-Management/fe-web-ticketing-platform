@@ -99,8 +99,8 @@ export interface SessionInfoBasicDTO {
             coordinates: [number, number]; // [longitude, latitude]
         } | null; // Optional, can be null
     };
+    discounts: DiscountThumbnailDTO[];
 }
-
 
 export interface SeatingBlockDTO {
     id: string;
