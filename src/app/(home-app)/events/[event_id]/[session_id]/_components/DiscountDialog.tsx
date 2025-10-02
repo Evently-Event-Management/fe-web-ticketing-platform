@@ -20,7 +20,11 @@ interface DiscountDialogProps {
 }
 
 export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscounts, appliedDiscount, eventId, sessionId }: DiscountDialogProps) => {
-    const [codeInput, setCodeInput] = useState('');
+    // Initialize codeInput with URL discount parameter if available
+    const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    const urlDiscountCode = searchParams.get('discount') || '';
+    
+    const [codeInput, setCodeInput] = useState(urlDiscountCode);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleValidateCode = async () => {
@@ -73,7 +77,6 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
                     {publicDiscounts.length > 0 && (
                         <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">Available Public Offers</h4>
-                            {/* ✅ UPDATED: Changed from a grid to a vertical stack */}
                             <div className="space-y-3 max-h-64 overflow-y-auto pr-3">
                                 {publicDiscounts.map(discount => (
                                     <DiscountDisplayCard

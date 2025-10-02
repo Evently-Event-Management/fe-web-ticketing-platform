@@ -201,8 +201,8 @@ export function DiscountDisplayCard({
                 </div>
             </CardContent>
 
-            {/* Right Section: Button */}
-            <CardFooter className="p-0">
+            {/* Right Section: Buttons */}
+            <CardFooter className="p-0 gap-2">
                 <Button
                     onClick={() => onApply(discount)}
                     disabled={!isAvailable || isApplied}
