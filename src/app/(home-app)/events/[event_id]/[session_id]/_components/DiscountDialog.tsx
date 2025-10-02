@@ -35,6 +35,7 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
                 toast.error("Invalid or inapplicable discount code.");
             }
         } catch (e) {
+            console.error(e)
             toast.error("Failed to validate discount.");
         } finally {
             setIsLoading(false);
@@ -43,15 +44,14 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-3xl"> {/* Adjusted width slightly */}
                 <DialogHeader>
                     <DialogTitle className="text-xl">Apply a Discount</DialogTitle>
                     <DialogDescription>
-                        Enter a code below or choose from one of the available public offers.
+                        Enter a code or choose from one of the available public offers below.
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* ✅ UPDATED: Vertical stack layout */}
                 <div className="space-y-6 py-2">
                     {/* Top Section: Manual Input */}
                     <div className="space-y-3">
@@ -73,8 +73,8 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
                     {publicDiscounts.length > 0 && (
                         <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">Available Public Offers</h4>
-                            {/* ✅ UPDATED: Two-column grid for the cards */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-64 overflow-y-auto pr-3">
+                            {/* ✅ UPDATED: Changed from a grid to a vertical stack */}
+                            <div className="space-y-3 max-h-64 overflow-y-auto pr-3">
                                 {publicDiscounts.map(discount => (
                                     <DiscountDisplayCard
                                         key={discount.id}

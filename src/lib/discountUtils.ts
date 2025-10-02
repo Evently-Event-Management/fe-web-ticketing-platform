@@ -30,11 +30,12 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
     );
 
     if ((discount.applicableTiers?.length ?? 0) > 0 && applicableSeats.length === 0) {
+        const requiredTiers = discount.applicableTiers?.map(tier => tier.name).join(", ");
         return {
             finalPrice: subtotal,
             discountAmount: 0,
             description: null,
-            error: "Discount not applicable to the items in your cart."
+            error: `Discount not applicable to the items in your cart. At least one of the following tiers must be present: ${requiredTiers}.`
         };
     }
 
