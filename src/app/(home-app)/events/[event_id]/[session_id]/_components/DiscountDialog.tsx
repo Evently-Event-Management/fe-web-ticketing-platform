@@ -1,5 +1,3 @@
-// components/ui/DiscountDialog.tsx
-
 "use client"
 
 import React, { useState } from "react";
@@ -32,8 +30,7 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
             const result = await getDiscountByCode(eventId, sessionId, codeInput);
             if (result) {
                 onApplyDiscount(result);
-                toast.success(`Discount "${result.code}" applied!`);
-                onClose(); // Close dialog on success
+                onClose();
             } else {
                 toast.error("Invalid or inapplicable discount code.");
             }
@@ -46,21 +43,20 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            {/* ✅ UPDATED: Made the dialog wider */}
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-xl">Apply a Discount</DialogTitle>
                     <DialogDescription>
-                        Enter a code or choose from one of the available public offers below.
+                        Enter a code below or choose from one of the available public offers.
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* ✅ UPDATED: Two-column grid layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
-                    {/* Column 1: Manual Input */}
+                {/* ✅ UPDATED: Vertical stack layout */}
+                <div className="space-y-6 py-2">
+                    {/* Top Section: Manual Input */}
                     <div className="space-y-3">
                         <h4 className="text-sm font-medium text-foreground">Have a code?</h4>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 max-w-sm">
                             <Input
                                 placeholder="ENTER CODE"
                                 value={codeInput}
@@ -73,18 +69,18 @@ export const DiscountDialog = ({ isOpen, onClose, onApplyDiscount, publicDiscoun
                         </div>
                     </div>
 
-                    {/* Column 2: Public Offers */}
+                    {/* Bottom Section: Public Offers */}
                     {publicDiscounts.length > 0 && (
                         <div className="space-y-3">
                             <h4 className="text-sm font-medium text-foreground">Available Public Offers</h4>
-                            <div className="space-y-2 max-h-64 overflow-y-auto pr-3 -mr-3 border-l md:border-l-0 md:border-t pt-4 md:pt-0 pl-4 md:pl-0">
+                            {/* ✅ UPDATED: Two-column grid for the cards */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-64 overflow-y-auto pr-3">
                                 {publicDiscounts.map(discount => (
                                     <DiscountDisplayCard
                                         key={discount.id}
                                         discount={discount}
                                         onApply={(applied) => {
                                             onApplyDiscount(applied);
-                                            toast.success(`Discount "${applied.code}" applied!`);
                                             onClose();
                                         }}
                                         isApplied={appliedDiscount?.id === discount.id}

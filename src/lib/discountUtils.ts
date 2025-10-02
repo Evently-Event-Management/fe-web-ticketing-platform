@@ -26,11 +26,18 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
 
     // Check if at least one applicable tier is in the cart. This applies to all discount types.
     const applicableSeats = selectedSeats.filter(seat =>
-        discount.applicableTierIds?.includes(seat.tier.id)
+        discount.applicableTiers?.some(tier => tier.id === seat.tier.id)
     );
-    if (discount.applicableTierIds?.length > 0 && applicableSeats.length === 0) {
-        return { finalPrice: subtotal, discountAmount: 0, description: null, error: "Discount not applicable to the items in your cart." };
+
+    if ((discount.applicableTiers?.length ?? 0) > 0 && applicableSeats.length === 0) {
+        return {
+            finalPrice: subtotal,
+            discountAmount: 0,
+            description: null,
+            error: "Discount not applicable to the items in your cart."
+        };
     }
+
 
     // --- Type-Specific Logic & Pre-Condition Checks ---
 

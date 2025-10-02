@@ -48,7 +48,12 @@ export interface DiscountDTO {
     currentUsage: number | null;
     active: boolean;
     public: boolean;
-    applicableTierIds: string[];
+    applicableTiers: {
+        id: string;
+        name: string;
+        price: number;
+        color: string;
+    }[] | null;
 }
 
 
