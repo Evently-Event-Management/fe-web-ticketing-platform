@@ -16,7 +16,15 @@ import {SessionType} from "@/types/enums/sessionType";
 import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
 import {getPublicDiscounts} from "@/lib/actions/public/eventActions";
 
-export default function SessionBooking({session, eventId}: { session: SessionInfoBasicDTO, eventId: string }) {
+export default function SessionBooking({
+    session, 
+    eventId, 
+    initialDiscountCode = null
+}: { 
+    session: SessionInfoBasicDTO, 
+    eventId: string,
+    initialDiscountCode?: string | null 
+}) {
     const [seatingMap, setSeatingMap] = useState<SessionSeatingMapDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const {isAuthenticated} = useAuth()
@@ -245,8 +253,9 @@ export default function SessionBooking({session, eventId}: { session: SessionInf
                     <div className="sticky top-24">
                         <SelectionSummary
                             selectedSeats={selectedSeatsData}
-                            onSeatRemove={(seatId) => setSelectedSeatIds(prev => prev.filter(id => id !== seatId))}
+                            onSeatRemoveAction={(seatId) => setSelectedSeatIds(prev => prev.filter(id => id !== seatId))}
                             publicDiscounts={publicDiscounts}
+                            initialDiscountCode={initialDiscountCode}
                         />
                     </div>
                 </div>

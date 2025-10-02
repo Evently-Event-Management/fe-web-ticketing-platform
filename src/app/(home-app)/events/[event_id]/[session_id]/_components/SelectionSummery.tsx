@@ -1,10 +1,10 @@
 "use client";
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {ShoppingCart, Armchair, Tag, XCircle, AlertCircle} from 'lucide-react';
+import {ShoppingCart, Armchair, Tag, XCircle} from 'lucide-react';
 import {SelectedSeat, DiscountDTO} from "@/types/event";
 import {useParams, useRouter} from 'next/navigation';
 import {toast} from 'sonner';
@@ -12,11 +12,18 @@ import TicketItemView from '@/components/ui/TicketItemView';
 import {applyDiscount} from "@/lib/discountUtils";
 import OrderConfirmationDialog from '@/components/ui/OrderConfirmationDialog';
 import {DiscountDialog} from "@/app/(home-app)/events/[event_id]/[session_id]/_components/DiscountDialog";
+import {getDiscountByCode} from "@/lib/actions/public/eventActions";
 
-export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}: {
+export const SelectionSummary = ({
+    selectedSeats, 
+    onSeatRemoveAction,
+    publicDiscounts,
+    initialDiscountCode = null
+}: {
     selectedSeats: SelectedSeat[],
-    onSeatRemove: (seatId: string) => void,
-    publicDiscounts: DiscountDTO[]
+    onSeatRemoveAction: (seatId: string) => void,
+    publicDiscounts: DiscountDTO[],
+    initialDiscountCode?: string | null
 }) => {
     const [orderDialogOpen, setOrderDialogOpen] = useState(false);
     const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
@@ -26,11 +33,65 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
     const params = useParams();
     const eventId = params.event_id as string;
     const sessionId = params.session_id as string;
+    const subtotal = useMemo(
+        () => selectedSeats.reduce((total, seat) => total + seat.tier.price, 0),
+        [selectedSeats]
+    );
+    const {finalPrice, discountAmount} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
 
-    const subtotal = selectedSeats.reduce((total, seat) => total + seat.tier.price, 0);
-    const {finalPrice, discountAmount, error} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
 
-    // Check discount validity whenever cart changes
+    const handleApplyDiscount = useCallback((discount: DiscountDTO) => {
+        const {error} = applyDiscount(subtotal, discount, selectedSeats);
+
+        setAppliedDiscount(discount);
+
+        if (error) {
+            setDiscountError(error);
+            toast.error(error);
+        } else {
+            setDiscountError(null);
+            toast.success(`Discount "${discount.code}" applied!`);
+        }
+    }, [subtotal, selectedSeats]);
+
+    useEffect(() => {
+        if (!initialDiscountCode) return;
+
+        if (initialDiscountCode) {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('discount');
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        const urlDiscountCode = initialDiscountCode;
+
+        if (!appliedDiscount && publicDiscounts.length > 0) {
+            const discount = publicDiscounts.find(
+                d => d.code.toUpperCase() === urlDiscountCode.toUpperCase()
+            );
+
+            if (discount) {
+                handleApplyDiscount(discount);
+            } else {
+                (async () => {
+                    try {
+                        const result = await getDiscountByCode(eventId, sessionId, urlDiscountCode);
+                        if (result) {
+                            handleApplyDiscount(result);
+                        } else {
+                            console.log("Discount code in URL is not valid:", urlDiscountCode);
+                        }
+                    } catch (e) {
+                        console.error("Error validating discount code:", e);
+                    }
+                })();
+            }
+        }
+    }, [publicDiscounts, initialDiscountCode, appliedDiscount, eventId, sessionId, handleApplyDiscount]);
+
+
+    // Validate applied discount when cart changes
     useEffect(() => {
         if (appliedDiscount) {
             const {error} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
@@ -48,22 +109,9 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
         toast.info("Discount removed.");
     };
 
-    const handleApplyDiscount = (discount: DiscountDTO) => {
-        // Check if discount can be applied
-        const {error} = applyDiscount(subtotal, discount, selectedSeats);
-        if (error) {
-            setDiscountError(error);
-            toast.error(error);
-        } else {
-            setDiscountError(null);
-            setAppliedDiscount(discount);
-            toast.success(`Discount "${discount.code}" applied!`);
-        }
-    };
-
     return (
         <>
-            <Card className="flex flex-col flex-grow overflow-hidden shadow-lg">
+            <Card className="flex flex-col flex-grow overflow-hidden shadow-lg gap-0">
                 <CardHeader className="flex-row items-center justify-between">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
                         <ShoppingCart className="h-5 w-5"/>
@@ -83,7 +131,7 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
                                             seat={seat}
                                             variant="list"
                                             showRemoveButton={true}
-                                            onRemove={onSeatRemove}
+                                            onRemove={onSeatRemoveAction}
                                         />
                                     </li>
                                 ))}
@@ -121,14 +169,15 @@ export const SelectionSummary = ({selectedSeats, onSeatRemove, publicDiscounts}:
                                         Code &#34;{appliedDiscount.code}&#34; {discountError ? "Invalid" : "Applied"}
                                     </span>
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
-                                    <XCircle className="h-4 w-4" />
-                                </Button>
+                                <div className="flex gap-1">
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
+                                        <XCircle className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
 
                             {discountError && (
                                 <div className="text-xs text-red-600 dark:text-red-400 flex items-start gap-1.5">
-                                    <AlertCircle className="h-3 w-3 mt-0.5" />
                                     <span>{discountError}</span>
                                 </div>
                             )}
