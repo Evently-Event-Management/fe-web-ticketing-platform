@@ -57,7 +57,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     // ✅ New handler for toggling the 'isActive' status
     const handleToggleStatus = (index: number) => {
         const discount = discountFields[index];
-        update(index, { ...discount, isActive: !discount.active });
+        update(index, { ...discount, active: !discount.active });
     }
 
     // ✅ New handler to switch to the edit view
