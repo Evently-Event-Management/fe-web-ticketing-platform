@@ -66,8 +66,8 @@ export function DiscountCodeForm({
             code: "",
             parameters: {type: DiscountType.PERCENTAGE, percentage: 10, minSpend: null, maxDiscount: null},
             maxUsage: null,
-            isActive: true,
-            isPublic: false,
+            active: true,
+            public: false,
             activeFrom: null,
             expiresAt: null,
             applicableTierIds: tiers.map((t) => t.id),
@@ -105,8 +105,8 @@ export function DiscountCodeForm({
             code: "",
             parameters: {percentage: 10, type: DiscountType.PERCENTAGE, minSpend: null, maxDiscount: null},
             maxUsage: null,
-            isActive: true,
-            isPublic: false,
+            active: true,
+            public: false,
             activeFrom: null,
             expiresAt: null,
             applicableTierIds: tiers.map((t) => t.id),
@@ -424,20 +424,20 @@ export function DiscountCodeForm({
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
                                     <Switch
-                                        id="isActive"
-                                        checked={form.watch("isActive")}
-                                        onCheckedChange={(checked) => form.setValue("isActive", checked)}
+                                        id="active"
+                                        checked={form.watch("active")}
+                                        onCheckedChange={(checked) => form.setValue("active", checked)}
                                     />
-                                    <Label htmlFor="isActive">Active</Label>
+                                    <Label htmlFor="active">Active</Label>
                                 </div>
 
                                 <div className="flex items-center space-x-2">
                                     <Switch
-                                        id="isPublic"
-                                        checked={form.watch("isPublic")}
-                                        onCheckedChange={(checked) => form.setValue("isPublic", checked)}
+                                        id="public"
+                                        checked={form.watch("public")}
+                                        onCheckedChange={(checked) => form.setValue("public", checked)}
                                     />
-                                    <Label htmlFor="isPublic">Public (Visible to all users)</Label>
+                                    <Label htmlFor="public">Public (Visible to all users)</Label>
                                 </div>
                             </div>
                         </CardContent>

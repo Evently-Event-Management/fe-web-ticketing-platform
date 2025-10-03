@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Ticket } from 'lucide-react';
-import { SelectedSeat } from '@/app/(home-app)/events/[event_id]/[session_id]/_components/SessionBooking';
+import {SelectedSeat} from "@/types/event";
 
 interface TicketItemViewProps {
   seat: SelectedSeat;
