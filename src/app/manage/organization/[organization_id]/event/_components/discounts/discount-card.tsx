@@ -15,6 +15,7 @@ import {CreateEventFormData, DiscountParsed} from "@/lib/validators/event";
 import {FieldArrayWithId} from "react-hook-form";
 import {toast} from "sonner";
 import {format} from "date-fns";
+import {getDiscountValue} from "@/lib/discountUtils";
 
 // --- Component Props ---
 interface DiscountCardProps {
@@ -39,17 +40,6 @@ const getDiscountIcon = (type: DiscountType) => {
             return <Gift className="h-5 w-5"/>;
         default:
             return <Percent className="h-5 w-5"/>;
-    }
-}
-
-const getDiscountValue = (discount: DiscountParsed) => {
-    switch (discount.type) {
-        case DiscountType.PERCENTAGE:
-            return `${discount.parameters.percentage}% OFF`;
-        case DiscountType.FLAT_OFF:
-            return `${formatCurrency(discount.parameters.amount, 'LKR')} OFF`;
-        case DiscountType.BUY_N_GET_N_FREE:
-            return `Buy ${discount.parameters.buyQuantity}, Get ${discount.parameters.getQuantity} Free`;
     }
 }
 
@@ -93,21 +83,21 @@ export function DiscountCard({
             <CardHeader className="flex items-start justify-between py-0">
                 <div className="flex items-center gap-4 flex-1">
                     <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                        {getDiscountIcon(discount.type)}
+                        {getDiscountIcon(discount.parameters.type)}
                     </div>
                     <div className="flex-1 ">
                         <div className="flex items-center gap-3">
                             <h3 className="text-lg font-semibold">{discount.code}</h3>
-                            <Badge variant={discount.isActive ? "default" : "secondary"}>
-                                {discount.isActive ? "Active" : "Inactive"}
+                            <Badge variant={discount.active ? "default" : "secondary"}>
+                                {discount.active ? "Active" : "Inactive"}
                             </Badge>
-                            {discount.isPublic && (
+                            {discount.public && (
                                 <Badge variant="outline">
                                     <Eye className="h-3 w-3 mr-1"/>
                                     Public
                                 </Badge>
                             )}
-                            {!discount.isPublic && (
+                            {!discount.public && (
                                 <Badge variant="outline">
                                     <EyeOff className="h-3 w-3 mr-1"/>
                                     Private
@@ -116,7 +106,7 @@ export function DiscountCard({
                         </div>
 
                         <p className="text-sm font-medium text-primary">
-                            {getDiscountValue(discount as DiscountParsed)}
+                            {getDiscountValue(discount.parameters)}
                         </p>
                     </div>
                 </div>
@@ -124,7 +114,7 @@ export function DiscountCard({
                 <div className="flex items-center gap-2">
                     {!isReadOnly && onToggleStatus && (
                         <Switch
-                            checked={discount.isActive}
+                            checked={discount.active}
                             onCheckedChange={() => onToggleStatus(index)}
                         />
                     )}

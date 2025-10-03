@@ -26,6 +26,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     const { fields: discountFields, append, remove, update } = useFieldArray({
         control,
         name: "discounts",
+        keyName: "key"
     });
 
     useEffect(() => {
@@ -44,7 +45,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     // ✅ New handler for updating an existing discount
     const handleUpdateDiscount = (index: number, discount: DiscountParsed) => {
         update(index, discount);
-        setView('list'); // Return to the list after updating
+        setView('list');
         setEditingIndex(null);
     }
 
@@ -56,7 +57,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     // ✅ New handler for toggling the 'isActive' status
     const handleToggleStatus = (index: number) => {
         const discount = discountFields[index];
-        update(index, { ...discount, isActive: !discount.isActive });
+        update(index, { ...discount, active: !discount.active });
     }
 
     // ✅ New handler to switch to the edit view

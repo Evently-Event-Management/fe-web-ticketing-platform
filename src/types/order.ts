@@ -9,7 +9,7 @@ export interface CreateOrderRequest {
     event_id: string;
     session_id: string;
     seat_ids: string[];
-    discountCode?: string;
+    discount_id: string | null;
 }
 
 export interface CreateOrderResponse {

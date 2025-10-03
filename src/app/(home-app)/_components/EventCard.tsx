@@ -1,139 +1,216 @@
-'use client';
-
-import React from 'react';
-import {Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {AspectRatio} from "@/components/ui/aspect-ratio";
-import {Building, Calendar, MapPin, Heart, Share2, Tag} from 'lucide-react';
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { CalendarDays, MapPin, Tag, Share2, Bookmark, Clock, Users } from "lucide-react"
+import { cn, formatCurrency } from "@/lib/utils"
+import { DiscountType } from "@/types/enums/discountType";
+import { DiscountThumbnailDTO, EventThumbnailDTO } from "@/types/event";
 import Image from "next/image";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Link from "next/link";
+import { MouseEvent } from "react";
 
-// --- Mocking types for demonstration ---
-interface EventThumbnailDTO {
-    id: string;
-    title: string;
-    coverPhotoUrl: string;
-    organizationName: string;
-    categoryName: string;
-    earliestSession: {
-        startTime: string;
-        venueName: string;
-        city: string;
-    };
-    startingPrice: number | null;
+interface EventCardProps {
+    event: EventThumbnailDTO
+    className?: string
 }
 
-
-// --- Helper Functions ---
-/**
- * Formats an ISO 8601 date string into a more readable format.
- * @param {string} isoString - The date string to format.
- * @returns {{day: string, month: string, fullDate: string}}
- */
-const formatDate = (isoString: string) => {
-    try {
-        const date = new Date(isoString);
-        if (isNaN(date.getTime())) {
-            throw new Error("Invalid date");
-        }
-        const day = date.toLocaleDateString('en-US', {day: '2-digit'});
-        const month = date.toLocaleDateString('en-US', {month: 'short'}).toUpperCase();
-        const fullDate = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        }).replace(' at', ' -');
-        return {day, month, fullDate};
-    } catch (error) {
-        console.error("Error formatting date:", error);
-        return {day: '??', month: '???', fullDate: 'Date not available'};
+export function EventCard({ event, className }: EventCardProps) {
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString)
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        })
     }
-};
 
+    const formatTime = (dateString: string) => {
+        const date = new Date(dateString)
+        return date.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        })
+    }
 
-export function EventCard({event}: { event: EventThumbnailDTO }) {
-    const {
-        title,
-        coverPhotoUrl,
-        organizationName,
-        categoryName,
-        earliestSession,
-        startingPrice,
-    } = event;
+    const getBestDiscount = () => {
+        if (!event.discounts || event.discounts.length === 0) return null
 
-    const {day, month, fullDate} = formatDate(earliestSession?.startTime);
+        const now = new Date();
+        const activeDiscounts = event.discounts.filter((discount) => {
+            if (discount.expiresAt && new Date(discount.expiresAt) < now) return false;
+            return !(discount.maxUsage && discount.currentUsage && discount.currentUsage >= discount.maxUsage);
+
+        });
+
+        if (activeDiscounts.length === 0) return null
+
+        // Prioritize BOGO, then percentage, then flat off
+        const priority = {
+            [DiscountType.BUY_N_GET_N_FREE]: 0,
+            [DiscountType.PERCENTAGE]: 1,
+            [DiscountType.FLAT_OFF]: 2,
+        };
+
+        return activeDiscounts.sort((a, b) => {
+            const aPriority = priority[a.parameters.type] ?? 99;
+            const bPriority = priority[b.parameters.type] ?? 99;
+            return aPriority - bPriority;
+        })[0];
+    }
+
+    const getTimeRemaining = (expiryDate: string) => {
+        const now = new Date();
+        const end = new Date(expiryDate);
+        const diff = end.getTime() - now.getTime();
+
+        if (diff <= 0) return "Offer has expired";
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        if (days > 1) return `Ends in ${days} days`;
+        if (days === 1) return `Ends in 1 day`;
+
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        if (hours > 0) return `Ends in ${hours}h ${minutes}m`;
+
+        return `Ends in ${minutes}m`;
+    }
+
+    const renderDiscountBadgeText = (discount: DiscountThumbnailDTO) => {
+        switch (discount.parameters.type) {
+            case DiscountType.PERCENTAGE:
+                return `${discount.parameters.percentage}% OFF`
+            case DiscountType.FLAT_OFF:
+                // Assuming USD, replace with dynamic currency if needed
+                return `$${discount.parameters.amount} OFF`
+            case DiscountType.BUY_N_GET_N_FREE:
+                return `BOGO Offer`
+            default:
+                return "Special Offer"
+        }
+    }
+
+    const bestDiscount = getBestDiscount();
+
+    // Handler to stop propagation for nested interactive elements
+    const handleButtonClick = (e: MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+        // Add button-specific logic here (e.g., open share modal, call bookmark API)
+        console.log("Button clicked, navigation prevented.");
+    };
 
     return (
-        <Card
-            className="py-0 w-full max-w-sm rounded-xl overflow-hidden transform hover:scale-101 transition-transform duration-300 ease-in-out font-sans shadow-lg gap-3">
-            <CardHeader className="p-0 relative">
-                <AspectRatio ratio={16 / 9}>
-                    <Image
-                        fill
-                        src={coverPhotoUrl}
-                        alt={title}
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/6366f1/ffffff?text=Event+Image';
-                        }}
-                    />
-                </AspectRatio>
+        <Link href={`/events/${event.id}`} className="block">
+            <Card
+                className={cn(
+                    "group overflow-hidden transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl shadow-lg flex flex-col h-full pt-0 gap-2",
+                    className,
+                )}
+            >
+                <CardHeader className={'m-0 p-0'}>
+                    <AspectRatio ratio={16 / 9} className="relative overflow-hidden">
+                        <Image
+                            fill
+                            src={event.coverPhotoUrl || "/placeholder.svg"}
+                            alt={event.title}
+                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/6366f1/ffffff?text=Event+Image';
+                            }}
+                        />
+                        <div className="absolute top-3 right-3 flex gap-2">
+                            <Button
+                                size="icon"
+                                variant="secondary"
+                                className="bg-background/80 text-foreground backdrop-blur-sm hover:bg-background/95 p-2 h-9 w-9 rounded-full"
+                                onClick={handleButtonClick}
+                            >
+                                <Share2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                                size="icon"
+                                variant="secondary"
+                                className="bg-background/80 text-foreground backdrop-blur-sm hover:bg-background/95 p-2 h-9 w-9 rounded-full"
+                                onClick={handleButtonClick}
+                            >
+                                <Bookmark className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <div className="absolute top-3 left-3">
+                            <Badge variant="secondary" className="bg-background/80 text-foreground backdrop-blur-sm">
+                                {event.categoryName}
+                            </Badge>
+                        </div>
+                    </AspectRatio>
+                </CardHeader>
+                <CardContent className="flex flex-col flex-grow space-y-4">
+                    <div className="space-y-1.5 flex-grow">
+                        <p className="text-sm text-muted-foreground font-medium">{event.organizationName}</p>
+                        <h3 className="font-bold text-xl leading-tight text-balance group-hover:text-primary transition-colors">
+                            {event.title}
+                        </h3>
+                    </div>
 
-                {/* Date Badge */}
-                <div className="absolute top-4 left-4 bg-card rounded-lg p-2 text-center shadow-md">
-                    <p className="text-xl font-bold text-primary">{day}</p>
-                    <p className="text-xs font-semibold">{month}</p>
-                </div>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <CalendarDays className="w-4 h-4 flex-shrink-0" />
+                            <span className="font-medium text-foreground truncate">
+                                {formatDate(event.earliestSession.startTime)} at {formatTime(event.earliestSession.startTime)}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">
+                                {event.earliestSession.venueName}, {event.earliestSession.city}
+                            </span>
+                        </div>
+                    </div>
 
-                {/* Action Icons */}
-                <div className="absolute top-4 right-4 flex space-x-2">
-                    <Button variant="ghost" size="icon"
-                            className="bg-card/80 backdrop-blur-sm rounded-full h-10 w-10 hover:bg-white">
-                        <Heart className="h-5 w-5 text-red-500"/>
-                    </Button>
-                    <Button variant="ghost" size="icon"
-                            className="bg-card/80 backdrop-blur-sm rounded-full h-10 w-10 hover:bg-white">
-                        <Share2 className="h-5 w-5 text-blue-700 dark:text-blue-300"/>
-                    </Button>
-                </div>
+                    <div className="flex items-end justify-between pt-2 border-t mt-auto">
+                        <div>
+                            <p className="text-xs text-muted-foreground">Starts from</p>
+                            <p className="text-2xl font-extrabold text-foreground leading-none">
+                                {formatCurrency(event.startingPrice || 0, "LKR", "en-LK")}
+                            </p>
+                        </div>
 
-                {/* Starting Price Badge */}
-                <div className="absolute bottom-4 right-4 bg-card rounded-lg p-2 text-center shadow-md">
-                    <span className="text-sm font-bold">
-                        {startingPrice ? `LKR ${startingPrice.toFixed(2)}` : 'Free'}
-                    </span>
-                </div>
-            </CardHeader>
-            <CardContent className="px-4 py-0">
-                <h3 className="text-xl font-bold leading-tight text-gray-900 dark:text-white">{title}</h3>
-                <div className="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center">
-                        <Tag className="h-4 w-4 mr-2 flex-shrink-0"/>
-                        <span>{categoryName}</span>
+                        {bestDiscount && (
+                            <TooltipProvider delayDuration={200}>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold cursor-help dark:bg-emerald-600 dark:hover:bg-emerald-700">
+                                            <Tag className="w-3 h-3 mr-1.5" />
+                                            {renderDiscountBadgeText(bestDiscount)}
+                                        </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <div className="space-y-2 p-1 text-sm">
+                                            {bestDiscount.expiresAt && (
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="w-4 h-4" />
+                                                    <span>{getTimeRemaining(bestDiscount.expiresAt)}</span>
+                                                </div>
+                                            )}
+                                            {bestDiscount.maxUsage && (
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="w-4 h-4" />
+                                                    <span>
+                                                        {bestDiscount.maxUsage - (bestDiscount.currentUsage || 0)} left
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </div>
-                    <div className="flex items-start">
-                        <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0"/>
-                        <span>{earliestSession?.venueName}, {earliestSession?.city}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0"/>
-                        <span>{fullDate}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <Building className="h-4 w-4 mr-2 flex-shrink-0"/>
-                        <span>By {organizationName}</span>
-                    </div>
-                </div>
-            </CardContent>
-            <CardFooter className="p-4 gap-3 flex">
-                <Link href={`/events/${event.id}`} className="w-full">
-                    <Button className={'w-full'}>Buy Tickets</Button>
-                </Link>
-            </CardFooter>
-        </Card>
-    );
+                </CardContent>
+            </Card>
+        </Link>
+    )
 }

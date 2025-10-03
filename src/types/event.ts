@@ -1,6 +1,7 @@
 import {SessionType} from "@/types/enums/sessionType";
 import {SessionStatus} from "@/types/enums/sessionStatus";
 import {ReadModelSeatStatus} from "@/types/enums/readModelSeatStatus";
+import {DiscountParameters} from "@/lib/validators/event";
 
 export interface EventResponseDTO {
     id: string;
@@ -26,7 +27,33 @@ export interface EventThumbnailDTO {
         venueName: string;
         city: string; // Extracted for display
     };
-    startingPrice: number | null; // Use number for price, can be null if not available
+    startingPrice: number | null;
+    discounts: DiscountThumbnailDTO[] | null;
+}
+
+export interface DiscountThumbnailDTO {
+    parameters: DiscountParameters,
+    expiresAt: string | null;
+    maxUsage: number | null;
+    currentUsage: number | null;
+}
+
+export interface DiscountDTO {
+    id: string;
+    code: string;
+    parameters: DiscountParameters;
+    activeFrom: string | null;
+    expiresAt: string | null;
+    maxUsage: number | null;
+    currentUsage: number | null;
+    active: boolean;
+    public: boolean;
+    applicableTiers: {
+        id: string;
+        name: string;
+        price: number;
+        color: string;
+    }[] | null;
 }
 
 
@@ -52,6 +79,7 @@ export interface EventBasicInfoDTO {
         price: number;
         color: string;
     }[];
+    availableDiscounts: DiscountThumbnailDTO[];
 }
 
 
@@ -71,8 +99,8 @@ export interface SessionInfoBasicDTO {
             coordinates: [number, number]; // [longitude, latitude]
         } | null; // Optional, can be null
     };
+    discounts: DiscountThumbnailDTO[];
 }
-
 
 export interface SeatingBlockDTO {
     id: string;
@@ -111,3 +139,14 @@ export interface SessionSeatingMapDTO {
         blocks: SeatingBlockDTO[];
     };
 }
+
+
+export type SelectedSeat = SeatDTO & {
+    tier: {
+        id: string;
+        name: string;
+        price: number;
+        color: string;
+    };
+    blockName: string;
+};
