@@ -10,14 +10,15 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {SelectedSeat} from '@/app/(home-app)/events/[event_id]/[session_id]/_components/SessionBooking';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {CreditCard, Info, ShieldAlert, Ticket} from 'lucide-react';
+import {CreditCard, Info, ShieldAlert, Ticket, Tag} from 'lucide-react';
 import {createOrder} from '@/lib/actions/orderActions';
 import {useState} from 'react';
 import {Loader2} from 'lucide-react';
 import {toast} from "sonner";
 import TicketItemView from '@/components/ui/TicketItemView';
+import {DiscountDTO, SelectedSeat} from "@/types/event";
+import {applyDiscount} from "@/lib/discountUtils";
 
 interface OrderConfirmationDialogProps {
     isOpen: boolean;
@@ -26,40 +27,59 @@ interface OrderConfirmationDialogProps {
     eventId: string;
     sessionId: string;
     onSuccess: (orderId: string) => void;
+    appliedDiscount: DiscountDTO | null; // This can be null if no discount is applied
 }
 
 const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
-                                                                             isOpen,
-                                                                             onClose,
-                                                                             selectedSeats,
-                                                                             eventId,
-                                                                             sessionId,
-                                                                             onSuccess
-                                                                         }) => {
+    isOpen,
+    onClose,
+    selectedSeats,
+    eventId,
+    sessionId,
+    onSuccess,
+    appliedDiscount // Destructure the new prop
+}) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const totalAmount = selectedSeats.reduce((sum, seat) => sum + seat.tier.price, 0);
-    const formattedTotal = new Intl.NumberFormat('en-LK', {
-        style: 'currency',
-        currency: 'LKR',
-        minimumFractionDigits: 0
-    }).format(totalAmount);
+    // UPDATED: Use the shared utility to calculate all price components
+    const subtotal = selectedSeats.reduce((sum, seat) => sum + seat.tier.price, 0);
+    const {finalPrice, discountAmount} = applyDiscount(subtotal, appliedDiscount, selectedSeats);
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-LK', {
+            style: 'currency',
+            currency: 'LKR',
+        }).format(amount);
+    };
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-
+        const t = toast.loading("Creating your order...");
         try {
             const response = await createOrder({
                 event_id: eventId,
                 session_id: sessionId,
                 seat_ids: selectedSeats.map(seat => seat.id),
+                discount_id: appliedDiscount?.id ?? null,
             });
 
-            toast.success("Order created successfully!");
-            onSuccess(response.order_id);
-        } catch (error) {
+            if (response?.order_id) {
+                toast.success("Order created successfully!", { id: t });
+                onSuccess(response.order_id);
+            } else {
+                throw new Error("Order creation did not return an order ID.");
+            }
+
+        } catch (error: unknown) {
             console.error("Error creating order:", error);
-            toast.error("Failed to create order. Please try again.");
+
+            let errorMessage = "An unexpected error occurred. Please try again.";
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+
+            toast.error("Failed to create order", { description: errorMessage, id: t });
+
         } finally {
             setIsSubmitting(false);
         }
@@ -101,18 +121,28 @@ const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
                             Order Summary
                         </h3>
 
-                        <div className="space-y-2">
+                        {/* UPDATED: Price breakdown with discount */}
+                        <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span>Subtotal</span>
-                                <span>{formattedTotal}</span>
+                                <span>{formatCurrency(subtotal)}</span>
                             </div>
+                            {appliedDiscount && (
+                                <div className="flex justify-between text-green-600 dark:text-green-400">
+                                    <span className="flex items-center gap-1.5">
+                                        <Tag className="h-4 w-4"/>
+                                        Discount ({appliedDiscount.code})
+                                    </span>
+                                    <span>-{formatCurrency(discountAmount)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between">
                                 <span>Service Fee</span>
-                                <span>LKR 0</span>
+                                <span>{formatCurrency(0)}</span>
                             </div>
-                            <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                            <div className="border-t pt-2 mt-2 flex justify-between font-bold text-base">
                                 <span>Total</span>
-                                <span>{formattedTotal}</span>
+                                <span>{formatCurrency(finalPrice)}</span>
                             </div>
                         </div>
                     </div>

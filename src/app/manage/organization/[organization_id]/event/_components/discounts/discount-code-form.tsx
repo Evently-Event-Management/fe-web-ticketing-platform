@@ -1,7 +1,6 @@
 "use client"
 
 import {useEffect} from "react"
-import {formatCurrency} from "@/lib/utils"
 import {Controller, useForm} from "react-hook-form"
 import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -33,6 +32,25 @@ interface DiscountCodeFormProps {
     initialData?: DiscountParsed,
 }
 
+type PercentageParams = {
+    type: DiscountType.PERCENTAGE,
+    percentage: number,
+    minSpend?: number | null,
+    maxDiscount?: number | null
+};
+type FlatOffParams = {
+    type: DiscountType.FLAT_OFF,
+    amount: number,
+    currency: string,
+    minSpend?: number | null
+};
+type BogoParams = {
+    type: DiscountType.BUY_N_GET_N_FREE,
+    buyQuantity: number,
+    getQuantity: number
+};
+
+
 export function DiscountCodeForm({
                                      isQuickCreate = false,
                                      tiers,
@@ -46,11 +64,10 @@ export function DiscountCodeForm({
         defaultValues: {
             id: crypto.randomUUID(),
             code: "",
-            type: DiscountType.PERCENTAGE,
-            parameters: {percentage: 10},
+            parameters: {type: DiscountType.PERCENTAGE, percentage: 10, minSpend: null, maxDiscount: null},
             maxUsage: null,
-            isActive: true,
-            isPublic: false,
+            active: true,
+            public: false,
             activeFrom: null,
             expiresAt: null,
             applicableTierIds: tiers.map((t) => t.id),
@@ -66,7 +83,8 @@ export function DiscountCodeForm({
 
     const selectedTiers = form.watch("applicableTierIds");
     const selectedSessions = form.watch("applicableSessionIds");
-    const discountType = form.watch('type')
+    const discountType = form.watch('parameters.type')
+    const parameters = form.watch('parameters');
 
 
     const onSubmit = (data: z.input<typeof discountSchema>) => {
@@ -85,11 +103,10 @@ export function DiscountCodeForm({
         form.reset({
             id: crypto.randomUUID(),
             code: "",
-            type: DiscountType.PERCENTAGE,
-            parameters: {percentage: 10},
+            parameters: {percentage: 10, type: DiscountType.PERCENTAGE, minSpend: null, maxDiscount: null},
             maxUsage: null,
-            isActive: true,
-            isPublic: false,
+            active: true,
+            public: false,
             activeFrom: null,
             expiresAt: null,
             applicableTierIds: tiers.map((t) => t.id),
@@ -108,6 +125,10 @@ export function DiscountCodeForm({
             default:
                 return <Percent className="h-4 w-4"/>
         }
+    }
+
+    const handleOptionalNumberChange = (value: string) => {
+        return value === "" ? null : Number(value);
     }
 
     return (
@@ -141,17 +162,29 @@ export function DiscountCodeForm({
                                     <Select
                                         value={discountType}
                                         onValueChange={(value: DiscountType) => {
-                                            form.setValue("type", value)
-                                            // Reset parameters based on type
                                             switch (value) {
                                                 case DiscountType.PERCENTAGE:
-                                                    form.setValue("parameters", {percentage: 10})
+                                                    form.setValue("parameters", {
+                                                        percentage: 10,
+                                                        type: DiscountType.PERCENTAGE,
+                                                        minSpend: null,
+                                                        maxDiscount: null
+                                                    })
                                                     break
                                                 case DiscountType.FLAT_OFF:
-                                                    form.setValue("parameters", {amount: 1000, currency: "LKR"})
+                                                    form.setValue("parameters", {
+                                                        amount: 1000,
+                                                        currency: "LKR",
+                                                        type: DiscountType.FLAT_OFF,
+                                                        minSpend: null
+                                                    })
                                                     break
                                                 case DiscountType.BUY_N_GET_N_FREE:
-                                                    form.setValue("parameters", {buyQuantity: 2, getQuantity: 1})
+                                                    form.setValue("parameters", {
+                                                        buyQuantity: 2,
+                                                        getQuantity: 1,
+                                                        type: DiscountType.BUY_N_GET_N_FREE
+                                                    })
                                                     break
                                             }
                                         }}
@@ -185,46 +218,78 @@ export function DiscountCodeForm({
 
                             {/* Discount Parameters */}
                             <div className="space-y-4">
+                                {/* Discount Parameters */}
                                 {discountType === DiscountType.PERCENTAGE && (
-                                    <div className="space-y-2">
-                                        <Label htmlFor="percentage">Percentage (%)</Label>
-                                        <Input
-                                            id="percentage"
-                                            type="number"
-                                            min="1"
-                                            max="100"
-                                            placeholder="10"
-                                            onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value), {shouldValidate: true})}
-                                        />
-                                        {form.formState.errors.parameters && (
-                                            <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
-                                        )}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="percentage">Percentage (%) *</Label>
+                                            <Input
+                                                id="percentage" type="number" min="0.1" max="100" placeholder="10"
+                                                value={(parameters as PercentageParams)?.percentage || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    ...(parameters as PercentageParams),
+                                                    type: DiscountType.PERCENTAGE,
+                                                    percentage: Number(e.target.value) || 0
+                                                }, {shouldValidate: true})}/>
+                                        </div>
+                                        {/* ✅ ADDED: minSpend and maxDiscount inputs */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="minSpend">Minimum Spend (Optional)</Label>
+                                            <Input
+                                                id="minSpend" type="number" min="0" placeholder="e.g., 5000"
+                                                value={(parameters as PercentageParams)?.minSpend || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    ...(parameters as PercentageParams),
+                                                    type: DiscountType.PERCENTAGE,
+                                                    minSpend: handleOptionalNumberChange(e.target.value)
+                                                }, {shouldValidate: true})}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="maxDiscount">Max Discount (Optional)</Label>
+                                            <Input
+                                                id="maxDiscount" type="number" min="0" placeholder="e.g., 2000"
+                                                value={(parameters as PercentageParams)?.maxDiscount || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    ...(parameters as PercentageParams),
+                                                    type: DiscountType.PERCENTAGE,
+                                                    maxDiscount: handleOptionalNumberChange(e.target.value)
+                                                }, {shouldValidate: true})}
+                                            />
+                                        </div>
                                     </div>
                                 )}
 
                                 {discountType === DiscountType.FLAT_OFF && (
-                                    <div className="space-y-2">
-                                        <Label htmlFor="amount">Amount (LKR)</Label>
-                                        <Input
-                                            id="amount"
-                                            type="number"
-                                            min="0.01"
-                                            step="0.01"
-                                            placeholder="1000.00"
-                                            onChange={(e) => {
-                                                const current = form.getValues("parameters") as {
-                                                    amount?: number;
-                                                    currency?: string
-                                                }
-                                                form.setValue("parameters", {
-                                                    amount: Number(e.target.value),
-                                                    currency: "LKR"
-                                                }, {shouldValidate: true})
-                                            }}
-                                        />
-                                        {form.formState.errors.parameters && (
-                                            <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
-                                        )}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="amount">Amount (LKR) *</Label>
+                                            <Input
+                                                id="amount" type="number" min="0.01" step="0.01" placeholder="1000.00"
+                                                value={(parameters as FlatOffParams)?.amount || ''}
+                                                onChange={(e) => {
+                                                    form.setValue("parameters", {
+                                                        ...(parameters as FlatOffParams),
+                                                        amount: Number(e.target.value),
+                                                        currency: "LKR",
+                                                        type: DiscountType.FLAT_OFF
+                                                    }, {shouldValidate: true})
+                                                }}
+                                            />
+                                        </div>
+                                        {/* ✅ ADDED: minSpend input */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="minSpend">Minimum Spend (Optional)</Label>
+                                            <Input
+                                                id="minSpend" type="number" min="0" placeholder="e.g., 5000"
+                                                value={(parameters as FlatOffParams)?.minSpend || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    ...(parameters as FlatOffParams),
+                                                    type: DiscountType.FLAT_OFF,
+                                                    minSpend: handleOptionalNumberChange(e.target.value)
+                                                }, {shouldValidate: true})}
+                                            />
+                                        </div>
                                     </div>
                                 )}
 
@@ -237,8 +302,12 @@ export function DiscountCodeForm({
                                                 type="number"
                                                 min="1"
                                                 placeholder="2"
-                                                onChange={(e) => form.setValue("parameters.buyQuantity", Number(e.target.value), {shouldValidate: true})}
-                                            />
+                                                value={(parameters as BogoParams)?.buyQuantity || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    type: DiscountType.BUY_N_GET_N_FREE,
+                                                    buyQuantity: Number(e.target.value) || 0,
+                                                    getQuantity: (parameters as BogoParams)?.getQuantity || 1
+                                                }, {shouldValidate: true})}/>
                                             {form.formState.errors.parameters && (
                                                 <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                             )}
@@ -250,8 +319,12 @@ export function DiscountCodeForm({
                                                 type="number"
                                                 min="1"
                                                 placeholder="1"
-                                                onChange={(e) => form.setValue("parameters.getQuantity", Number(e.target.value), {shouldValidate: true})}
-                                            />
+                                                value={(parameters as BogoParams)?.getQuantity || ''}
+                                                onChange={(e) => form.setValue("parameters", {
+                                                    type: DiscountType.BUY_N_GET_N_FREE,
+                                                    buyQuantity: (parameters as BogoParams)?.buyQuantity || 1,
+                                                    getQuantity: Number(e.target.value) || 0
+                                                }, {shouldValidate: true})}/>
                                             {form.formState.errors.parameters && (
                                                 <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                             )}
@@ -275,7 +348,7 @@ export function DiscountCodeForm({
                                 <Controller
                                     name="maxUsage"
                                     control={form.control}
-                                    render={({ field }) => (
+                                    render={({field}) => (
                                         <div className="space-y-2">
                                             <Label htmlFor="maxUsage">Max Usage (Optional)</Label>
                                             <Input
@@ -302,7 +375,7 @@ export function DiscountCodeForm({
                                 <Controller
                                     name="activeFrom"
                                     control={form.control}
-                                    render={({ field }) => (
+                                    render={({field}) => (
                                         <div className="space-y-2">
                                             <Label htmlFor="activeFrom">Active From (Optional)</Label>
                                             <Input
@@ -326,7 +399,7 @@ export function DiscountCodeForm({
                                 <Controller
                                     name="expiresAt"
                                     control={form.control}
-                                    render={({ field }) => (
+                                    render={({field}) => (
                                         <div className="space-y-2">
                                             <Label htmlFor="expiresAt">Expires At (Optional)</Label>
                                             <Input
@@ -351,20 +424,20 @@ export function DiscountCodeForm({
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
                                     <Switch
-                                        id="isActive"
-                                        checked={form.watch("isActive")}
-                                        onCheckedChange={(checked) => form.setValue("isActive", checked)}
+                                        id="active"
+                                        checked={form.watch("active")}
+                                        onCheckedChange={(checked) => form.setValue("active", checked)}
                                     />
-                                    <Label htmlFor="isActive">Active</Label>
+                                    <Label htmlFor="active">Active</Label>
                                 </div>
 
                                 <div className="flex items-center space-x-2">
                                     <Switch
-                                        id="isPublic"
-                                        checked={form.watch("isPublic")}
-                                        onCheckedChange={(checked) => form.setValue("isPublic", checked)}
+                                        id="public"
+                                        checked={form.watch("public")}
+                                        onCheckedChange={(checked) => form.setValue("public", checked)}
                                     />
-                                    <Label htmlFor="isPublic">Public (Visible to all users)</Label>
+                                    <Label htmlFor="public">Public (Visible to all users)</Label>
                                 </div>
                             </div>
                         </CardContent>
@@ -403,7 +476,29 @@ export function DiscountCodeForm({
                     <div className="space-y-2">
                         <Label htmlFor="quick-type">Type</Label>
                         <Select value={discountType}
-                                onValueChange={(value: DiscountType) => form.setValue("type", value)}>
+                                onValueChange={(value: DiscountType) => {
+                                    switch (value) {
+                                        case DiscountType.PERCENTAGE:
+                                            form.setValue("parameters", {
+                                                percentage: 10,
+                                                type: DiscountType.PERCENTAGE
+                                            })
+                                            break
+                                        case DiscountType.FLAT_OFF:
+                                            form.setValue("parameters", {
+                                                amount: 1000,
+                                                currency: "LKR",
+                                                type: DiscountType.FLAT_OFF
+                                            })
+                                            break
+                                        default:
+                                            form.setValue("parameters", {
+                                                percentage: 10,
+                                                type: DiscountType.PERCENTAGE
+                                            })
+                                            break
+                                    }
+                                }}>
                             <SelectTrigger>
                                 <SelectValue/>
                             </SelectTrigger>
@@ -414,7 +509,8 @@ export function DiscountCodeForm({
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="quick-value">{discountType === DiscountType.PERCENTAGE ? 'Percentage (%)' : 'Amount (LKR)'}</Label>
+                        <Label
+                            htmlFor="quick-value">{discountType === DiscountType.PERCENTAGE ? 'Percentage (%)' : 'Amount (LKR)'}</Label>
                         {discountType === DiscountType.PERCENTAGE ? (
                             <>
                                 <Input
@@ -423,8 +519,11 @@ export function DiscountCodeForm({
                                     min="1"
                                     max="100"
                                     placeholder="20"
-                                    onChange={(e) => form.setValue("parameters.percentage", Number(e.target.value), {shouldValidate: true})}
-                                />
+                                    value={(parameters as PercentageParams)?.percentage || ''}
+                                    onChange={(e) => form.setValue("parameters", {
+                                        type: DiscountType.PERCENTAGE,
+                                        percentage: Number(e.target.value) || 0
+                                    }, {shouldValidate: true})}/>
                                 {form.formState.errors.parameters && (
                                     <p className="text-sm text-destructive">{form.formState.errors.parameters.message}</p>
                                 )}
@@ -437,14 +536,12 @@ export function DiscountCodeForm({
                                     min="0.01"
                                     step="0.01"
                                     placeholder="1000.00"
+                                    value={(parameters as FlatOffParams)?.amount || ''}
                                     onChange={(e) => {
-                                        const current = form.getValues("parameters") as {
-                                            amount?: number;
-                                            currency?: string
-                                        }
                                         form.setValue("parameters", {
                                             amount: Number(e.target.value),
-                                            currency: "LKR"
+                                            currency: "LKR",
+                                            type: DiscountType.FLAT_OFF
                                         }, {shouldValidate: true})
                                     }}
                                 />
