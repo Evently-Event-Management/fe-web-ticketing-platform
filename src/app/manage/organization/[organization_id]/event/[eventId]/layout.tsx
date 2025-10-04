@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   Settings,
 } from "lucide-react";
+import { EventProvider } from "@/providers/EventProvider";
 
 export default function EventDetailsLayout({
                                              children,
@@ -57,38 +58,40 @@ export default function EventDetailsLayout({
   ];
 
   return (
-      <div className="space-y-6 p-4">
-        <Tabs
-            value={getActiveTab()}
-            onValueChange={handleTabChange}
-            className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-4 rounded-lg shadow-sm">
-            {tabItems.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                  <TabsTrigger
-                      key={tab.value}
-                      value={tab.value}
-                      className="
-                  flex items-center justify-center gap-2
-                  data-[state=active]:bg-primary
-                  data-[state=active]:text-primary-foreground
-                  dark:data-[state=active]:bg-primary
-                  dark:data-[state=active]:text-primary-foreground
-                  hover:bg-primary/10 dark:hover:bg-primary/20
-                  transition-all duration-200
-                "
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{tab.name}</span>
-                  </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
+      <EventProvider eventId={eventId}>
+        <div className="space-y-6 p-4">
+          <Tabs
+              value={getActiveTab()}
+              onValueChange={handleTabChange}
+              className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-4 rounded-lg shadow-sm">
+              {tabItems.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                    <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        className="
+                    flex items-center justify-center gap-2
+                    data-[state=active]:bg-primary
+                    data-[state=active]:text-primary-foreground
+                    dark:data-[state=active]:bg-primary
+                    dark:data-[state=active]:text-primary-foreground
+                    hover:bg-primary/10 dark:hover:bg-primary/20
+                    transition-all duration-200
+                  "
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{tab.name}</span>
+                    </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
 
-        <div className="mt-4">{children}</div>
-      </div>
+          <div className="mt-4">{children}</div>
+        </div>
+      </EventProvider>
   );
 }
