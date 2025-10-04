@@ -39,6 +39,8 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
         };
     }
 
+    // Calculate the total price of applicable tiers only
+    const applicableTiersTotal = applicableSeats.reduce((total, seat) => total + seat.tier.price, 0);
 
     // --- Type-Specific Logic & Pre-Condition Checks ---
 
@@ -48,7 +50,7 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
 
     switch (discount.parameters.type) {
         case DiscountType.FLAT_OFF: {
-            // Check for minSpend inside the case block where the type is known.
+            // Check for minSpend against the full subtotal
             if (discount.parameters.minSpend && subtotal < discount.parameters.minSpend) {
                 return {
                     finalPrice: subtotal,
@@ -58,13 +60,14 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
                 };
             }
 
-            discountAmount = discount.parameters.amount || 0;
+            // Apply flat discount, but cap it at the applicable tiers total
+            discountAmount = Math.min(discount.parameters.amount || 0, applicableTiersTotal);
             description = `${discount.parameters.currency} ${discountAmount} OFF`;
             break;
         }
 
         case DiscountType.PERCENTAGE: {
-            // Check for minSpend inside the case block.
+            // Check for minSpend against the full subtotal
             if (discount.parameters.minSpend && subtotal < discount.parameters.minSpend) {
                 return {
                     finalPrice: subtotal,
@@ -74,7 +77,8 @@ export const applyDiscount = (subtotal: number, discount: DiscountDTO | null, se
                 };
             }
 
-            let calculatedDiscount = subtotal * ((discount.parameters.percentage || 0) / 100);
+            // Calculate discount based on applicable tiers total, not the full subtotal
+            let calculatedDiscount = applicableTiersTotal * ((discount.parameters.percentage || 0) / 100);
             if (discount.parameters.maxDiscount) {
                 calculatedDiscount = Math.min(calculatedDiscount, discount.parameters.maxDiscount);
             }

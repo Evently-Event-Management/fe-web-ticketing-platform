@@ -157,7 +157,10 @@ export const SelectionSummary = ({
                                     ? "bg-red-50 dark:bg-red-900/20" 
                                     : "bg-green-50 dark:bg-green-900/20"
                             }`}>
-                                <div className="flex items-center gap-2 font-semibold">
+                                <div 
+                                    className="flex items-center gap-2 font-semibold flex-grow cursor-pointer" 
+                                    onClick={() => setDiscountDialogOpen(true)}
+                                >
                                     <Tag className={`h-4 w-4 ${
                                         discountError 
                                             ? "text-red-700 dark:text-red-400" 
@@ -171,14 +174,25 @@ export const SelectionSummary = ({
                                     </span>
                                 </div>
                                 <div className="flex gap-1">
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveDiscount}>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveDiscount();
+                                        }}
+                                    >
                                         <XCircle className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
 
                             {discountError && (
-                                <div className="text-xs text-red-600 dark:text-red-400 flex items-start gap-1.5">
+                                <div 
+                                    className="text-xs text-red-600 dark:text-red-400 flex items-start gap-1.5 cursor-pointer" 
+                                    onClick={() => setDiscountDialogOpen(true)}
+                                >
                                     <span>{discountError}</span>
                                 </div>
                             )}
