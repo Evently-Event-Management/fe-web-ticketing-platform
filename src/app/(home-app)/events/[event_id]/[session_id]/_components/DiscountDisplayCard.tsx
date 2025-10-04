@@ -4,7 +4,7 @@ import React from "react"
 import {Card, CardContent, CardFooter} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
-import {Check, Clock, Percent, Gift, XCircle, DollarSign} from "lucide-react"
+import {Check, Clock, Percent, Gift, XCircle, DollarSign, Sparkles} from "lucide-react"
 import {formatCurrency} from "@/lib/utils"
 import {DiscountParameters} from "@/lib/validators/event"
 import {DiscountType} from "@/types/enums/discountType"
@@ -15,6 +15,7 @@ export interface DiscountDisplayCardProps {
     discount: DiscountDTO
     onApply: (discount: DiscountDTO) => void
     isApplied?: boolean
+    isManuallyLoaded?: boolean
 }
 
 // --- Helper Functions ---
@@ -31,22 +32,34 @@ const getDiscountIcon = (type: DiscountType) => {
 
 const accentColorClasses: Record<
     string,
-    { bg: string; text: string; button: string }
+    { bg: string; text: string; button: string; border: string; badgeBg: string; badgeText: string; pulseColor: string }
 > = {
     [DiscountType.PERCENTAGE]: {
         bg: "bg-orange-100 dark:bg-orange-900/20",
         text: "text-orange-600 dark:text-orange-400",
         button: "bg-orange-600 hover:bg-orange-700 focus:ring-orange-500",
+        border: "border-orange-300 dark:border-orange-700",
+        badgeBg: "bg-orange-100 dark:bg-orange-900/30",
+        badgeText: "text-orange-700 dark:text-orange-400",
+        pulseColor: "bg-orange-500/10",
     },
     [DiscountType.FLAT_OFF]: {
         bg: "bg-green-100 dark:bg-green-900/20",
         text: "text-green-600 dark:text-green-400",
         button: "bg-green-600 hover:bg-green-700 focus:ring-green-500",
+        border: "border-green-300 dark:border-green-700",
+        badgeBg: "bg-green-100 dark:bg-green-900/30",
+        badgeText: "text-green-700 dark:text-green-400",
+        pulseColor: "bg-green-500/10",
     },
     [DiscountType.BUY_N_GET_N_FREE]: {
         bg: "bg-blue-100 dark:bg-blue-900/20",
         text: "text-blue-600 dark:text-blue-400",
         button: "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+        border: "border-blue-300 dark:border-blue-700",
+        badgeBg: "bg-blue-100 dark:bg-blue-900/30",
+        badgeText: "text-blue-700 dark:text-blue-400",
+        pulseColor: "bg-blue-500/10",
     },
 }
 
@@ -100,6 +113,7 @@ export function DiscountDisplayCard({
                                         discount,
                                         onApply,
                                         isApplied = false,
+                                        isManuallyLoaded = false,
                                     }: DiscountDisplayCardProps) {
     const isExpired = discount.expiresAt
         ? new Date(discount.expiresAt) < new Date()
@@ -120,6 +134,16 @@ export function DiscountDisplayCard({
                     Applied
                 </Badge>
             )
+        if (isManuallyLoaded)
+            return (
+                <Badge
+                    variant="outline"
+                    className={`${colors.badgeBg} ${colors.badgeText} gap-1.5 ${colors.border}`}
+                >
+                    <Sparkles className="h-3 w-3"/>
+                    Exclusive
+                </Badge>
+            )
         if (isAvailable)
             return (
                 <Badge
@@ -138,16 +162,47 @@ export function DiscountDisplayCard({
         )
     }
 
+    const manuallyLoadedStyles = isManuallyLoaded ? {
+        borderColor: colors.border,
+        bgGradient: `bg-gradient-to-r from-${discount.parameters.type === 'PERCENTAGE' ? 'orange' : discount.parameters.type === 'FLAT_OFF' ? 'green' : 'blue'}-50 to-transparent dark:from-${discount.parameters.type === 'PERCENTAGE' ? 'orange' : discount.parameters.type === 'FLAT_OFF' ? 'green' : 'blue'}-900/10 dark:to-transparent`,
+    } : {};
+
+    // Use a simpler gradient approach to avoid Tailwind class generation issues
+    const getGradientClass = () => {
+        if (!isManuallyLoaded) return "";
+
+        switch(discount.parameters.type) {
+            case 'PERCENTAGE':
+                return "bg-gradient-to-r from-orange-50 to-transparent dark:from-orange-900/10 dark:to-transparent";
+            case 'FLAT_OFF':
+                return "bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/10 dark:to-transparent";
+            case 'BUY_N_GET_N_FREE':
+                return "bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-900/10 dark:to-transparent";
+            default:
+                return "";
+        }
+    };
+
     return (
         <Card
             className={`relative flex flex-row items-center justify-between p-4 gap-6 overflow-hidden border-2 ${
                 isApplied
                     ? "border-green-500"
-                    : isAvailable
-                        ? "border-transparent"
-                        : "border-muted/50 opacity-70"
-            }`}
+                    : isManuallyLoaded
+                        ? manuallyLoadedStyles.borderColor
+                        : isAvailable
+                            ? "border-transparent"
+                            : "border-muted/50 opacity-70"
+            } ${isManuallyLoaded ? getGradientClass() : ""}`}
         >
+            {isManuallyLoaded && (
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-0 right-0 h-16 w-16 -translate-y-8 translate-x-8">
+                        <div className={`h-full w-full ${colors.pulseColor} rounded-full animate-pulse`} style={{ animationDuration: '3s' }}></div>
+                    </div>
+                </div>
+            )}
+
             {/* Left Section: Icon */}
             <div
                 className={`flex h-12 w-12 items-center justify-center rounded-lg ${colors.bg} ${colors.text} flex-shrink-0`}
