@@ -1,14 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import {CreateEventFormData, DiscountParsed} from '@/lib/validators/event';
+import {CreateEventFormData, DiscountRequest} from '@/lib/validators/event';
 import {FieldArrayWithId} from "react-hook-form";
 import {DiscountList} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
 
 interface DiscountReviewProps {
     tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
     sessions?: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
-    discounts?: DiscountParsed[],
+    discounts?: DiscountRequest[],
 }
 
 export const DiscountReview: React.FC<DiscountReviewProps> = ({tiers, sessions, discounts}) => {
