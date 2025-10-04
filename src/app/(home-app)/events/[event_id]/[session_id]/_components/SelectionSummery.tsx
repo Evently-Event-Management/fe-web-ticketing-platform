@@ -13,6 +13,7 @@ import {applyDiscount} from "@/lib/discountUtils";
 import OrderConfirmationDialog from '@/components/ui/OrderConfirmationDialog';
 import {DiscountDialog} from "@/app/(home-app)/events/[event_id]/[session_id]/_components/DiscountDialog";
 import {getDiscountByCode} from "@/lib/actions/public/eventActions";
+import {Badge} from "@/components/ui/badge";
 
 export const SelectionSummary = ({
     selectedSeats, 
@@ -184,11 +185,11 @@ export const SelectionSummary = ({
                         </div>
                     ) : (
                         <Button variant="link" className="p-0 h-auto justify-start flex items-center gap-2" onClick={() => setDiscountDialogOpen(true)}>
-                            Have a discount code?
+                            Apply a discount code?
                             {publicDiscounts && publicDiscounts.length > 0 && (
-                                <span className="ml-2 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
+                                <Badge variant={'success'} >
                                     {publicDiscounts.length} available
-                                </span>
+                                </Badge>
                             )}
                         </Button>
                     )}
