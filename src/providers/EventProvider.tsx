@@ -2,10 +2,10 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { getMyEventById } from "@/lib/actions/eventActions";
-import { getMyOrganizationById } from "@/lib/actions/organizationActions";
 import { EventDetailDTO } from "@/lib/validators/event";
 import { OrganizationResponse } from "@/types/oraganizations";
 import { toast } from "sonner";
+import { useOrganization } from "@/providers/OrganizationProvider";
 
 interface EventContextProps {
   event: EventDetailDTO | null;
@@ -34,9 +34,9 @@ interface EventProviderProps {
 
 export const EventProvider = ({ children, eventId }: EventProviderProps) => {
   const [event, setEvent] = useState<EventDetailDTO | null>(null);
-  const [organization, setOrganization] = useState<OrganizationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { organizations, organization: currentOrganization, switchOrganization } = useOrganization();
 
   const fetchEventData = useCallback(async () => {
     if (!eventId) {
@@ -52,9 +52,11 @@ export const EventProvider = ({ children, eventId }: EventProviderProps) => {
       const eventData = await getMyEventById(eventId);
       setEvent(eventData);
 
-      if (eventData && eventData.organizationId) {
-        const orgData = await getMyOrganizationById(eventData.organizationId);
-        setOrganization(orgData);
+      // If the event belongs to a different organization than the current one,
+      // switch to the event's organization
+      if (eventData && eventData.organizationId &&
+          currentOrganization && eventData.organizationId !== currentOrganization.id) {
+        await switchOrganization(eventData.organizationId);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load event details";
@@ -64,16 +66,22 @@ export const EventProvider = ({ children, eventId }: EventProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, currentOrganization, switchOrganization]);
 
   // Initial fetch
   React.useEffect(() => {
     fetchEventData();
   }, [fetchEventData]);
 
+  // Find the correct organization for this event
+  const eventOrganization = React.useMemo(() => {
+    if (!event || !event.organizationId || !organizations) return null;
+    return organizations.find(org => org.id === event.organizationId) || null;
+  }, [event, organizations]);
+
   const value = {
     event,
-    organization,
+    organization: eventOrganization,
     isLoading,
     error,
     refetchEventData: fetchEventData
