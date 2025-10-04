@@ -13,7 +13,6 @@ interface DiscountStepProps {
 }
 
 export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
-    // ✅ State to manage the view and which discount is being edited
     const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -21,6 +20,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
 
     const tiers = watch("tiers");
     const sessions = watch("sessions");
+    const discounts = watch("discounts");
 
     // ✅ Destructure all necessary functions from useFieldArray
     const { fields: discountFields, append, remove, update } = useFieldArray({
@@ -106,7 +106,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
                 </Button>
             </div>
             <DiscountList
-                discounts={discountFields}
+                discounts={discounts?.map((d) => discountSchema.parse(d))}
                 tiers={tiers}
                 sessions={sessions}
                 onDelete={handleDeleteDiscount}

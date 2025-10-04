@@ -1,9 +1,9 @@
 import { apiFetch } from '@/lib/api';
-import { PaginatedResponse } from "@/types/paginatedResponse";
 import {DiscountRequest} from "@/lib/validators/event";
-import {DiscountDTO} from "@/types/event";
 
 const API_BASE_PATH = '/event-seating/v1/events';
+
+export type DiscountResponse = DiscountRequest & {}
 
 /**
  * Creates a new discount for an event.
@@ -12,8 +12,8 @@ const API_BASE_PATH = '/event-seating/v1/events';
  * @param discountData The discount data to create
  * @returns The created discount details
  */
-export const createDiscount = (eventId: string, discountData: DiscountRequest): Promise<DiscountDTO> => {
-  return apiFetch<DiscountDTO>(`${API_BASE_PATH}/${eventId}/discounts`, {
+export const createDiscount = (eventId: string, discountData: DiscountRequest): Promise<DiscountResponse> => {
+  return apiFetch<DiscountResponse>(`${API_BASE_PATH}/${eventId}/discounts`, {
     method: 'POST',
     body: JSON.stringify(discountData),
   });
@@ -33,14 +33,14 @@ export const getDiscounts = (
   includePrivate: boolean = false,
   page: number = 0,
   size: number = 10
-): Promise<PaginatedResponse<DiscountDTO>> => {
+): Promise<DiscountResponse[]> => {
   const params = new URLSearchParams({
     includePrivate: includePrivate.toString(),
     page: page.toString(),
     size: size.toString(),
   });
 
-  return apiFetch<PaginatedResponse<DiscountDTO>>(
+  return apiFetch<DiscountResponse[]>(
     `${API_BASE_PATH}/${eventId}/discounts?${params.toString()}`
   );
 };
@@ -52,8 +52,8 @@ export const getDiscounts = (
  * @param discountId ID of the discount to fetch
  * @returns The discount details
  */
-export const getDiscount = (eventId: string, discountId: string): Promise<DiscountDTO> => {
-  return apiFetch<DiscountDTO>(`${API_BASE_PATH}/${eventId}/discounts/${discountId}`);
+export const getDiscount = (eventId: string, discountId: string): Promise<DiscountResponse> => {
+  return apiFetch<DiscountResponse>(`${API_BASE_PATH}/${eventId}/discounts/${discountId}`);
 };
 
 /**
@@ -68,8 +68,8 @@ export const updateDiscount = (
   eventId: string,
   discountId: string,
   discountData: DiscountRequest
-): Promise<DiscountDTO> => {
-  return apiFetch<DiscountDTO>(`${API_BASE_PATH}/${eventId}/discounts/${discountId}`, {
+): Promise<DiscountResponse> => {
+  return apiFetch<DiscountResponse>(`${API_BASE_PATH}/${eventId}/discounts/${discountId}`, {
     method: 'PUT',
     body: JSON.stringify(discountData),
   });
