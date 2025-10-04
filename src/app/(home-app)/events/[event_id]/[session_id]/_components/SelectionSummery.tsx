@@ -167,7 +167,7 @@ export const SelectionSummary = ({
                                         ? "text-red-700 dark:text-red-400"
                                         : "text-green-700 dark:text-green-400"
                                     }>
-                                        Code &#34;{appliedDiscount.code}&#34; {discountError ? "Invalid" : "Applied"}
+                                        Code &#34;{appliedDiscount.code}&#34; {discountError ? "Not applied" : "Applied"}
                                     </span>
                                 </div>
                                 <div className="flex gap-1">
