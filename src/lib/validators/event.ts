@@ -329,7 +329,7 @@ export type Seat = z.infer<typeof seatSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Row = z.infer<typeof rowSchema>;
 export type DiscountFormData = z.input<typeof discountSchema>;
-export type DiscountParsed = z.infer<typeof discountSchema>;
+export type DiscountRequest = z.infer<typeof discountSchema>;
 export type DiscountParameters = z.infer<typeof discountParametersUnionSchema>;
 
 

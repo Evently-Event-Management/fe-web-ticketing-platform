@@ -2,7 +2,7 @@
 
 import { DiscountList } from "./discount-list";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import {CreateEventFormData, DiscountParsed, discountSchema} from "@/lib/validators/event";
+import {CreateEventFormData, DiscountRequest, discountSchema} from "@/lib/validators/event";
 import {useEffect, useState} from "react";
 import { FullDiscountFormView } from "./full-discount-form-view";
 import { Button } from "@/components/ui/button";
@@ -37,13 +37,13 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
 
     // --- Event Handlers ---
 
-    const handleAddDiscount = (discount: DiscountParsed) => {
+    const handleAddDiscount = (discount: DiscountRequest) => {
         append(discount);
         setView('list');
     }
 
     // ✅ New handler for updating an existing discount
-    const handleUpdateDiscount = (index: number, discount: DiscountParsed) => {
+    const handleUpdateDiscount = (index: number, discount: DiscountRequest) => {
         update(index, discount);
         setView('list');
         setEditingIndex(null);
