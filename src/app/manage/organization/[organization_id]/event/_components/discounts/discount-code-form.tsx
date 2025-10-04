@@ -14,8 +14,8 @@ import {CalendarIcon, Percent, DollarSign, Gift} from "lucide-react"
 import {
     DiscountRequest,
     discountSchema,
-    SessionParsed,
-    TierParsed
+    SessionRequest,
+    TierRequest
 } from "@/lib/validators/event"
 import {TierSelector} from "./tier-selector"
 import {SessionSelector} from "./session-selector"
@@ -24,8 +24,8 @@ import {toast} from "sonner";
 import {formatToDateTimeLocalString} from "@/lib/utils";
 
 interface DiscountCodeFormProps {
-    tiers: TierParsed[],
-    sessions: SessionParsed[],
+    tiers: TierRequest[],
+    sessions: SessionRequest[],
     onSave: (discount: DiscountRequest) => void,
     isQuickCreate?: boolean,
     isEditing?: boolean,

@@ -1,5 +1,5 @@
 import {apiFetch} from '@/lib/api';
-import {CreateEventParsed} from '@/lib/validators/event';
+import {CreateEventRequest} from '@/lib/validators/event';
 import {EventDetailDTO, EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 
 import {PaginatedResponse} from "@/types/paginatedResponse";
@@ -14,7 +14,7 @@ const API_BASE_PATH = '/event-seating/v1/events';
 /**
  * Creates a new event.
  */
-export const createEvent = (eventData: CreateEventParsed, coverImages: File[]): Promise<EventResponseDTO> => {
+export const createEvent = (eventData: CreateEventRequest, coverImages: File[]): Promise<EventResponseDTO> => {
     const formData = new FormData();
     formData.append('request', JSON.stringify(eventData));
     if (coverImages?.length > 0) {
