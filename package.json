@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev -p 8090",
     "build": "next build",
+    "clean-build": "rm -rf .next && next build",
     "start": "next start -p 8090",
     "lint": "next lint"
   },

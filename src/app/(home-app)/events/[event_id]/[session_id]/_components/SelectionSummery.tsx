@@ -183,8 +183,13 @@ export const SelectionSummary = ({
                             )}
                         </div>
                     ) : (
-                        <Button variant="link" className="p-0 h-auto justify-start" onClick={() => setDiscountDialogOpen(true)}>
+                        <Button variant="link" className="p-0 h-auto justify-start flex items-center gap-2" onClick={() => setDiscountDialogOpen(true)}>
                             Have a discount code?
+                            {publicDiscounts && publicDiscounts.length > 0 && (
+                                <span className="ml-2 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
+                                    {publicDiscounts.length} available
+                                </span>
+                            )}
                         </Button>
                     )}
 
