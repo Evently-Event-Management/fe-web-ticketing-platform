@@ -6,14 +6,13 @@ import {Input} from "@/components/ui/input"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Search, Filter} from "lucide-react"
 import {DiscountType} from "@/types/enums/discountType";
-import {CreateEventFormData} from "@/lib/validators/event";
-import {FieldArrayWithId} from "react-hook-form";
+import {DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/event";
 import {DiscountCard} from "./discount-card"; // ✅ Import the new component
 
 interface DiscountListProps {
-    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
-    sessions?: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
-    discounts?: FieldArrayWithId<CreateEventFormData, "discounts", "id">[],
+    tiers: TierRequest[],
+    sessions?: SessionRequest[],
+    discounts?: DiscountRequest[],
     onDelete?: (index: number) => void,
     onToggleStatus?: (index: number) => void,
     onEdit?: (index: number) => void,

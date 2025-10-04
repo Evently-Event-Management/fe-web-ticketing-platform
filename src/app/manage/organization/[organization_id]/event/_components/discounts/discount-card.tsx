@@ -10,18 +10,17 @@ import {
 } from "lucide-react"
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import {DiscountType} from "@/types/enums/discountType";
-import {CreateEventFormData} from "@/lib/validators/event";
-import {FieldArrayWithId} from "react-hook-form";
+import {DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/event";
 import {toast} from "sonner";
 import {format} from "date-fns";
 import {getDiscountValue} from "@/lib/discountUtils";
 
 // --- Component Props ---
 interface DiscountCardProps {
-    discount: FieldArrayWithId<CreateEventFormData, "discounts", "id">,
+    discount: DiscountRequest,
     index: number,
-    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
-    sessions?: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
+    tiers: TierRequest[],
+    sessions?: SessionRequest[],
     onDelete?: (index: number) => void,
     onToggleStatus?: (index: number) => void,
     onEdit?: (index: number) => void,

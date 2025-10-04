@@ -315,14 +315,14 @@ export const finalCreateEventSchema = step5Schema;
 // --- Type Inference ---
 
 export type CreateEventFormData = z.input<typeof finalCreateEventSchema>;
-export type CreateEventParsed = z.infer<typeof finalCreateEventSchema>;
+export type CreateEventRequest = z.infer<typeof finalCreateEventSchema>;
 export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
 export type SessionFormData = z.input<typeof sessionWithSeatingSchema>;
-export type SessionParsed = z.infer<typeof sessionWithSeatingSchema>;
+export type SessionRequest = z.infer<typeof sessionWithSeatingSchema>;
 export type TierFormData = z.input<typeof tierSchema>;
-export type TierParsed = z.infer<typeof tierSchema>;
+export type TierRequest = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
