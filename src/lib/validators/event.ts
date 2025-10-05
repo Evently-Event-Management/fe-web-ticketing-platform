@@ -119,20 +119,20 @@ const venueDetailsSchema = z.object({
 });
 
 const seatSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     label: z.string(),
     tierId: z.string().optional(),
     status: z.enum(['AVAILABLE', 'RESERVED']).optional(),
 });
 
 const rowSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     label: z.string(),
     seats: z.array(seatSchema),
 });
 
 export const blockSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     name: z.string().min(1, "Block name is required."),
     type: z.enum(['seated_grid', 'standing_capacity', 'non_sellable']),
     position: positionSchema,
