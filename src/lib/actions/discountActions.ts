@@ -24,20 +24,14 @@ export const createDiscount = (eventId: string, discountData: DiscountRequest): 
  * 
  * @param eventId ID of the event
  * @param includePrivate Whether to include private discounts (default: false)
- * @param page Page number (default: 0)
- * @param size Page size (default: 10)
  * @returns Paginated list of discounts
  */
 export const getDiscounts = (
   eventId: string,
   includePrivate: boolean = false,
-  page: number = 0,
-  size: number = 10
 ): Promise<DiscountResponse[]> => {
   const params = new URLSearchParams({
     includePrivate: includePrivate.toString(),
-    page: page.toString(),
-    size: size.toString(),
   });
 
   return apiFetch<DiscountResponse[]>(
