@@ -5,41 +5,38 @@ import {useEventContext} from "@/providers/EventProvider";
 import {Skeleton} from "@/components/ui/skeleton";
 import {AlertTriangle, Plus, RefreshCcw} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {DiscountResponse, getDiscounts} from "@/lib/actions/discountActions";
+import {DiscountResponse, getDiscounts, deleteDiscount} from "@/lib/actions/discountActions";
 import {toast} from "sonner";
-import {
-    DiscountCodeForm
-} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-code-form";
 import {DiscountList} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
-
-
-// Define possible interaction modes
-type InteractionMode = "view" | "create" | "edit";
+import {
+    DiscountFormDialog
+} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-form-dialog";
 
 export default function DiscountManagementPage() {
     const {event, isLoading: isEventLoading} = useEventContext();
     const [discounts, setDiscounts] = useState<DiscountResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [mode, setMode] = useState<InteractionMode>("view");
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [editingDiscountId, setEditingDiscountId] = useState<string | null>(null);
-    const [currentDiscount, setCurrentDiscount] = useState<DiscountResponse | null>(null);
-    const pageSize = 1000; // Large enough to fetch all
+
+    const [dialogState, setDialogState] = useState<{
+        mode: 'create' | 'edit' | null;
+        data?: DiscountResponse;
+    }>({mode: null});
+
+    const pageSize = 1000;
 
     const fetchDiscounts = async () => {
         if (!event?.id) return;
-
+        setIsLoading(true);
+        setError(null);
         try {
-            setIsLoading(true);
-            setError(null);
-
             const response = await getDiscounts(event.id, true, 0, pageSize);
             setDiscounts(response || []);
         } catch (err) {
-            setError("Failed to load discounts. Please try again.");
+            const message = "Failed to load discounts. Please try again.";
+            setError(message);
             console.error(err);
-            toast.error("Failed to load discounts.");
+            toast.error(message);
         } finally {
             setIsLoading(false);
         }
@@ -51,39 +48,32 @@ export default function DiscountManagementPage() {
         }
     }, [event?.id]);
 
-    const handleCreateDiscount = () => {
-        setCurrentDiscount(null);
-        setMode("create");
-        setIsCreateDialogOpen(true);
+    const handleOpenCreateDialog = () => {
+        setDialogState({mode: 'create'});
     };
 
-    const handleEditDiscount = (discountIndex: number) => {
-        const discountToEdit = discounts[discountIndex];
-        setMode("edit");
+    const handleOpenEditDialog = (discount: DiscountResponse) => {
+        setDialogState({mode: 'edit', data: discount});
     };
 
-    const handleCancelEdit = () => {
-        setMode("view");
-        setEditingDiscountId(null);
-        setCurrentDiscount(null);
-    };
-
-    const handleDiscountCreated = () => {
-        setIsCreateDialogOpen(false);
+    const handleOnSuccess = () => {
+        setDialogState({mode: null});
         fetchDiscounts();
-        toast.success("Discount created successfully.");
     };
 
-    const handleDiscountUpdated = () => {
-        setMode("view");
-        setEditingDiscountId(null);
-        fetchDiscounts();
-        toast.success("Discount updated successfully.");
-    };
+    const handleDeleteDiscount = async (discountId: string) => {
+        if (!event?.id) return;
+        if (!confirm("Are you sure you want to delete this discount? This action cannot be undone.")) return;
 
-    const handleDiscountDeleted = (discountIndex: number) => {
-        fetchDiscounts();
-        toast.success("Discount deleted successfully.");
+        const toastId = toast.loading("Deleting discount...");
+        try {
+            await deleteDiscount(event.id, discountId);
+            toast.success("Discount deleted successfully.", {id: toastId});
+            fetchDiscounts();
+        } catch (err) {
+            toast.error("Failed to delete discount.", {id: toastId});
+            console.error(err);
+        }
     };
 
     if (isEventLoading) {
@@ -126,31 +116,17 @@ export default function DiscountManagementPage() {
                             variant="outline"
                             size="sm"
                             onClick={fetchDiscounts}
-                            disabled={isLoading || mode === "edit"}
+                            disabled={isLoading}
                         >
                             <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}/>
                             Refresh
                         </Button>
-                        <Button
-                            onClick={handleCreateDiscount}
-                            disabled={mode === "edit"}
-                        >
+                        <Button onClick={handleOpenCreateDialog}>
                             <Plus className="h-4 w-4 mr-2"/>
                             New Discount
                         </Button>
                     </div>
                 </div>
-
-                {mode === "create" && (
-                    <div className="mb-6 p-4 border rounded-md bg-muted/30">
-                        <h2 className="text-xl font-medium mb-4">Create New Discount</h2>
-                        <DiscountCodeForm
-                            tiers={event.tiers || []}
-                            sessions={event.sessions || []}
-                            onSave={handleDiscountCreated}
-                        />
-                    </div>
-                )}
 
                 {error ? (
                     <div className="p-4 border border-destructive/50 rounded-md bg-destructive/10 text-destructive">
@@ -158,23 +134,39 @@ export default function DiscountManagementPage() {
                     </div>
                 ) : isLoading ? (
                     <Skeleton className="h-64 w-full"/>
-                ) : discounts.length === 0 && mode === "view" ? (
+                ) : discounts.length === 0 ? (
                     <div className="text-center p-8 border rounded-md">
                         <p className="mb-4">No discounts found</p>
-                        <Button onClick={handleCreateDiscount} variant="outline">
+                        <Button onClick={handleOpenCreateDialog} variant="outline">
                             Create your first discount
                         </Button>
                     </div>
                 ) : (
                     <DiscountList
                         discounts={discounts}
+                        onEdit={handleOpenEditDialog}
+                        onDelete={handleDeleteDiscount}
                         tiers={event.tiers || []}
                         sessions={event.sessions || []}
-                        onEdit={handleEditDiscount}
-                        onDelete={handleDiscountDeleted}
+                        eventId={event.id}
                     />
                 )}
             </div>
+
+            {dialogState.mode && (
+                <DiscountFormDialog
+                    open={dialogState.mode !== null}
+                    onOpenChange={(isOpen) => {
+                        if (!isOpen) setDialogState({mode: null});
+                    }}
+                    mode={dialogState.mode}
+                    initialData={dialogState.data}
+                    onSuccess={handleOnSuccess}
+                    eventId={event.id}
+                    tiers={event.tiers || []}
+                    sessions={event.sessions || []}
+                />
+            )}
         </div>
     );
 }
