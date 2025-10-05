@@ -114,7 +114,6 @@
 
         const handleDeleteDiscount = async (discountId: string) => {
             if (!event?.id) return;
-            if (!confirm("Are you sure you want to delete this discount? This action cannot be undone.")) return;
 
             // 1. Save original state and create the new state
             const originalDiscounts = [...discounts];
@@ -193,15 +192,14 @@
                         <div className="flex gap-2">
                             <Button
                                 variant="outline"
-                                size="sm"
                                 onClick={fetchDiscounts}
                                 disabled={isLoading}
                             >
-                                <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}/>
+                                <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
                                 Refresh
                             </Button>
                             <Button onClick={handleOpenCreateForm}>
-                                <Plus className="h-4 w-4 mr-2"/>
+                                <Plus className="h-4 w-4"/>
                                 New Discount
                             </Button>
                         </div>

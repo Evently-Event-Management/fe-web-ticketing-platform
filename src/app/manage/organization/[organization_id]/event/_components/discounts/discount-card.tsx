@@ -14,8 +14,15 @@ import {DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/eve
 import {toast} from "sonner";
 import {format} from "date-fns";
 import {getDiscountValue} from "@/lib/discountUtils";
-import { useState } from "react";
-import { DiscountShareDialog } from "./discount-share-dialog";
+import {useState} from "react";
+import {DiscountShareDialog} from "./discount-share-dialog";
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter,
+    AlertDialogHeader, AlertDialogTitle,
+    AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 
 // --- Component Props ---
 interface DiscountCardProps {
@@ -82,7 +89,8 @@ export function DiscountCard({
             <Card key={discount.id} className="hover:shadow-md transition-shadow gap-4">
                 <CardHeader className="flex items-start justify-between py-0">
                     <div className="flex items-center gap-4 flex-1">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+                        <div
+                            className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
                             {getDiscountIcon(discount.parameters.type)}
                         </div>
                         <div className="flex-1 ">
@@ -122,9 +130,9 @@ export function DiscountCard({
                                 onClick={() => copyToClipboard(discount.code)}>
                             <Copy className="h-4 w-4"/>
                         </Button>
-                        <Button 
-                            type={'button'} 
-                            variant="outline" 
+                        <Button
+                            type={'button'}
+                            variant="outline"
                             size="sm"
                             onClick={() => setIsShareDialogOpen(true)}
                         >
@@ -144,10 +152,36 @@ export function DiscountCard({
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="text-destructive"
-                                        onSelect={() => onDelete(discount.id)}
+                                        onSelect={(e) => {
+                                            // Prevent the dropdown from closing
+                                            e.preventDefault();
+                                        }}
                                     >
-                                        <Trash2 className="h-4 w-4 mr-2"/>
-                                        Delete
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <div className="flex items-center w-full cursor-pointer">
+                                                    <Trash2 className="h-4 w-4 mr-2"/>
+                                                    Delete
+                                                </div>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the discount code &#34;{discount.code}&#34;.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() => onDelete(discount.id)}
+                                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                                    >
+                                                        Yes, delete discount
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -192,7 +226,7 @@ export function DiscountCard({
                     </div>
                 </CardContent>
             </Card>
-            
+
             {/* Share Dialog */}
             <DiscountShareDialog
                 open={isShareDialogOpen}
