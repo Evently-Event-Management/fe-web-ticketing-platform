@@ -18,12 +18,11 @@ import {getDiscountValue} from "@/lib/discountUtils";
 // --- Component Props ---
 interface DiscountCardProps {
     discount: DiscountRequest,
-    index: number,
     tiers: TierRequest[],
     sessions?: SessionRequest[],
-    onDelete?: (index: number) => void,
-    onToggleStatus?: (index: number) => void,
-    onEdit?: (index: number) => void,
+    onDelete?: (id: string) => void,
+    onToggleStatus?: (id: string) => void,
+    onEdit?: (discount: DiscountRequest) => void,
     isReadOnly?: boolean,
 }
 
@@ -43,7 +42,6 @@ const getDiscountIcon = (type: DiscountType) => {
 
 export function DiscountCard({
                                  discount,
-                                 index,
                                  tiers,
                                  sessions,
                                  onDelete,
@@ -63,7 +61,7 @@ export function DiscountCard({
         navigator.clipboard.writeText(code).then(() => toast.success(`Code "${code}" copied!`));
     }
 
-    // ✅ FIX: Pre-format dates to prevent 'unknown' type errors in JSX
+    // Pre-format dates to prevent 'unknown' type errors in JSX
     const formatDate = (dateString?: string | null) => {
         if (!dateString) return null;
         return format(new Date(dateString), 'MMM d, p');
@@ -72,7 +70,7 @@ export function DiscountCard({
     const activeFromDate = formatDate(discount.activeFrom);
     const expiresAtDate = formatDate(discount.expiresAt);
 
-    // ✅ FIX: Use a safe fallback for arrays that might be undefined
+    // Use a safe fallback for arrays that might be undefined
     const applicableSessionIds = discount.applicableSessionIds || [];
     const sessionsCount = sessions?.length || 0;
 
@@ -113,7 +111,7 @@ export function DiscountCard({
                     {!isReadOnly && onToggleStatus && (
                         <Switch
                             checked={discount.active}
-                            onCheckedChange={() => onToggleStatus(index)}
+                            onCheckedChange={() => onToggleStatus(discount.id)}
                         />
                     )}
                     <Button type={'button'} variant="outline" size="sm"
@@ -128,13 +126,13 @@ export function DiscountCard({
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => onEdit(index)}>
+                                <DropdownMenuItem onSelect={() => onEdit(discount)}>
                                     <Edit className="h-4 w-4 mr-2"/>
                                     Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     className="text-destructive"
-                                    onSelect={() => onDelete(index)}
+                                    onSelect={() => onDelete(discount.id)}
                                 >
                                     <Trash2 className="h-4 w-4 mr-2"/>
                                     Delete

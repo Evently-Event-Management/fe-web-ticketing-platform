@@ -7,17 +7,17 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Search, Filter} from "lucide-react"
 import {DiscountType} from "@/types/enums/discountType";
 import {DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/event";
-import {DiscountCard} from "./discount-card"; // ✅ Import the new component
+import {DiscountCard} from "./discount-card";
 
 interface DiscountListProps {
     tiers: TierRequest[],
     sessions?: SessionRequest[],
     discounts?: DiscountRequest[],
-    onDelete?: (index: number) => void,
-    onToggleStatus?: (index: number) => void,
-    onEdit?: (index: number) => void,
+    onDelete?: (id: string) => void,
+    onToggleStatus?: (id: string) => void,
+    onEdit?: (discount: DiscountRequest) => void,
     filters?: boolean,
-    isReadOnly?: boolean, // ✅ New prop
+    isReadOnly?: boolean,
 }
 
 export function DiscountList({
@@ -28,7 +28,7 @@ export function DiscountList({
                                  onToggleStatus,
                                  onEdit,
                                  filters = true,
-                                    isReadOnly = false
+                                 isReadOnly = false
                              }: DiscountListProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterType, setFilterType] = useState<string>("all")
@@ -99,24 +99,18 @@ export function DiscountList({
             )}
 
             <div className="grid gap-4">
-                {/* ✅ The mapping logic is now much cleaner */}
-                {filteredCodes.map((discount) => {
-                    const originalIndex = (discounts || []).findIndex(d => d.id === discount.id);
-                    if (originalIndex === -1) return null; // Safety check
-                    return (
-                        <DiscountCard
-                            key={discount.id}
-                            discount={discount}
-                            index={originalIndex}
-                            tiers={tiers}
-                            sessions={sessions}
-                            onDelete={onDelete}
-                            onToggleStatus={onToggleStatus}
-                            onEdit={onEdit}
-                            isReadOnly={isReadOnly}
-                        />
-                    )
-                })}
+                {filteredCodes.map((discount) => (
+                    <DiscountCard
+                        key={discount.id}
+                        discount={discount}
+                        tiers={tiers}
+                        sessions={sessions}
+                        onDelete={onDelete}
+                        onToggleStatus={onToggleStatus}
+                        onEdit={onEdit}
+                        isReadOnly={isReadOnly}
+                    />
+                ))}
             </div>
 
             {filteredCodes.length === 0 && (
