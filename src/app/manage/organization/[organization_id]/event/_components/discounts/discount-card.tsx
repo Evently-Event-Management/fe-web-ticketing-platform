@@ -56,7 +56,7 @@ export function DiscountCard({
                                  onDelete,
                                  onToggleStatus,
                                  onEdit,
-                                 isReadOnly
+                                 isReadOnly = false
                              }: DiscountCardProps) {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
@@ -83,6 +83,10 @@ export function DiscountCard({
     // Use a safe fallback for arrays that might be undefined
     const applicableSessionIds = discount.applicableSessionIds || [];
     const sessionsCount = sessions?.length || 0;
+
+    const usagePercentage = discount.maxUsage && discount.maxUsage > 0
+        ? ((discount.currentUsage || 0) / discount.maxUsage) * 100
+        : 0;
 
     return (
         <>
@@ -168,7 +172,8 @@ export function DiscountCard({
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete the discount code &#34;{discount.code}&#34;.
+                                                        This action cannot be undone. This will permanently delete the
+                                                        discount code &#34;{discount.code}&#34;.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
@@ -191,27 +196,47 @@ export function DiscountCard({
                 <CardContent className="">
                     <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4 flex-1">
-                            <div className="flex-1 space-y-2">
-                                <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                                    {discount.maxUsage && (
-                                        <div className="flex items-center gap-1">
-                                            <Users className="h-4 w-4"/>
-                                            <span>{discount.maxUsage} use limit</span>
+                            <div className="flex-1 space-y-2 text-sm text-muted-foreground">
+                                {discount.maxUsage != null ? (
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Users className="h-4 w-4"/>
+                                        <span>Usage Limit:</span>
+                                        <div className="relative w-28 h-5 rounded-full bg-muted overflow-hidden">
+                                            <div
+                                                className="h-full bg-primary transition-all"
+                                                style={{ width: `${usagePercentage}%` }}
+                                            />
+                                            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white">
+                                                {discount.currentUsage || 0}/{discount.maxUsage}
+                                            </span>
                                         </div>
-                                    )}
-                                    {activeFromDate && (
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4"/>
-                                            <span>Activates {activeFromDate}</span>
-                                        </div>
-                                    )}
-                                    {expiresAtDate && (
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4"/>
-                                            <span>Expires {expiresAtDate}</span>
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Users className="h-4 w-4"/>
+                                        <span>Uses:</span>
+                                        <span className="font-medium">{discount.currentUsage || 0}</span>
+                                    </div>
+                                )}
+
+
+
+                                {activeFromDate && expiresAtDate && (
+                                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                                        {activeFromDate && (
+                                            <div className="flex items-center gap-1">
+                                                <Calendar className="h-4 w-4"/>
+                                                <span>Activates {activeFromDate}</span>
+                                            </div>
+                                        )}
+                                        {expiresAtDate && (
+                                            <div className="flex items-center gap-1">
+                                                <Calendar className="h-4 w-4"/>
+                                                <span>Expires {expiresAtDate}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div className="space-y-1">
                                     <p className="text-xs text-muted-foreground">
