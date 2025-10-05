@@ -1,11 +1,11 @@
     "use client";
 
-    import {useState, useEffect, useCallback} from "react";
+    import {useState} from "react";
     import {useEventContext} from "@/providers/EventProvider";
     import {Skeleton} from "@/components/ui/skeleton";
     import {AlertTriangle, Plus, RefreshCcw} from "lucide-react";
     import {Button} from "@/components/ui/button";
-    import {createDiscount, DiscountResponse, getDiscounts, deleteDiscount, updateDiscount} from "@/lib/actions/discountActions";
+    import {createDiscount, DiscountResponse, deleteDiscount, updateDiscount} from "@/lib/actions/discountActions";
     import {toast} from "sonner";
     import {DiscountList} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
     import {DiscountRequest} from "@/lib/validators/event";
@@ -14,40 +14,11 @@
     } from "@/app/manage/organization/[organization_id]/event/_components/discounts/full-discount-form-view";
 
     export default function DiscountManagementPage() {
-        const {event, isLoading: isEventLoading} = useEventContext();
-        const [discounts, setDiscounts] = useState<DiscountResponse[]>([]);
-        const [isLoading, setIsLoading] = useState(true);
-        const [error, setError] = useState<string | null>(null);
+        const {event, isLoading, refetchDiscounts, error, setDiscounts} = useEventContext();
 
         const [mode, setMode] = useState<'view' | 'create' | 'edit'>('view');
         const [editingDiscount, setEditingDiscount] = useState<DiscountResponse | null>(null);
 
-        const pageSize = 1000;
-
-        const fetchDiscounts = useCallback(async () => {
-            if (!event?.id) return;
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await getDiscounts(event.id, true, 0, pageSize);
-                setDiscounts(response || []);
-            } catch (err) {
-                const message = "Failed to load discounts. Please try again.";
-                setError(message);
-                console.error(err);
-                toast.error(message);
-            } finally {
-                setIsLoading(false);
-            }
-        }, [event?.id]);
-
-        useEffect(() => {
-            if (event?.id) {
-                fetchDiscounts();
-            }
-        }, [event?.id, fetchDiscounts]);
-
-        // --- Handlers ---
 
         const handleOpenCreateForm = () => {
             setEditingDiscount(null);
@@ -76,7 +47,7 @@
                 await action;
                 toast.success(`Discount ${mode === 'create' ? 'created' : 'updated'} successfully.`, {id: toastId});
                 setMode('view'); // Return to list view on success
-                fetchDiscounts();
+                await refetchDiscounts();
             } catch (error) {
                 console.error(`Failed to ${mode} discount`, error);
                 toast.error(`Failed to ${mode} discount.`, {id: toastId});
@@ -84,39 +55,37 @@
         };
 
         const handleToggleStatus = async (discountId: string) => {
-            if (!event?.id) return;
-
-            // 1. Save the original state in case we need to revert
-            const originalDiscounts = [...discounts];
-            const discountIndex = originalDiscounts.findIndex(d => d.id === discountId);
+            if (!event) return;
+            const originalDiscounts = [...(event.discounts || [])];
+            const discountIndex = originalDiscounts.findIndex((d) => d.id === discountId);
             if (discountIndex === -1) return;
 
             const discountToUpdate = originalDiscounts[discountIndex];
             const newStatus = !discountToUpdate.active;
 
-            // 2. Optimistically update the UI immediately
             const newDiscounts = [...originalDiscounts];
             newDiscounts[discountIndex] = { ...discountToUpdate, active: newStatus };
             setDiscounts(newDiscounts);
 
-            // 3. Send the request to the backend
             const toastId = toast.loading("Updating status...");
             try {
-                await updateDiscount(event.id, discountId, { ...discountToUpdate, active: newStatus });
+                await updateDiscount(event.id, discountId, {
+                    ...discountToUpdate,
+                    active: newStatus
+                });
                 toast.success("Status updated.", { id: toastId });
             } catch (err) {
-                // 4. On failure, revert the state and show an error
                 toast.error("Failed to update status.", { id: toastId });
-                setDiscounts(originalDiscounts); // Revert to the original state
+                setDiscounts(originalDiscounts);
                 console.error(err);
             }
-        }
+        };
 
         const handleDeleteDiscount = async (discountId: string) => {
-            if (!event?.id) return;
+            if (!event) return;
 
             // 1. Save original state and create the new state
-            const originalDiscounts = [...discounts];
+            const originalDiscounts = [...(event.discounts || [])];
             const newDiscounts = originalDiscounts.filter(d => d.id !== discountId);
 
             // 2. Optimistically update the UI
@@ -135,7 +104,7 @@
             }
         };
 
-        if (isEventLoading) {
+        if (isLoading) {
             return (
                 <div className="p-4 md:p-8 w-full">
                     <div className="max-w-5xl mx-auto">
@@ -192,7 +161,7 @@
                         <div className="flex gap-2">
                             <Button
                                 variant="outline"
-                                onClick={fetchDiscounts}
+                                onClick={refetchDiscounts}
                                 disabled={isLoading}
                             >
                                 <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
@@ -211,7 +180,7 @@
                         </div>
                     ) : isLoading ? (
                         <Skeleton className="h-64 w-full"/>
-                    ) : discounts.length === 0 ? (
+                    ) : event && (!event.discounts || event.discounts.length === 0) ? (
                         <div className="text-center p-8 border rounded-md">
                             <p className="mb-4">No discounts found</p>
                             <Button onClick={handleOpenCreateForm} variant="outline">
@@ -220,7 +189,7 @@
                         </div>
                     ) : (
                         <DiscountList
-                            discounts={discounts}
+                            discounts={event.discounts || []}
                             onEdit={handleOpenEditForm}
                             onDelete={handleDeleteDiscount}
                             tiers={event.tiers || []}
