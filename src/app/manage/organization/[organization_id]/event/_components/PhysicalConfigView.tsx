@@ -95,10 +95,10 @@ export function PhysicalConfigView({onSave, initialConfig}: {
 
                 newBlock.rows = Array.from({length: numRows}, (_, rowIndex) => {
                     const newRow: Row = {
-                        id: `temp_row_${block.id}_${rowIndex}`,
+                        id: crypto.randomUUID(),
                         label: `${getRowLabel(startRowIndex + rowIndex)}`,
                         seats: Array.from({length: numColumns}, (_, colIndex) => ({
-                            id: `temp_seat_${block.id}_${rowIndex}_${colIndex}`,
+                            id: crypto.randomUUID(),
                             label: `${startCol + colIndex}${getRowLabel(startRowIndex + rowIndex)}`,
                             status: 'AVAILABLE',
                         })),
@@ -108,7 +108,7 @@ export function PhysicalConfigView({onSave, initialConfig}: {
             } else if (block.type === 'standing_capacity' && block.capacity) {
                 const capacity = block.capacity;
                 newBlock.seats = Array.from({length: capacity}, (_, i) => ({
-                    id: `temp_seat_${block.id}_${i}`,
+                    id: crypto.randomUUID(),
                     label: `Slot ${i + 1}`,
                     status: 'AVAILABLE',
                 }));

@@ -25,7 +25,7 @@ export function OnlineConfigView({onSave}: {
 
         // Generate the seats programmatically
         const seats: Seat[] = Array.from({length: capacity}, (_, i) => ({
-            id: `temp_seat_${i}`,
+            id: crypto.randomUUID(),
             label: `Slot ${i + 1}`,
             tierId: selectedTierId,
             status: 'AVAILABLE',
@@ -35,7 +35,7 @@ export function OnlineConfigView({onSave}: {
             name: "Online Event Capacity",
             layout: {
                 blocks: [{
-                    id: `temp_block_${Date.now()}`,
+                    id: crypto.randomUUID(),
                     name: "Online Attendees",
                     type: 'standing_capacity',
                     position: {x: 0, y: 0},
