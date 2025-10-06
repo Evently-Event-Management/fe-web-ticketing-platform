@@ -2,20 +2,25 @@
 
 import React, {createContext, useContext, useState, useCallback, ReactNode, useEffect} from "react";
 import {getMyEventById} from "@/lib/actions/eventActions";
-import {EventDetailDTO} from "@/lib/validators/event";
+import {EventDetailDTO, SessionDetailDTO} from "@/lib/validators/event";
 import {OrganizationResponse} from "@/types/oraganizations";
 import {toast} from "sonner";
 import {useOrganization} from "@/providers/OrganizationProvider";
 import {DiscountResponse, getDiscounts} from "@/lib/actions/discountActions";
+import {getSession, getSessionsByEventId} from "@/lib/actions/sessionActions";
 
 interface EventContextProps {
     event: EventDetailDTO | null;
     organization: OrganizationResponse | null;
     isLoading: boolean;
     error: string | null;
+    loadingSessionId: string | null; // Track which session is currently loading
     refetchEventData: () => Promise<void>;
     refetchDiscounts: () => Promise<void>;
     setDiscounts: (discounts: DiscountResponse[]) => void;
+    refetchSessions: () => Promise<void>;
+    refetchSession: (sessionId: string) => Promise<void>;
+    setSessions: (sessions: SessionDetailDTO[]) => void;
 }
 
 const EventContext = createContext<EventContextProps | undefined>(undefined);
@@ -39,6 +44,7 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
     const [event, setEvent] = useState<EventDetailDTO | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
     const {organizations, organization: currentOrganization, switchOrganization} = useOrganization();
 
     const fetchEventData = useCallback(async () => {
@@ -99,6 +105,57 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
         setEvent(prev => prev ? {...prev, discounts} : prev);
     }
 
+    // Set sessions directly - useful for optimistic UI updates
+    const setSessions = (sessions: SessionDetailDTO[]) => {
+        setEvent(prev => prev ? {...prev, sessions} : prev);
+    }
+
+    // Fetch all sessions for the current event
+    const fetchSessions = useCallback(async () => {
+        if (!event?.id) return;
+        setIsLoading(true);
+        setError(null);
+        try {
+            const sessions = await getSessionsByEventId(event.id);
+            setEvent(prev => prev ? {...prev, sessions} : prev);
+        } catch (err) {
+            const message = "Failed to load sessions. Please try again.";
+            setError(message);
+            console.error(err);
+            toast.error(message);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [event?.id]);
+
+    // Fetch a specific session and update it in the array
+    const fetchSession = useCallback(async (sessionId: string) => {
+        if (!event?.id || !sessionId) return;
+        
+        setLoadingSessionId(sessionId); // Track which session is loading
+        
+        try {
+            const updatedSession = await getSession(sessionId);
+            
+            // Update the specific session in the array
+            setEvent(prev => {
+                if (!prev || !prev.sessions) return prev;
+                
+                const updatedSessions = prev.sessions.map(session => 
+                    session.id === sessionId ? updatedSession : session
+                );
+                
+                return {...prev, sessions: updatedSessions};
+            });
+        } catch (err) {
+            const message = `Failed to update session. Please try again.`;
+            console.error(err);
+            toast.error(message);
+        } finally {
+            setLoadingSessionId(null);
+        }
+    }, [event?.id]);
+
     useEffect(() => {
         if (event?.id) {
             fetchDiscounts();
@@ -116,9 +173,13 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
         organization: eventOrganization,
         isLoading,
         error,
+        loadingSessionId,
         refetchEventData: fetchEventData,
         refetchDiscounts: fetchDiscounts,
-        setDiscounts
+        setDiscounts,
+        refetchSessions: fetchSessions,
+        refetchSession: fetchSession,
+        setSessions
     };
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

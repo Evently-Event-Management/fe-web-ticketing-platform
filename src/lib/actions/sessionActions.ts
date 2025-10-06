@@ -74,6 +74,16 @@ export const getSession = (sessionId: string): Promise<SessionDetailDTO> => {
 };
 
 /**
+ * Fetches all sessions for a specific event.
+ * 
+ * @param eventId ID of the event to fetch sessions for
+ * @returns List of session details
+ */
+export const getSessionsByEventId = (eventId: string): Promise<SessionDetailDTO[]> => {
+  return apiFetch<SessionDetailDTO[]>(`${API_BASE_PATH}/sessions?eventId=${eventId}`);
+};
+
+/**
  * Updates a session's time details (start time, end time, sales start time).
  * Only allowed for SCHEDULED and ON_SALE sessions.
  * 
