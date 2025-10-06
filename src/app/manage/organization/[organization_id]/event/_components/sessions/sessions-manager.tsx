@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { 
   Calendar, Clock, LinkIcon, MapPin, Share2, MoreHorizontal, 
-  Edit, Trash2, Users, Layers, AlertTriangle, RefreshCcw, Plus 
+  Edit, Trash2, AlertTriangle, RefreshCcw, Plus 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEventContext } from '@/providers/EventProvider';
@@ -71,6 +71,9 @@ interface SessionCardProps {
 
 export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const { refetchSession, loadingSessionId } = useEventContext();
+  
+  const isRefreshing = loadingSessionId === session.id;
   
   const handleEdit = () => {
     // Placeholder for edit functionality
@@ -80,6 +83,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
   const handleDelete = () => {
     // Placeholder for delete functionality
     toast.info(`Delete session ${session.id} (Dummy function)`);
+  };
+  
+  const handleRefreshSession = () => {
+    refetchSession(session.id);
   };
   
   const startDate = parseISO(session.startTime);
@@ -111,49 +118,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
       byTier: []
     };
     
-    const blocks = session.layoutData.layout.blocks;
     const byTier: {tier: string; count: number; color?: string}[] = [];
-    
-    // Count sellable seats/capacity
-    let standingCount = 0;
-    let seatedCount = 0;
-    let nonSellableCount = 0;
     
     // Create map of tier counts
     const tierCounts = new Map<string, number>();
-    
-    blocks.forEach(block => {
-      if (block.type === 'standing_capacity' && block.capacity) {
-        standingCount += block.capacity;
-        
-        // We don't have tierId on blocks directly, but we can potentially count all standing capacity
-        // toward specific tiers if needed in the future
-      } else if (block.type === 'seated_grid') {
-        // Count seats in rows and group by tier
-        if (block.rows?.length) {
-          block.rows.forEach(row => {
-            row.seats.forEach(seat => {
-              seatedCount++;
-              if (seat.tierId) {
-                tierCounts.set(seat.tierId, (tierCounts.get(seat.tierId) || 0) + 1);
-              }
-            });
-          });
-        }
-        
-        // Count direct seats and group by tier
-        if (block.seats?.length) {
-          block.seats.forEach(seat => {
-            seatedCount++;
-            if (seat.tierId) {
-              tierCounts.set(seat.tierId, (tierCounts.get(seat.tierId) || 0) + 1);
-            }
-          });
-        }
-      } else if (block.type === 'non_sellable') {
-        nonSellableCount++;
-      }
-    });
     
     // Convert tier counts to summary array with tier names and colors
     if (event?.tiers && tierCounts.size > 0) {
@@ -210,6 +178,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
           </div>
 
           <div className="flex items-center gap-2 mt-2 sm:mt-0">
+            <Button
+              type={'button'}
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshSession}
+              disabled={isRefreshing}
+            >
+              <RefreshCcw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
             <Button
               type={'button'}
               variant="outline"
@@ -327,7 +304,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
 };
 
 export const SessionsManager: React.FC = () => {
-  const { event, isLoading, error } = useEventContext();
+  const { event, isLoading, error, refetchSessions, loadingSessionId } = useEventContext();
   
   const handleCreateSession = () => {
     // Placeholder for create session functionality
@@ -335,8 +312,8 @@ export const SessionsManager: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    // This would ideally call a refetch function similar to refetchDiscounts
-    toast.info("Refreshing sessions data (Dummy function)");
+    // Use the new refetchSessions function from the context
+    refetchSessions();
   };
 
   if (isLoading) {
@@ -376,9 +353,10 @@ export const SessionsManager: React.FC = () => {
             variant="outline"
             onClick={handleRefresh}
             disabled={isLoading}
+            className="flex items-center gap-2"
           >
             <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
-            Refresh
+            <span>Refresh {isLoading ? 'ing...' : ''}</span>
           </Button>
           <Button onClick={handleCreateSession}>
             <Plus className="h-4 w-4 mr-2"/>
