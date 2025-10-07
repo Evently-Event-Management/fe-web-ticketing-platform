@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import {useDraggable} from '@dnd-kit/core';
-import {Block, Tier} from '@/lib/validators/event';
+import {Block, TierFormData} from '@/lib/validators/event';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 
 // --- Interactive Draggable Block for Seated Grids ---
 interface DraggableBlockProps {
     block: Block;
-    tiers: Tier[];
+    tiers: TierFormData[];
     onSeatClick: (blockId: string, rowId: string, seatId: string) => void;
     onApplyToAllSeats?: (blockId: string) => void;  // New prop for handling apply to all
 }
@@ -89,7 +89,7 @@ export function InteractiveDraggableBlock({block, tiers, onSeatClick, onApplyToA
 // --- Interactive Resizable Block for Standing Capacity ---
 interface ResizableBlockProps {
     block: Block;
-    tiers: Tier[];
+    tiers: TierFormData[];
     onClick: (blockId: string) => void;
 }
 

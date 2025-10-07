@@ -21,7 +21,8 @@ const trendingEvents: EventThumbnailDTO[] = [
             venueName: 'Galle Face Green',
             city: 'Colombo'
         },
-        startingPrice: 25.00
+        startingPrice: 25.00,
+        discounts: null
     },
     {
         id: '2',
@@ -34,7 +35,8 @@ const trendingEvents: EventThumbnailDTO[] = [
             venueName: 'Temple of the Tooth',
             city: 'Kandy'
         },
-        startingPrice: 15.00
+        startingPrice: 15.00,
+        discounts: null
     },
     {
         id: '3',
@@ -47,7 +49,8 @@ const trendingEvents: EventThumbnailDTO[] = [
             venueName: 'Galle Fort',
             city: 'Galle'
         },
-        startingPrice: null
+        startingPrice: null,
+        discounts: null
     },
     {
         id: '4',
@@ -60,7 +63,8 @@ const trendingEvents: EventThumbnailDTO[] = [
             venueName: 'BMICH',
             city: 'Colombo'
         },
-        startingPrice: 50.00
+        startingPrice: 50.00,
+        discounts: null
     },
 ];
 
@@ -198,7 +202,7 @@ export default function HomePage() {
                         </Link>
                     ) : (
                         <button
-                            onClick={() => keycloak.register()}
+                            onClick={() => keycloak?.register()}
                             className="inline-flex items-center px-8 py-4 bg-background text-foreground rounded-full hover:bg-muted transition-colors duration-200 text-lg font-medium">
                             Get Started
                             <ArrowRight className="ml-2 w-5 h-5" />

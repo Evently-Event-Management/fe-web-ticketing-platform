@@ -10,8 +10,7 @@ const NeedLoginNotice: React.FC = () => {
     const {keycloak} = useAuth();
 
     const handleLogin = () => {
-        // You can customize this to direct to your login page
-        keycloak.login({
+        keycloak?.login({
             redirectUri: window.location.href
         }).then(r => console.log(r)).catch(e => console.error(e));
     };

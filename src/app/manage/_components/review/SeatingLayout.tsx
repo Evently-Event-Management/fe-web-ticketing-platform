@@ -1,14 +1,14 @@
 import * as React from "react";
-import {SessionType} from "@/lib/validators/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {SessionFormData, Tier} from "@/lib/validators/event";
+import {SessionParsed, TierFormData} from "@/lib/validators/event";
 import {getTierColor, getTierName} from "@/lib/utils";
+import {SessionType} from "@/types/enums/sessionType";
 
 interface SeatingLayoutProps {
-    session: SessionFormData;
-    tiers: Tier[];
+    session: SessionParsed;
+    tiers: TierFormData[];
 }
 
 export const SeatingLayout: React.FC<SeatingLayoutProps> = ({session, tiers}) => {

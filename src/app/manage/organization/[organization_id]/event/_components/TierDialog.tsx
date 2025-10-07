@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import {z} from 'zod';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
@@ -9,44 +8,46 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/components/ui/form';
+import {TierFormData, tierSchema} from "@/lib/validators/event";
+import {useEffect, useMemo} from "react";
 
-const tierSchema = z.object({
-    name: z.string().min(1, {message: "Tier name is required"}),
-    price: z.number().min(0, {message: "Price must be a positive number"}),
-    color: z.string().min(1, {message: "Color is required"})
-});
-
-type TierFormValues = z.infer<typeof tierSchema>;
 
 interface TierDialogProps {
     open: boolean;
     setOpen: (open: boolean) => void;
-    onSave: (tier: { name: string, price: number, color: string }) => void;
-    initialValues?: { name: string, price: number, color: string };
+    onSave: (tier: TierFormData) => void;
+    initialValues?: { name: string, price: number, color: string, id: string };
     mode: 'create' | 'edit';
 }
 
 export function TierDialog({open, setOpen, onSave, initialValues, mode}: TierDialogProps) {
-    // Default values when creating a new tier
-    const defaultValues: TierFormValues = {
+    const defaultValues: TierFormData = useMemo(() => ({
+        id: crypto.randomUUID(),
         name: '',
         price: 0,
-        color: '#8B5CF6' // Default purple color
-    };
+        color: '#8B5CF6'
+    }), []);
 
-    const form = useForm<TierFormValues>({
+
+    const form = useForm<TierFormData>({
         resolver: zodResolver(tierSchema),
-        defaultValues: initialValues || defaultValues
+        defaultValues
     });
 
-    const handleSubmit = (values: TierFormValues) => {
-        onSave({
-            name: values.name,
-            price: values.price,
-            color: values.color
-        });
+
+    useEffect(() => {
+        if (open) {
+            console.log('Initial values:', initialValues);
+            console.log('Default values:', defaultValues);
+            console.log('Resetting form with values:', initialValues || defaultValues);
+            form.reset(initialValues || defaultValues);
+        }
+    },  [open, initialValues, defaultValues, form]);
+
+    const handleSubmit = (tier: TierFormData) => {
+        onSave(tier);
         setOpen(false);
-        form.reset();
+        form.reset(defaultValues);
     };
 
     return (

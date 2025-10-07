@@ -17,13 +17,13 @@ import * as React from "react";
 
 export default function Topbar() {
     const {isAuthenticated, keycloak, isAdmin} = useAuth()
-    const username = keycloak.tokenParsed?.name || 'User'
+    const username = keycloak?.tokenParsed?.name || 'User'
     const userIsAdmin = isAdmin()
 
     return (
         <header
             className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2">
-            <div className="container flex h-12 items-center">
+            <div className="flex h-12 items-center justify-between w-full">
                 <div className="mr-4 flex">
                     <Link className="mr-6 flex items-center space-x-2" href="/">
                         <div className="flex items-center gap-2 p-3 text-primary">
@@ -91,10 +91,10 @@ export default function Topbar() {
                                             <DropdownMenuSeparator/>
                                         </>
                                     )}
-                                    <DropdownMenuItem onClick={() => keycloak.logout()}>
+                                    <DropdownMenuItem onClick={() => keycloak?.logout()}>
                                         Logout
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => keycloak.accountManagement()}>
+                                    <DropdownMenuItem onClick={() => keycloak?.accountManagement()}>
                                         Manage Account
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -102,11 +102,12 @@ export default function Topbar() {
                         </>
                     ) : (
                         <>
+                            {/* FIX: Use optional chaining on keycloak methods */}
                             <Button variant="outline" className="hidden lg:inline-flex"
-                                    onClick={() => keycloak.login()}>
+                                    onClick={() => keycloak?.login()}>
                                 Login
                             </Button>
-                            <Button onClick={() => keycloak.register()}>
+                            <Button onClick={() => keycloak?.register()}>
                                 Sign Up
                             </Button>
                         </>

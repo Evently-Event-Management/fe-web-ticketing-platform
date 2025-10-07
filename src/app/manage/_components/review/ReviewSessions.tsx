@@ -3,9 +3,9 @@ import {format, parseISO} from 'date-fns';
 import {Calendar, Clock, LinkIcon, MapPin, Tag} from 'lucide-react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from "@/components/ui/accordion";
 import {Badge} from '@/components/ui/badge';
-import {SessionFormData, Tier} from '@/lib/validators/event';
-import {SessionType} from "@/lib/validators/enums";
+import {SessionParsed, TierFormData} from '@/lib/validators/event';
 import dynamic from "next/dynamic";
+import {SessionType} from "@/types/enums/sessionType";
 
 const SeatingInformation = dynamic(
     () => import("./SeatingInformation").then(mod => mod.SeatingInformation),
@@ -13,8 +13,8 @@ const SeatingInformation = dynamic(
 );
 
 interface ReviewSessionsProps {
-    sessions: SessionFormData[];
-    tiers: Tier[];
+    sessions: SessionParsed[];
+    tiers: TierFormData[];
 }
 
 export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions, tiers}) => {
@@ -38,8 +38,8 @@ export const ReviewSessions: React.FC<ReviewSessionsProps> = ({sessions, tiers})
 };
 
 interface SessionAccordionItemProps {
-    session: SessionFormData;
-    tiers: Tier[];
+    session: SessionParsed;
+    tiers: TierFormData[];
     index: number;
 }
 
@@ -52,7 +52,7 @@ const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({session, ind
     return (
         <AccordionItem
             value={`item-${index}`}
-            className="border rounded-lg mb-4 overflow-hidden"
+            className="mb-4 overflow-hidden bg-card border rounded-lg"
         >
             <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40">
                 <div className="flex items-center justify-between w-full">
@@ -94,7 +94,7 @@ const SessionAccordionItem: React.FC<SessionAccordionItemProps> = ({session, ind
 };
 
 interface SessionDetailsProps {
-    session: SessionFormData;
+    session: SessionParsed;
 }
 
 const SessionDetails: React.FC<SessionDetailsProps> = ({session}) => {

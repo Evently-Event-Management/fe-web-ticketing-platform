@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionFormData, Tier} from "@/lib/validators/event";
+import { SessionParsed, TierFormData} from "@/lib/validators/event";
 import * as React from "react";
 import {MapContainer, TileLayer, Marker, Popup} from "react-leaflet";
 import {Armchair, Users} from "lucide-react";
@@ -11,8 +11,8 @@ import L, {LatLngTuple} from "leaflet";
 
 interface SeatingInformationProps {
     isOnline: boolean;
-    session: SessionFormData;
-    tiers: Tier[];
+    session: SessionParsed;
+    tiers: TierFormData[];
 }
 
 // Fix default marker icons (Leaflet requires this in React/Next.js setups)

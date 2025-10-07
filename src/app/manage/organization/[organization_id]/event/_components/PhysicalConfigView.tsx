@@ -241,8 +241,6 @@ export function PhysicalConfigView({onSave, initialConfig}: {
             toast.error("Please assign all seats to a tier or mark them as reserved. Standing areas must also have tier assignments.");
             return;
         }
-
-        // All elements are properly assigned, proceed with save
         onSave(currentAssignedLayout);
     };
 
@@ -258,25 +256,16 @@ export function PhysicalConfigView({onSave, initialConfig}: {
             if (selectedTemplateId) {
                 const data = await updateSeatingLayoutTemplate(selectedTemplateId, request);
                 toast.success(`Layout "${data.name}" updated successfully!`);
-
-                // Only set layout data and change mode on success
                 setSelectedLayout(data.layoutData);
                 setMode("assign");
-
-                // Refresh the templates list to show the updated template
                 await loadTemplates();
             } else {
-                // Creating a new template from scratch
                 console.log("Creating new seating layout template", request);
                 const data = await createSeatingLayoutTemplate(request);
                 toast.success(`Layout "${data.name}" saved successfully!`);
-
-                // Only set layout data and change mode on success
                 setSelectedLayout(data.layoutData);
                 setSelectedTemplateId(data.id);
                 setMode("assign");
-
-                // Refresh the templates list to include the new template
                 await loadTemplates();
             }
         } catch (err) {
@@ -321,10 +310,13 @@ export function PhysicalConfigView({onSave, initialConfig}: {
         switch (mode) {
             case 'create':
                 return (
-                    <div className={"h-[70vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
+                    <div className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
                         <LayoutEditor
+                            className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden flex flex-col"}
+                            containerHeight="flex-grow"
                             onSave={handleSave}
                             initialData={selectedLayout ?? undefined}
+                            toolboxPlacement={'header'}
                         />
                     </div>
                 );

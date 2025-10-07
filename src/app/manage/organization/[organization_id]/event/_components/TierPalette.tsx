@@ -4,10 +4,10 @@ import * as React from 'react';
 import {Button} from '@/components/ui/button';
 import {CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Ban} from 'lucide-react';
-import {Tier} from "@/lib/validators/event";
+import {TierFormData} from "@/lib/validators/event";
 
 interface TierPaletteProps {
-    tiers: Tier[];
+    tiers: TierFormData[];
     selectedTierId: string | null;
     onSelectTier: (id: string | null) => void;
 }

@@ -1,5 +1,6 @@
-import {EventThumbnailDTO, SessionInfoBasicDTO} from "@/types/event";
+import {DiscountDTO, EventThumbnailDTO, SessionInfoBasicDTO} from "@/types/event";
 import {PaginatedResponse} from "@/types/paginatedResponse";
+import {apiFetch} from "@/lib/api";
 
 const API_BASE_PATH = `${process.env.NEXT_PUBLIC_API_BASE_URL}/event-query/v1/events`;
 
@@ -124,6 +125,30 @@ export async function getEventSessionsInRange({
 
     return await res.json();
 }
+
+export async function getPublicDiscounts(eventId: string, sessionId: string): Promise<DiscountDTO[]> {
+    const url = `${API_BASE_PATH}/${eventId}/sessions/${sessionId}/discounts/public`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        cache: "no-store"
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch public discounts: ${res.status}`);
+    }
+
+    return await res.json();
+}
+
+export const getDiscountByCode = (eventId: string, sessionId: string, code: string): Promise<DiscountDTO | null> => {
+    const url = `/event-query/v1/events/${eventId}/sessions/${sessionId}/discounts/code/${code}`;
+    return apiFetch<DiscountDTO | null>(url, {
+        method: 'GET',
+    });
+};
 
 export type EventSearchResult = Awaited<ReturnType<typeof searchEvents>>;
 export type EventSessionsResult = Awaited<ReturnType<typeof getEventSessions>>;
