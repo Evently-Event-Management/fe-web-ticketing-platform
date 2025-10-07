@@ -13,10 +13,11 @@ import {
 import {SingleSessionDialog} from "@/app/manage/organization/[organization_id]/event/_components/SingleSessionDialog";
 import {SessionListItem} from "@/app/manage/organization/[organization_id]/event/_components/SessionListItem";
 import {useLimits} from "@/providers/LimitProvider";
+import {CreateSessionsFormData} from "@/app/manage/organization/[organization_id]/event/[eventId]/sessions/create/page";
 
 // --- Main Scheduling Step Component ---
 export function SchedulingStep() {
-    const {control, formState: {errors}} = useFormContext<CreateEventFormData>();
+    const {control, formState: {errors}} = useFormContext<CreateEventFormData | CreateSessionsFormData>();
     const [isRecurringDialogOpen, setIsRecurringDialogOpen] = useState(false);
     const [isSingleSessionDialogOpen, setIsSingleSessionDialogOpen] = useState(false);
     const {myLimits} = useLimits();

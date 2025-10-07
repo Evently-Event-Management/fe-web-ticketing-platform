@@ -178,7 +178,7 @@ export const baseSessionSchema = z.object({
     });
 
 // 2. A session that is "complete" for Step 3.
-const sessionWithVenueSchema = baseSessionSchema
+export const sessionWithVenueSchema = baseSessionSchema
     .refine(data => data.sessionType !== null, {
         message: "A session type (Physical or Online) must be selected.",
         path: ["sessionType"],
@@ -206,7 +206,7 @@ const sessionWithVenueSchema = baseSessionSchema
 
 
 // 3. A session that is "complete" for Step 4.
-const sessionWithSeatingSchema = sessionWithVenueSchema
+export const sessionWithSeatingSchema = sessionWithVenueSchema
     .safeExtend({
         layoutData: sessionSeatingMapRequestSchema.extend({
             layout: z.object({

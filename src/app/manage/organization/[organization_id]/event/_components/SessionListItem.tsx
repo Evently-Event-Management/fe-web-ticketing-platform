@@ -9,6 +9,7 @@ import {TimeConfigDialog} from './TimeConfigDialog'; // Assuming this component 
 import {LinkIcon, MapPin, Settings, Trash2, Edit, Tag, Hourglass} from 'lucide-react';
 import dynamic from "next/dynamic";
 import {SessionType} from "@/types/enums/sessionType";
+import {CreateSessionsFormData} from "@/app/manage/organization/[organization_id]/event/[eventId]/sessions/create/page";
 
 const LocationConfigDialog = dynamic(
     () => import("./LocationConfigDialog").then(mod => mod.LocationConfigDialog),
@@ -61,7 +62,7 @@ export function SessionListItem({ index, onRemoveAction}: {
     index: number;
     onRemoveAction: (index: number) => void
 }) {
-    const {watch} = useFormContext<CreateEventFormData>();
+    const {watch} = useFormContext<CreateEventFormData | CreateSessionsFormData>();
     const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
     const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
     const sessionData = watch(`sessions.${index}`);
@@ -127,7 +128,7 @@ export function SessionListItem({ index, onRemoveAction}: {
                             )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            {format(parseISO(startTime), "PPP p")} - {format(parseISO(endTime), "p")}
+                            {format(parseISO(startTime), "PPP p")} - {format(parseISO(endTime), "PPP p")}
                         </p>
                     </div>
                 </div>
