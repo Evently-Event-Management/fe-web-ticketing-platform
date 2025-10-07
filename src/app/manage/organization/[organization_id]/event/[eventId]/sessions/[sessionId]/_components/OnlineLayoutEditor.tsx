@@ -1,16 +1,13 @@
-// --- Online Configuration View ---
-import {CreateEventFormData, SessionSeatingMapRequest} from "@/lib/validators/event";
-import {useFormContext} from "react-hook-form";
+// --- Online Configuration Editor ---
+import {SessionSeatingMapRequest, TierDTO} from "@/lib/validators/event";
 import * as React from "react";
 import {OnlineConfigEditorBase} from "@/app/manage/organization/[organization_id]/event/_components/OnlineConfigEditorBase";
 
-export function OnlineConfigView({onSave, initialConfig}: {
+export function OnlineLayoutEditor({onSave, initialConfig, tiers}: {
     onSave: (layout: SessionSeatingMapRequest) => void;
+    tiers: TierDTO[];
     initialConfig?: SessionSeatingMapRequest;
 }) {
-    const {watch} = useFormContext<CreateEventFormData>();
-    const tiers = watch('tiers');
-
     return (
         <OnlineConfigEditorBase
             onSave={onSave}
