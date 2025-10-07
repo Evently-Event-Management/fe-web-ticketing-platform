@@ -71,7 +71,7 @@ const SessionPage = () => {
     const sessionId = params.sessionId as string;
     const organizationId = params.organization_id as string;
     const router = useRouter();
-    const { event, refetchEventData } = useEventContext();
+    const { event, refetchSession } = useEventContext();
     
     // Dialog states
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -156,7 +156,7 @@ const SessionPage = () => {
             setIsSaving(true);
             await updateSessionTime(sessionId, timeData);
             toast.success('Session time updated successfully');
-            await refetchEventData();
+            await refetchSession(sessionId);
             setIsEditTimeDialogOpen(false);
         } catch (error) {
             console.error('Error updating session time:', error);
@@ -172,7 +172,7 @@ const SessionPage = () => {
             setIsSaving(true);
             await updateSessionVenue(sessionId, { venueDetails });
             toast.success('Venue details updated successfully');
-            await refetchEventData();
+            await refetchSession(sessionId);
             setIsEditLocationDialogOpen(false);
         } catch (error) {
             console.error('Error updating venue details:', error);
@@ -188,7 +188,7 @@ const SessionPage = () => {
             setIsSaving(true);
             await updateSessionLayout(sessionId, layoutData);
             toast.success('Seating layout updated successfully');
-            await refetchEventData();
+            await refetchSession(sessionId);
             setIsEditLayoutDialogOpen(false);
         } catch (error) {
             console.error('Error updating seating layout:', error);
@@ -204,7 +204,7 @@ const SessionPage = () => {
             setIsSaving(true);
             await updateSessionStatus(sessionId, statusData);
             toast.success(`Session status updated to ${statusData.status}`);
-            await refetchEventData();
+            await refetchSession(sessionId);
             setIsChangeStatusDialogOpen(false);
         } catch (error) {
             console.error('Error updating session status:', error);
@@ -221,7 +221,7 @@ const SessionPage = () => {
             await deleteSession(sessionId);
             toast.success('Session deleted successfully');
             router.push(`/manage/organization/${params.organization_id}/event/${params.eventId}`);
-            await refetchEventData();
+            await refetchSession(sessionId);
         } catch (error) {
             console.error('Error deleting session:', error);
             toast.error('Failed to delete session');
