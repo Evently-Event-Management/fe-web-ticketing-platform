@@ -9,7 +9,6 @@ import {toast} from 'sonner';
 import {Check, ChevronLeft, ChevronRight} from 'lucide-react';
 import {Stepper} from '@/components/ui/stepper';
 import {Button} from '@/components/ui/button';
-import {Card, CardContent} from '@/components/ui/card';
 import {Separator} from '@/components/ui/separator';
 import {useEventContext} from '@/providers/EventProvider';
 import {createSessions} from '@/lib/actions/sessionActions';
@@ -201,7 +200,7 @@ export default function CreateSessionPage() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto p-4 md:p-8">
+        <div className="p-4 md:p-8">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold">Create New Sessions</h1>
                 <p className="text-muted-foreground">
@@ -209,82 +208,78 @@ export default function CreateSessionPage() {
                 </p>
             </div>
 
-            <Card>
-                <CardContent className="p-6">
-                    <Stepper
-                        currentStep={step}
-                        className="mb-8"
-                        steps={[
-                            {
-                                label: "Scheduling",
-                                description: "Set dates and locations",
-                                icon: <span className="text-xs">1</span>
-                            },
-                            {
-                                label: "Seating",
-                                description: "Configure seating layout",
-                                icon: <span className="text-xs">2</span>
-                            }
-                        ]}
-                    />
+            <Stepper
+                currentStep={step}
+                className="mb-8"
+                steps={[
+                    {
+                        label: "Scheduling",
+                        description: "Set dates and locations",
+                        icon: <span className="text-xs">1</span>
+                    },
+                    {
+                        label: "Seating",
+                        description: "Configure seating layout",
+                        icon: <span className="text-xs">2</span>
+                    }
+                ]}
+            />
 
-                    <Separator className="mb-8"/>
+            <Separator className="mb-8"/>
 
-                    <FormProvider {...methods}>
-                        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
-                            {renderStep()}
+            <FormProvider {...methods}>
+                <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+                    {renderStep()}
 
-                            <Separator/>
+                    <Separator/>
 
-                            <div className="flex justify-between pt-4">
+                    <div className="flex justify-between pt-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => router.back()}
+                            disabled={isSubmitting || inConfigMode}
+                        >
+                            <ChevronLeft className="mr-2 h-4 w-4"/>
+                            Cancel
+                        </Button>
+
+                        <div className="flex gap-2">
+                            {step > 1 && !inConfigMode && (
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => router.back()}
-                                    disabled={isSubmitting || inConfigMode}
+                                    onClick={onPrev}
+                                    disabled={isSubmitting}
                                 >
                                     <ChevronLeft className="mr-2 h-4 w-4"/>
-                                    Cancel
+                                    Back
                                 </Button>
+                            )}
 
-                                <div className="flex gap-2">
-                                    {step > 1 && !inConfigMode && (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={onPrev}
-                                            disabled={isSubmitting}
-                                        >
-                                            <ChevronLeft className="mr-2 h-4 w-4"/>
-                                            Back
-                                        </Button>
-                                    )}
-
-                                    {step < totalSteps ? (
-                                        <Button
-                                            type="button"
-                                            onClick={onNext}
-                                            disabled={isSubmitting || inConfigMode}
-                                        >
-                                            Next
-                                            <ChevronRight className="ml-2 h-4 w-4"/>
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            type="submit"
-                                            disabled={isSubmitting || inConfigMode}
-                                            className="bg-primary"
-                                        >
-                                            <Check className="mr-2 h-4 w-4"/>
-                                            Create Sessions
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        </form>
-                    </FormProvider>
-                </CardContent>
-            </Card>
+                            {step < totalSteps ? (
+                                <Button
+                                    type="button"
+                                    onClick={onNext}
+                                    disabled={isSubmitting || inConfigMode}
+                                >
+                                    Next
+                                    <ChevronRight className="ml-2 h-4 w-4"/>
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting || inConfigMode}
+                                    className="bg-primary"
+                                >
+                                    <Check className="mr-2 h-4 w-4"/>
+                                    Create Sessions
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </form>
+            </FormProvider>
         </div>
     );
 }
