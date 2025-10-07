@@ -3,15 +3,15 @@
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { DiscountCodeForm } from "./discount-code-form"
-import { DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/event";
+import { DiscountDTO, SessionDTO, TierDTO} from "@/lib/validators/event";
 
 interface FullDiscountFormViewProps {
-    tiers: TierRequest[],
-    sessions: SessionRequest[],
-    onSave: (discount: DiscountRequest) => void,
+    tiers: TierDTO[],
+    sessions: SessionDTO[],
+    onSave: (discount: DiscountDTO) => void,
     onBack: () => void,
     isEditing?: boolean,
-    initialData?: DiscountRequest,
+    initialData?: DiscountDTO,
 }
 export function FullDiscountFormView({ tiers, sessions, onSave, onBack, isEditing, initialData }: FullDiscountFormViewProps) {
     return (

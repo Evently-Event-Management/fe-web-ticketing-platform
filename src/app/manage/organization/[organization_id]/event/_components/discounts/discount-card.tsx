@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import {DiscountType} from "@/types/enums/discountType";
-import {DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/event";
+import {DiscountDTO, SessionDTO, TierDTO} from "@/lib/validators/event";
 import {toast} from "sonner";
 import {format} from "date-fns";
 import {getDiscountValue} from "@/lib/discountUtils";
@@ -26,12 +26,12 @@ import {
 
 // --- Component Props ---
 interface DiscountCardProps {
-    discount: DiscountRequest,
-    tiers: TierRequest[],
-    sessions?: SessionRequest[],
+    discount: DiscountDTO,
+    tiers: TierDTO[],
+    sessions?: SessionDTO[],
     onDelete?: (id: string) => void,
     onToggleStatus?: (id: string) => void,
-    onEdit?: (discount: DiscountRequest) => void,
+    onEdit?: (discount: DiscountDTO) => void,
     isReadOnly?: boolean,
 }
 

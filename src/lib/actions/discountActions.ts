@@ -1,9 +1,9 @@
 import { apiFetch } from '@/lib/api';
-import {DiscountRequest} from "@/lib/validators/event";
+import {DiscountDTO} from "@/lib/validators/event";
 
 const API_BASE_PATH = '/event-seating/v1/events';
 
-export type DiscountResponse = DiscountRequest & {}
+export type DiscountResponse = DiscountDTO & {}
 
 /**
  * Creates a new discount for an event.
@@ -12,7 +12,7 @@ export type DiscountResponse = DiscountRequest & {}
  * @param discountData The discount data to create
  * @returns The created discount details
  */
-export const createDiscount = (eventId: string, discountData: DiscountRequest): Promise<DiscountResponse> => {
+export const createDiscount = (eventId: string, discountData: DiscountDTO): Promise<DiscountResponse> => {
   return apiFetch<DiscountResponse>(`${API_BASE_PATH}/${eventId}/discounts`, {
     method: 'POST',
     body: JSON.stringify(discountData),
@@ -61,7 +61,7 @@ export const getDiscount = (eventId: string, discountId: string): Promise<Discou
 export const updateDiscount = (
   eventId: string,
   discountId: string,
-  discountData: DiscountRequest
+  discountData: DiscountDTO
 ): Promise<DiscountResponse> => {
   return apiFetch<DiscountResponse>(`${API_BASE_PATH}/${eventId}/discounts/${discountId}`, {
     method: 'PUT',

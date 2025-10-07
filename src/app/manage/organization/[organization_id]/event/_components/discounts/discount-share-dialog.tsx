@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { SessionRequest, DiscountRequest } from "@/lib/validators/event";
+import { SessionDTO, DiscountDTO } from "@/lib/validators/event";
 import { ShareComponent } from "@/components/ui/share/share-component";
 import { useEventContext } from "@/providers/EventProvider";
 import { format } from "date-fns";
@@ -13,8 +13,8 @@ import { format } from "date-fns";
 interface DiscountShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  discount: DiscountRequest;
-  sessions?: SessionRequest[];
+  discount: DiscountDTO;
+  sessions?: SessionDTO[];
 }
 
 export function DiscountShareDialog({

@@ -1,4 +1,4 @@
-import {SessionDetailDTO} from "@/lib/validators/event";
+import {SessionDetailDTO, TierDTO} from "@/lib/validators/event";
 import * as React from "react";
 import {useState} from "react";
 import {useEventContext} from "@/providers/EventProvider";
@@ -8,6 +8,7 @@ import {SessionType} from "@/types/enums/sessionType";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {SessionStatus} from "@/types/enums/sessionStatus";
+import {useRouter} from "next/navigation";
 import {Button} from "@/components/ui/button";
 import {Calendar, Clock, Edit, LinkIcon, MapPin, MoreHorizontal, RefreshCcw, Share2, Trash2} from "lucide-react";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
@@ -32,13 +33,16 @@ interface SessionCardProps {
 
 export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-    const {refetchSession, loadingSessionId} = useEventContext();
+    const {refetchSession, loadingSessionId, event} = useEventContext();
+    const router = useRouter();
 
     const isRefreshing = loadingSessionId === session.id;
+    const organizationId = event?.organizationId;
+    const eventId = event?.id;
 
     const handleEdit = () => {
-        // Placeholder for edit functionality
-        toast.info(`Edit session ${session.id} (Dummy function)`);
+        // Navigate to the session detail page using Next.js router
+        router.push(`/manage/organization/${organizationId}/event/${eventId}/sessions/${session.id}`);
     };
 
     const handleDelete = () => {
@@ -69,8 +73,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
             return "N/A";
         }
     };
-
-    const {event: eventContext} = useEventContext();
 
     // Get seating summary by tier
     const getSeatingDetails = () => {
@@ -126,7 +128,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
         // Convert tier counts record to byTier array with tier names and colors
         const byTier: { tier: string; count: number; color?: string }[] = [];
 
-        if (eventContext?.tiers) {
+        if (event?.tiers) {
             Object.entries(tierCountsRecord).forEach(([tierId, count]) => {
                 if (tierId === "unassigned") {
                     byTier.push({
@@ -134,7 +136,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
                         count
                     });
                 } else {
-                    const tier = eventContext.tiers.find(t => t.id === tierId);
+                    const tier = event.tiers.find((t: TierDTO) => t.id === tierId);
                     if (tier) {
                         byTier.push({
                             tier: tier.name,
@@ -159,9 +161,17 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
 
     const seatingDetails = getSeatingDetails();
 
+    const navigateToSessionDetails = () => {
+        router.push(`/manage/organization/${organizationId}/event/${eventId}/sessions/${session.id}`);
+    };
+
     return (
         <>
-            <Card key={session.id} className="hover:shadow-md transition-shadow">
+            <Card 
+                key={session.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer" 
+                onClick={navigateToSessionDetails}
+            >
                 <CardHeader className="flex flex-col sm:flex-row items-center justify-between">
                     <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -192,7 +202,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
                             type={'button'}
                             variant="outline"
                             size="sm"
-                            onClick={handleRefreshSession}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleRefreshSession();
+                            }}
                             disabled={isRefreshing}
                         >
                             <RefreshCcw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}/>
@@ -201,18 +214,28 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
                             type={'button'}
                             variant="outline"
                             size="sm"
-                            onClick={() => setIsShareDialogOpen(true)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsShareDialogOpen(true);
+                            }}
                         >
                             <Share2 className="h-4 w-4"/>
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     <MoreHorizontal className="h-4 w-4"/>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={handleEdit}>
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuItem onSelect={(e) => {
+                                    e.stopPropagation();
+                                    handleEdit();
+                                }}>
                                     <Edit className="h-4 w-4 mr-2"/>
                                     Edit
                                 </DropdownMenuItem>
@@ -220,6 +243,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
                                     className="text-destructive"
                                     onSelect={(e) => {
                                         e.preventDefault();
+                                        e.stopPropagation();
                                     }}
                                 >
                                     <AlertDialog>

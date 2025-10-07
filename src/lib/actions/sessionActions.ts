@@ -1,6 +1,6 @@
 import { apiFetch } from '@/lib/api';
 import { 
-  SessionRequest, 
+  SessionDTO,
   SessionDetailDTO, 
   VenueDetails, 
   SessionSeatingMapRequest,
@@ -23,7 +23,7 @@ export interface SessionBatchResponse {
  */
 export interface CreateSessionsRequest {
   eventId: string;
-  sessions: SessionRequest[];
+  sessions: SessionDTO[];
 }
 
 /**

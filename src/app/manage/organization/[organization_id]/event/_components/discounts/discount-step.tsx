@@ -2,7 +2,7 @@
 
 import { DiscountList } from "./discount-list";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import {CreateEventFormData, DiscountRequest, discountSchema} from "@/lib/validators/event";
+import {CreateEventFormData, DiscountDTO, discountSchema} from "@/lib/validators/event";
 import {useEffect, useState} from "react";
 import { FullDiscountFormView } from "./full-discount-form-view";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ interface DiscountStepProps {
 
 export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
-    const [editingDiscount, setEditingDiscount] = useState<DiscountRequest | null>(null);
+    const [editingDiscount, setEditingDiscount] = useState<DiscountDTO | null>(null);
 
     const { control, watch } = useFormContext<CreateEventFormData>();
 
@@ -37,12 +37,12 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
 
     // --- Event Handlers ---
 
-    const handleAddDiscount = (discount: DiscountRequest) => {
+    const handleAddDiscount = (discount: DiscountDTO) => {
         append(discount);
         setView('list');
     }
 
-    const handleUpdateDiscount = (discount: DiscountRequest) => {
+    const handleUpdateDiscount = (discount: DiscountDTO) => {
         const index = discountFields.findIndex(item => item.id === discount.id);
         if (index !== -1) {
             update(index, discount);
@@ -66,7 +66,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
         }
     }
 
-    const handleGoToEditView = (discount: DiscountRequest) => {
+    const handleGoToEditView = (discount: DiscountDTO) => {
         setEditingDiscount(discount);
         setView('edit');
     }

@@ -6,16 +6,16 @@ import {Input} from "@/components/ui/input"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Search, Filter} from "lucide-react"
 import {DiscountType} from "@/types/enums/discountType";
-import {DiscountRequest, SessionRequest, TierRequest} from "@/lib/validators/event";
+import {DiscountDTO, SessionDTO, TierDTO} from "@/lib/validators/event";
 import {DiscountCard} from "./discount-card";
 
 interface DiscountListProps {
-    tiers: TierRequest[],
-    sessions?: SessionRequest[],
-    discounts?: DiscountRequest[],
+    tiers: TierDTO[],
+    sessions?: SessionDTO[],
+    discounts?: DiscountDTO[],
     onDelete?: (id: string) => void,
     onToggleStatus?: (id: string) => void,
-    onEdit?: (discount: DiscountRequest) => void,
+    onEdit?: (discount: DiscountDTO) => void,
     filters?: boolean,
     isReadOnly?: boolean,
 }

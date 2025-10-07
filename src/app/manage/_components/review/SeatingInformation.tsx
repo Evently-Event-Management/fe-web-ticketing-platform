@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionRequest, TierFormData} from "@/lib/validators/event";
+import { SessionDTO, TierFormData} from "@/lib/validators/event";
 import * as React from "react";
 import {MapContainer, TileLayer, Marker, Popup} from "react-leaflet";
 import {Armchair, Users} from "lucide-react";
@@ -11,7 +11,7 @@ import L, {LatLngTuple} from "leaflet";
 
 interface SeatingInformationProps {
     isOnline: boolean;
-    session: SessionRequest;
+    session: SessionDTO;
     tiers: TierFormData[];
 }
 

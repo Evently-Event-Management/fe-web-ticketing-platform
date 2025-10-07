@@ -1,13 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import {DiscountRequest, SessionRequest, TierRequest} from '@/lib/validators/event';
+import {DiscountDTO, SessionDTO, TierDTO} from '@/lib/validators/event';
 import {DiscountList} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
 
 interface DiscountReviewProps {
-    tiers: TierRequest[],
-    sessions?: SessionRequest[],
-    discounts?: DiscountRequest[],
+    tiers: TierDTO[],
+    sessions?: SessionDTO[],
+    discounts?: DiscountDTO[],
 }
 
 export const DiscountReview: React.FC<DiscountReviewProps> = ({tiers, sessions, discounts}) => {

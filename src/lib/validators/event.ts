@@ -2,6 +2,7 @@ import {z} from 'zod';
 
 import {SessionType} from "@/types/enums/sessionType";
 import {DiscountType} from "@/types/enums/discountType";
+import { SeatStatus } from '@/types/enums/SeatStatus';
 
 
 // --- Reusable Atomic Schemas ---
@@ -122,7 +123,7 @@ const seatSchema = z.object({
     id: z.uuid(),
     label: z.string(),
     tierId: z.string().optional(),
-    status: z.enum(['AVAILABLE', 'RESERVED']).optional(),
+    status: z.enum([SeatStatus.AVAILABLE, SeatStatus.RESERVED, SeatStatus.BOOKED]).default(SeatStatus.AVAILABLE),
 });
 
 const rowSchema = z.object({
@@ -320,16 +321,16 @@ export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
 export type SessionFormData = z.input<typeof sessionWithSeatingSchema>;
-export type SessionRequest = z.infer<typeof sessionWithSeatingSchema>;
+export type SessionDTO = z.infer<typeof sessionWithSeatingSchema>;
 export type TierFormData = z.input<typeof tierSchema>;
-export type TierRequest = z.infer<typeof tierSchema>;
+export type TierDTO = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Row = z.infer<typeof rowSchema>;
 export type DiscountFormData = z.input<typeof discountSchema>;
-export type DiscountRequest = z.infer<typeof discountSchema>;
+export type DiscountDTO = z.infer<typeof discountSchema>;
 export type DiscountParameters = z.infer<typeof discountParametersUnionSchema>;
 
 
