@@ -8,6 +8,7 @@ import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Button} from "@/components/ui/button";
+import {SeatStatus} from "@/types/enums/SeatStatus";
 
 export function OnlineConfigView({onSave}: {
     onSave: (layout: SessionSeatingMapRequest) => void;
@@ -28,7 +29,7 @@ export function OnlineConfigView({onSave}: {
             id: crypto.randomUUID(),
             label: `Slot ${i + 1}`,
             tierId: selectedTierId,
-            status: 'AVAILABLE',
+            status: SeatStatus.AVAILABLE,
         }));
 
         const layoutData: SessionSeatingMapRequest = {
