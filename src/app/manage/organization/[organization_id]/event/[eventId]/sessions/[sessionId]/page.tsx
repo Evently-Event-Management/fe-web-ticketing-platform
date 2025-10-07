@@ -14,7 +14,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { SessionType } from "@/types/enums/sessionType";
 import { SessionStatus } from "@/types/enums/sessionStatus";
 import dynamic from "next/dynamic";
-import { deleteSession } from "@/lib/actions/sessionActions";
+import { 
+    deleteSession, 
+    updateSessionLayout, 
+    updateSessionStatus, 
+    updateSessionTime, 
+    updateSessionVenue,
+    SessionTimeUpdateRequest,
+    SessionStatusUpdateRequest,
+    SessionLayoutUpdateRequest,
+    SessionVenueUpdateRequest
+} from "@/lib/actions/sessionActions";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -28,6 +38,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SessionSeatingLayout } from "./_components/SessionSeatingLayout";
 import { SeatingCapacitySummary } from "./_components/seatingCapacitySummary";
+import { getSalesWindowDuration, getSalesStartTimeDisplay } from '@/lib/utils';
+
+// Import edit dialogs
+import { EditTimeDialog } from './_components/EditTimeDialog';
+import { LocationEditDialog } from './_components/LocationEditDialog';
+import { EditLayoutDialog } from './_components/EditLayoutDialog';
+import { ChangeStatusDialog } from './_components/ChangeStatusDialog';
 
 // Dynamically import the new VenueMap component
 const VenueMap = dynamic(
@@ -58,10 +75,20 @@ const getStatusProperties = (status: string | undefined) => {
 const SessionPage = () => {
     const params = useParams();
     const sessionId = params.sessionId as string;
+    const organizationId = params.organization_id as string;
     const router = useRouter();
     const { event, refetchEventData } = useEventContext();
+    
+    // Dialog states
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isEditTimeDialogOpen, setIsEditTimeDialogOpen] = useState(false);
+    const [isEditLocationDialogOpen, setIsEditLocationDialogOpen] = useState(false);
+    const [isEditLayoutDialogOpen, setIsEditLayoutDialogOpen] = useState(false);
+    const [isChangeStatusDialogOpen, setIsChangeStatusDialogOpen] = useState(false);
+    
+    // Operation states
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     if (!event) {
         return (
@@ -129,6 +156,70 @@ const SessionPage = () => {
         }
     };
 
+    // Handle session time update
+    const handleTimeUpdate = async (timeData: SessionTimeUpdateRequest) => {
+        try {
+            setIsSaving(true);
+            await updateSessionTime(sessionId, timeData);
+            toast.success('Session time updated successfully');
+            await refetchEventData();
+            setIsEditTimeDialogOpen(false);
+        } catch (error) {
+            console.error('Error updating session time:', error);
+            toast.error('Failed to update session time');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Handle location/venue update
+    const handleVenueUpdate = async (venueDetails: any) => {
+        try {
+            setIsSaving(true);
+            await updateSessionVenue(sessionId, { venueDetails });
+            toast.success('Venue details updated successfully');
+            await refetchEventData();
+            setIsEditLocationDialogOpen(false);
+        } catch (error) {
+            console.error('Error updating venue details:', error);
+            toast.error('Failed to update venue details');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Handle layout update
+    const handleLayoutUpdate = async (layoutData: SessionLayoutUpdateRequest) => {
+        try {
+            setIsSaving(true);
+            await updateSessionLayout(sessionId, layoutData);
+            toast.success('Seating layout updated successfully');
+            await refetchEventData();
+            setIsEditLayoutDialogOpen(false);
+        } catch (error) {
+            console.error('Error updating seating layout:', error);
+            toast.error('Failed to update seating layout');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Handle status change
+    const handleStatusUpdate = async (statusData: SessionStatusUpdateRequest) => {
+        try {
+            setIsSaving(true);
+            await updateSessionStatus(sessionId, statusData);
+            toast.success(`Session status updated to ${statusData.status}`);
+            await refetchEventData();
+            setIsChangeStatusDialogOpen(false);
+        } catch (error) {
+            console.error('Error updating session status:', error);
+            toast.error('Failed to update session status');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    
     // Handle delete
     const handleDelete = async () => {
         try {
@@ -145,6 +236,19 @@ const SessionPage = () => {
             setIsDeleteDialogOpen(false);
         }
     };
+    
+    // Business logic for edit permissions
+    const canEditTime = session?.status === SessionStatus.SCHEDULED || 
+                       (session?.status === SessionStatus.ON_SALE && new Date(session.startTime) > new Date());
+                       
+    const canEditVenue = session?.status === SessionStatus.SCHEDULED;
+    
+    const canEditLayout = session?.status === SessionStatus.SCHEDULED;
+    
+    const canDelete = session?.status === SessionStatus.SCHEDULED;
+    
+    const canChangeStatus = session?.status === SessionStatus.SCHEDULED || 
+                           session?.status === SessionStatus.ON_SALE;
 
     return (
         <div className="space-y-6 p-6">
@@ -177,25 +281,37 @@ const SessionPage = () => {
                     </p>
                 </div>
                 <div className="flex space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-1"
-                        onClick={handleShare}
-                    >
-                        <Share2 className="h-4 w-4" />
-                        Share
-                    </Button>
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex items-center gap-1"
-                        onClick={() => setIsDeleteDialogOpen(true)}
-                        disabled={status === SessionStatus.ON_SALE || status === SessionStatus.SOLD_OUT}
-                    >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                    </Button>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" onClick={handleShare}>
+                                    <Share2 className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Share Session</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    
+                    {canDelete && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button 
+                                        variant="destructive" 
+                                        size="icon"
+                                        onClick={() => setIsDeleteDialogOpen(true)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Delete Session</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
             </div>
 
@@ -227,191 +343,228 @@ const SessionPage = () => {
             {/* Session Metadata Section */}
             <Card>
                 <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5" />
-                        Session Information
-                    </CardTitle>
-                    <Badge
-                        variant={statusProps.variant}
-                        className="text-xs sm:text-sm mt-2 sm:mt-0"
-                    >
-                        {React.createElement(statusProps.icon, { className: "h-3 w-3 mr-1 inline" })}
-                        {status || 'PENDING'}
-                    </Badge>
+                    <CardTitle>Session Details</CardTitle>
+                    {canEditTime && (
+                        <Button 
+                            onClick={() => setIsEditTimeDialogOpen(true)}
+                            variant="outline"
+                            size="sm"
+                        >
+                            Edit Times
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-4">
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">Start Time</div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <span className="font-medium">{format(startDate, 'EEEE, MMMM d, yyyy h:mm a')}</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">End Time</div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <span className="font-medium">{format(endDate, 'EEEE, MMMM d, yyyy h:mm a')}</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">Duration</div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <span>{getDuration()}</span>
-                                </div>
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <div className="text-sm text-muted-foreground">Start Time</div>
+                            <div>{format(startDate, 'EEEE, MMMM d, yyyy h:mm a')}</div>
                         </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">Sales Start Time</div>
-                                {salesStartDate ? (
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <Tag className="h-4 w-4 text-muted-foreground" />
-                                            <span>{format(salesStartDate, 'MMM d, yyyy h:mm a')}</span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <Alert variant="destructive" className="mt-2 py-2">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        <AlertDescription>
-                                            Sales start time not set
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                            </div>
+                        <div className="space-y-2">
+                            <div className="text-sm text-muted-foreground">End Time</div>
+                            <div>{format(endDate, 'EEEE, MMMM d, yyyy h:mm a')}</div>
                         </div>
+                        <div className="space-y-2">
+                            <div className="text-sm text-muted-foreground">Duration</div>
+                            <div>{getDuration()}</div>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="text-sm text-muted-foreground">Sales Start</div>
+                            <div>{salesStartDate ? format(salesStartDate, 'MMM d, yyyy h:mm a') : 'Not set'}</div>
+                        </div>
+                        {salesStartDate && (
+                            <div className="space-y-2 col-span-full">
+                                <div className="text-sm text-muted-foreground">Sales Window</div>
+                                <div>{getSalesWindowDuration(session.salesStartTime, session.startTime)}</div>
+                            </div>
+                        )}
                     </div>
+                    
+                    {(canChangeStatus || session.status !== SessionStatus.CANCELED) && (
+                        <div className="pt-2 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <div className="text-sm font-medium mb-1">Session Status</div>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={statusProps.variant}>
+                                        {session.status?.replace('_', ' ')}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                        {session.status === SessionStatus.SCHEDULED && salesStartDate && 
+                                            getSalesStartTimeDisplay(session.salesStartTime)}
+                                    </span>
+                                </div>
+                            </div>
+                            {canChangeStatus && (
+                                <Button
+                                    onClick={() => setIsChangeStatusDialogOpen(true)}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    Change Status
+                                </Button>
+                            )}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
             {/* Venue Information Section */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex items-center">
-                                        {isOnline ? (
-                                            <LinkIcon className="h-5 w-5 text-blue-500" />
-                                        ) : (
-                                            <MapPin className="h-5 w-5 text-emerald-500" />
-                                        )}
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{isOnline ? 'Online Session' : 'Physical Session'}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                        {isOnline ? 'Online Event Details' : 'Venue Details'}
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <CardTitle>
+                        {isOnline ? 'Online Event Information' : 'Venue Information'}
                     </CardTitle>
+                    {canEditVenue && (
+                        <Button
+                            onClick={() => setIsEditLocationDialogOpen(true)}
+                            variant="outline"
+                            size="sm"
+                        >
+                            Edit {isOnline ? 'Online Link' : 'Venue'}
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardContent>
                     {isOnline ? (
-                        <div className="space-y-2">
-                            <div className="text-sm font-medium text-muted-foreground">Online Link</div>
+                        <div>
                             {venueDetails?.onlineLink ? (
-                                <div className="break-all">{venueDetails.onlineLink}</div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <div className="text-sm text-muted-foreground mb-1">Online Meeting Link</div>
+                                        <a 
+                                            href={venueDetails.onlineLink} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-primary hover:underline flex items-center gap-1"
+                                        >
+                                            <LinkIcon size={16} />
+                                            {venueDetails.onlineLink}
+                                        </a>
+                                    </div>
+                                </div>
                             ) : (
-                                <Alert variant="destructive" className="mt-2 py-2">
-                                    <AlertTriangle className="h-4 w-4" />
-                                    <AlertDescription>
-                                        Online link not provided
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                            {/* Capacity summary for online events */}
-                            {layoutData && layoutData.layout.blocks.length > 0 && (
-                                <div className="mt-4">
-                                    <SeatingCapacitySummary
-                                        session={session}
-                                        tiers={event.tiers || []}
-                                    />
+                                <div className="text-muted-foreground">
+                                    No online link has been provided for this session.
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="text-sm font-medium text-muted-foreground">Venue Name</div>
-                                        {venueDetails?.name ? (
-                                            <div className="font-medium">{venueDetails.name}</div>
-                                        ) : (
-                                            <div className="text-destructive">Not specified</div>
-                                        )}
-                                    </div>
-
-                                    {venueDetails?.address && (
-                                        <div>
-                                            <div className="text-sm font-medium text-muted-foreground">Address</div>
-                                            <div>{venueDetails.address}</div>
-                                        </div>
-                                    )}
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <div className="text-sm text-muted-foreground">Venue Name</div>
+                                    <div>{venueDetails?.name || 'Not specified'}</div>
                                 </div>
-
-                                {/* Map for physical events */}
-                                <div className="h-[300px] rounded-md overflow-hidden border">
-                                    <VenueMap
+                                <div className="space-y-2">
+                                    <div className="text-sm text-muted-foreground">Address</div>
+                                    <div>{venueDetails?.address || 'Not specified'}</div>
+                                </div>
+                            </div>
+                            
+                            {/* Map */}
+                            <div className="h-[300px] w-full rounded-md border overflow-hidden relative">
+                                {venueDetails?.latitude && venueDetails?.longitude ? (
+                                    <VenueMap 
                                         center={mapCenter}
-                                        venueName={venueDetails?.name || "Event Venue"}
+                                        venueName={venueDetails?.name || 'Event Location'}
                                     />
-                                </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full bg-muted/30">
+                                        <div className="text-center p-4">
+                                            <MapPin className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                                            <p className="text-muted-foreground">No location coordinates specified</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-
-                            {/* Add a note about the map */}
-                            <div className="text-xs text-muted-foreground mt-2 italic">
-                                Map shows approximate location based on venue coordinates
-                            </div>
-                        </>
+                        </div>
                     )}
                 </CardContent>
             </Card>
 
-            {/* Seating Layout Section */}
+                        {/* Seating Layout Section */}
             {!isOnline && layoutData && layoutData.layout.blocks.length > 0 && (
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <CardTitle>Seating Layout</CardTitle>
+                        {canEditLayout && (
+                            <Button
+                                onClick={() => setIsEditLayoutDialogOpen(true)}
+                                variant="outline"
+                                size="sm"
+                            >
+                                Edit Layout
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent>
-                        <div className="w-full">
-                            <SessionSeatingLayout
-                                session={session}
-                                tiers={event.tiers || []}
-                            />
-                        </div>
+                        <SessionSeatingLayout
+                            session={session}
+                            tiers={event.tiers}
+                        />
                     </CardContent>
                 </Card>
             )}
 
+            {/* Edit Time Dialog */}
+            <EditTimeDialog
+                open={isEditTimeDialogOpen}
+                onOpenChange={setIsEditTimeDialogOpen}
+                initialData={{
+                    startTime: session.startTime,
+                    endTime: session.endTime,
+                    salesStartTime: session.salesStartTime,
+                    status: session.status
+                }}
+                onSave={handleTimeUpdate}
+            />
+            
+            {/* Edit Location Dialog */}
+            <LocationEditDialog
+                open={isEditLocationDialogOpen}
+                onOpenChange={setIsEditLocationDialogOpen}
+                sessionType={session.sessionType}
+                initialData={venueDetails}
+                onSave={handleVenueUpdate}
+                sessionIndex={0}
+            />
+            
+            {/* Edit Layout Dialog */}
+            <EditLayoutDialog
+                open={isEditLayoutDialogOpen}
+                onOpenChange={setIsEditLayoutDialogOpen}
+                initialLayout={layoutData}
+                sessionType={session.sessionType}
+                tiers={event.tiers}
+                organizationId={organizationId}
+                onSave={handleLayoutUpdate}
+            />
+            
+            {/* Change Status Dialog */}
+            <ChangeStatusDialog
+                open={isChangeStatusDialogOpen}
+                onOpenChange={setIsChangeStatusDialogOpen}
+                currentStatus={session.status}
+                onSave={handleStatusUpdate}
+            />
+            
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to delete this session?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete Session</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the session
-                            and all its associated data.
+                            Are you sure you want to delete this session? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
+                        <AlertDialogAction 
                             onClick={handleDelete}
-                            disabled={isDeleting}
+                            disabled={isDeleting} 
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            {isDeleting ? 'Deleting...' : 'Delete'}
+                            {isDeleting ? "Deleting..." : "Delete"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
