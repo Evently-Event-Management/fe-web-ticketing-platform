@@ -34,6 +34,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {ShareComponent} from '@/components/ui/share/share-component';
 
 interface SessionShareDialogProps {
     open: boolean;
@@ -41,12 +42,20 @@ interface SessionShareDialogProps {
     session: SessionDetailDTO;
 }
 
-// Simple placeholder share dialog
+// Session share dialog using the ShareComponent
 const SessionShareDialog: React.FC<SessionShareDialogProps> = ({
-                                                                   open,
-                                                                   onOpenChange,
-                                                                   session
-                                                               }) => {
+    open,
+    onOpenChange,
+    session
+}) => {
+    const {event} = useEventContext();
+    const eventUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8090'}/events/${event?.id}`;
+
+    const handleCopy = () => {
+        // Optional: handle any additional logic after copying
+        onOpenChange(false); // Close dialog after copying
+    };
+
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
@@ -54,12 +63,20 @@ const SessionShareDialog: React.FC<SessionShareDialogProps> = ({
                     <AlertDialogTitle>Share Session</AlertDialogTitle>
                     <AlertDialogDescription>
                         Share the session details for {format(parseISO(session.startTime), "EEEE, MMMM d, yyyy")}.
-                        (This is a placeholder dialog)
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+
+                <div className="py-4">
+                    <ShareComponent
+                        url={eventUrl}
+                        title={`${event?.title || 'Event'} - ${format(parseISO(session.startTime), "MMMM d, yyyy")}`}
+                        text={`Check out this event: ${event?.title || 'Event'} on ${format(parseISO(session.startTime), "MMMM d, yyyy")}`}
+                        onCopy={handleCopy}
+                    />
+                </div>
+
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Copy Link</AlertDialogAction>
+                    <AlertDialogCancel>Close</AlertDialogCancel>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -110,7 +127,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
         }
     };
 
-    const {event} = useEventContext();
+    const {event: eventContext} = useEventContext();
 
     // Get seating summary by tier
     const getSeatingDetails = () => {
@@ -166,7 +183,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
         // Convert tier counts record to byTier array with tier names and colors
         const byTier: { tier: string; count: number; color?: string }[] = [];
 
-        if (event?.tiers) {
+        if (eventContext?.tiers) {
             Object.entries(tierCountsRecord).forEach(([tierId, count]) => {
                 if (tierId === "unassigned") {
                     byTier.push({
@@ -174,7 +191,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
                         count
                     });
                 } else {
-                    const tier = event.tiers.find(t => t.id === tierId);
+                    const tier = eventContext.tiers.find(t => t.id === tierId);
                     if (tier) {
                         byTier.push({
                             tier: tier.name,
