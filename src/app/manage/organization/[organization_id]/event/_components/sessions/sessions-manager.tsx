@@ -3,6 +3,7 @@
 import * as React from 'react';
 import {useState} from 'react';
 import {format, parseISO} from 'date-fns';
+import Link from 'next/link';
 import {
     Calendar, Clock, LinkIcon, MapPin, Share2, MoreHorizontal,
     Edit, Trash2, AlertTriangle, RefreshCcw, Plus
@@ -357,11 +358,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({session}) => {
 export const SessionsManager: React.FC = () => {
     const {event, isLoading, error, refetchSessions} = useEventContext();
 
-    const handleCreateSession = () => {
-        // Placeholder for create session functionality
-        toast.info("Create new session (Dummy function)");
-    };
-
     const handleRefresh = () => {
         // Use the new refetchSessions function from the context
         refetchSessions().then();
@@ -409,10 +405,14 @@ export const SessionsManager: React.FC = () => {
                         <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
                         <span>Refresh {isLoading ? 'ing...' : ''}</span>
                     </Button>
-                    <Button onClick={handleCreateSession}>
-                        <Plus className="h-4 w-4 mr-2"/>
-                        New Session
-                    </Button>
+                    <Link
+                        href={`/manage/organization/${event.organizationId}/event/${event.id}/sessions/create`}
+                    >
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2"/>
+                            New Session
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -425,9 +425,11 @@ export const SessionsManager: React.FC = () => {
             ) : event && (!event.sessions || event.sessions.length === 0) ? (
                 <div className="text-center p-8 border rounded-md">
                     <p className="mb-4">No sessions found</p>
-                    <Button onClick={handleCreateSession} variant="outline">
-                        Create your first session
-                    </Button>
+                    <Link href={`/manage/organization/${event.organizationId}/event/${event.id}/sessions/create`}>
+                        <Button variant="outline">
+                            Create your first session
+                        </Button>
+                    </Link>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-4">
