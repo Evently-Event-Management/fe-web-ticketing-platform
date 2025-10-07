@@ -105,7 +105,7 @@ export function SchedulingStep() {
 
             <div className="space-y-6">
                 {fields.map((field, index) => (
-                    <SessionListItem key={field.id} field={field} index={index} onRemoveAction={remove}/>
+                    <SessionListItem key={field.id} index={index} onRemoveAction={remove}/>
                 ))}
 
                 {fields.length === 0 && (

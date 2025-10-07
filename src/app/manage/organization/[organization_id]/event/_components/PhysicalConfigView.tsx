@@ -19,6 +19,7 @@ import {LayoutSelector} from "./physical-config/LayoutSelector";
 import {DeleteConfirmationDialog} from "./physical-config/DeleteConfirmationDialog";
 import {getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/getRowLabel";
 import {Button} from "@/components/ui/button";
+import {SeatStatus} from "@/types/enums/SeatStatus";
 
 type Step = {
     id: string;
@@ -100,7 +101,7 @@ export function PhysicalConfigView({onSave, initialConfig}: {
                         seats: Array.from({length: numColumns}, (_, colIndex) => ({
                             id: crypto.randomUUID(),
                             label: `${startCol + colIndex}${getRowLabel(startRowIndex + rowIndex)}`,
-                            status: 'AVAILABLE',
+                            status: SeatStatus.AVAILABLE,
                         })),
                     };
                     return newRow;
@@ -110,7 +111,7 @@ export function PhysicalConfigView({onSave, initialConfig}: {
                 newBlock.seats = Array.from({length: capacity}, (_, i) => ({
                     id: crypto.randomUUID(),
                     label: `Slot ${i + 1}`,
-                    status: 'AVAILABLE',
+                    status: SeatStatus.AVAILABLE,
                 }));
             }
             return newBlock;
