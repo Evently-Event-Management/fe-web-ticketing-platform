@@ -1,12 +1,12 @@
 import {type ClassValue, clsx} from "clsx"
 import {twMerge} from "tailwind-merge"
-import {SessionRequest, TierFormData} from "@/lib/validators/event";
+import {SessionDTO, TierFormData} from "@/lib/validators/event";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
-export const getTierColor = (tierId: string, session: SessionRequest, tiers: TierFormData[]): string => {
+export const getTierColor = (tierId: string, session: SessionDTO, tiers: TierFormData[]): string => {
     if (tierId === 'unassigned') return '#d1d5db'; // gray-300
 
     // We need to check if tiers exist in the session
@@ -14,7 +14,7 @@ export const getTierColor = (tierId: string, session: SessionRequest, tiers: Tie
     return tier?.color || '#6b7280'; // gray-500 as fallback
 };
 // Helper to get tier name
-export const getTierName = (tierId: string, session: SessionRequest, tiers: TierFormData[]): string => {
+export const getTierName = (tierId: string, session: SessionDTO, tiers: TierFormData[]): string => {
     if (tierId === 'unassigned') return 'Unassigned';
 
     const tier = tiers.find(t => t.id === tierId);

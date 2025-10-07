@@ -8,7 +8,7 @@ import {
     DialogDescription
 } from "@/components/ui/dialog";
 import { DiscountCodeForm } from "./discount-code-form";
-import { DiscountRequest, SessionRequest, TierRequest } from "@/lib/validators/event";
+import { DiscountDTO, SessionDTO, TierDTO } from "@/lib/validators/event";
 import {createDiscount, DiscountResponse, updateDiscount} from "@/lib/actions/discountActions";
 import { toast } from "sonner";
 
@@ -19,8 +19,8 @@ interface DiscountFormDialogProps {
     onSuccess: () => void;
     initialData?: DiscountResponse;
     eventId: string;
-    tiers: TierRequest[];
-    sessions: SessionRequest[];
+    tiers: TierDTO[];
+    sessions: SessionDTO[];
 }
 
 export const DiscountFormDialog = ({
@@ -34,7 +34,7 @@ export const DiscountFormDialog = ({
                                        sessions,
                                    }: DiscountFormDialogProps) => {
 
-    const handleSave = async (data: DiscountRequest) => {
+    const handleSave = async (data: DiscountDTO) => {
         const action = mode === 'create'
             ? createDiscount(eventId, data)
             : updateDiscount(eventId, initialData!.id, data);

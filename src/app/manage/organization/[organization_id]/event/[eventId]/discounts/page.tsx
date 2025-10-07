@@ -8,7 +8,7 @@
     import {createDiscount, DiscountResponse, deleteDiscount, updateDiscount} from "@/lib/actions/discountActions";
     import {toast} from "sonner";
     import {DiscountList} from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
-    import {DiscountRequest} from "@/lib/validators/event";
+    import {DiscountDTO} from "@/lib/validators/event";
     import {
         FullDiscountFormView
     } from "@/app/manage/organization/[organization_id]/event/_components/discounts/full-discount-form-view";
@@ -37,7 +37,7 @@
 
 
 
-        const handleSaveDiscount = async (data: DiscountRequest) => {
+        const handleSaveDiscount = async (data: DiscountDTO) => {
             const action = mode === 'create'
                 ? createDiscount(event!.id, data)
                 : updateDiscount(event!.id, editingDiscount!.id, data);
