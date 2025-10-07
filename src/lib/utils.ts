@@ -1,6 +1,7 @@
 import {type ClassValue, clsx} from "clsx"
 import {twMerge} from "tailwind-merge"
 import {SessionDTO, TierFormData} from "@/lib/validators/event";
+import {format, intervalToDuration, parseISO} from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -124,3 +125,42 @@ export const formatToDateTimeLocalString = (dateInput: string | null | undefined
 };
 
 
+// --- Helper: Display sales start time ---
+export const getSalesStartTimeDisplay = (salesStartTime?: string): string => {
+    if (!salesStartTime) return 'Sales start time not set';
+    try {
+        const salesStartDate = parseISO(salesStartTime);
+        return `Sales start on ${format(salesStartDate, 'MMM d, yyyy h:mm a')}`;
+    } catch (e) {
+        console.error('Error parsing sales start time:', e);
+        return 'Invalid sales start time';
+    }
+};
+
+
+// --- Helper: Calculate sales window duration ---
+export const getSalesWindowDuration = (
+    salesStartTime?: string,
+    sessionStartTime?: string
+): string => {
+    if (!salesStartTime || !sessionStartTime) return 'Sales window not available';
+    try {
+        const salesStart = parseISO(salesStartTime);
+        const sessionStart = parseISO(sessionStartTime);
+
+        if (salesStart > sessionStart) return 'Sales start after session begins';
+
+        const duration = intervalToDuration({start: salesStart, end: sessionStart});
+        const parts = [
+            duration.days && `${duration.days}d`,
+            duration.hours && `${duration.hours}h`,
+            duration.minutes && `${duration.minutes}m`,
+        ].filter(Boolean);
+
+        if (parts.length === 0) return 'Sales open just before the session';
+        return `Sales open for ${parts.join(', ')} before session`;
+    } catch (e) {
+        console.error('Error calculating sales window duration:', e);
+        return 'Could not calculate duration';
+    }
+};
