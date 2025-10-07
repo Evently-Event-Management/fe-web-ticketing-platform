@@ -1,0 +1,393 @@
+// --- Physical Configuration View ---
+import {Block, Row, SessionSeatingMapRequest, TierDTO} from "@/lib/validators/event";
+import * as React from "react";
+import {useCallback, useEffect, useState} from "react";
+import {LayoutData, SeatingLayoutTemplateResponse} from "@/types/seatingLayout";
+import {
+    createSeatingLayoutTemplate,
+    deleteSeatingLayoutTemplate,
+    getSeatingLayoutTemplatesByOrg,
+    updateSeatingLayoutTemplate
+} from "@/lib/actions/seatingLayoutTemplateActions";
+import {toast} from "sonner";
+import {LayoutEditor} from "@/app/manage/organization/[organization_id]/seating/_components/LayoutEditor";
+import {TierAssignmentEditor} from "@/app/manage/organization/[organization_id]/event/_components/TierAssignmentEditor";
+import {getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/getRowLabel";
+import {Button} from "@/components/ui/button";
+import {SeatStatus} from "@/types/enums/SeatStatus";
+import {
+    LayoutSelector
+} from "@/app/manage/organization/[organization_id]/event/_components/physical-config/LayoutSelector";
+import {
+    ProgressSteps
+} from "@/app/manage/organization/[organization_id]/event/_components/physical-config/ProgressSteps";
+import {
+    NavigationButtons
+} from "@/app/manage/organization/[organization_id]/event/_components/physical-config/NavigationButtons";
+import {
+    DeleteConfirmationDialog
+} from "@/app/manage/organization/[organization_id]/event/_components/physical-config/DeleteConfirmationDialog";
+
+type Step = {
+    id: string;
+    label: string;
+}
+
+export function PhysicalLayoutEditor({onSave, initialConfig, tiers, organizationId}: {
+    onSave: (layout: SessionSeatingMapRequest) => void;
+    tiers: TierDTO[];
+    organizationId: string;
+    initialConfig?: SessionSeatingMapRequest;
+}) {
+    const [templates, setTemplates] = useState<SeatingLayoutTemplateResponse[]>([]);
+    const [mode, setMode] = useState<'select' | 'create' | 'assign'>('select');
+    const [selectedLayout, setSelectedLayout] = useState<LayoutData | null>(null);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [layoutToDelete, setLayoutToDelete] = useState<{ id: string, name: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentAssignedLayout, setCurrentAssignedLayout] = useState<SessionSeatingMapRequest | null>(null);
+
+    // Progress steps configuration
+    const steps: Step[] = [
+        {id: 'select', label: 'Select Layout'},
+        {id: 'create', label: 'Edit Layout'},
+        {id: 'assign', label: 'Assign Tiers'},
+    ];
+
+    // If initialConfig is provided, we should start at the assign step
+    useEffect(() => {
+        if (initialConfig && initialConfig.name !== null) {
+            setCurrentAssignedLayout(initialConfig);
+            setMode('assign');
+        }
+    }, [initialConfig]);
+
+    const loadTemplates = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const res = await getSeatingLayoutTemplatesByOrg(organizationId, 0, 100);
+            setTemplates(res.content);
+        } catch (error) {
+            toast.error("Failed to load layout templates");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [organizationId]);
+
+    // Fetch templates when component loads or organization changes
+    useEffect(() => {
+        if (organizationId) {
+            loadTemplates().then();
+        }
+    }, [loadTemplates, organizationId]);
+
+    // Transform layout for tier assignment when selectedLayout changes
+    useEffect(() => {
+        if (!selectedLayout || mode !== 'assign') return;
+
+        const transformedBlocks = selectedLayout.layout.blocks.map((block) => {
+            const newBlock: Block = {
+                ...block,
+                rows: [],
+                seats: [],
+            };
+
+            if (block.type === 'seated_grid' && block.rows && block.columns) {
+                const startRowIndex = block.startRowLabel ? block.startRowLabel.charCodeAt(0) - 'A'.charCodeAt(0) : 0;
+                const startCol = block.startColumnLabel || 1;
+                const numRows = block.rows;
+                const numColumns = block.columns;
+
+                newBlock.rows = Array.from({length: numRows}, (_, rowIndex) => {
+                    const newRow: Row = {
+                        id: crypto.randomUUID(),
+                        label: `${getRowLabel(startRowIndex + rowIndex)}`,
+                        seats: Array.from({length: numColumns}, (_, colIndex) => ({
+                            id: crypto.randomUUID(),
+                            label: `${startCol + colIndex}${getRowLabel(startRowIndex + rowIndex)}`,
+                            status: SeatStatus.AVAILABLE,
+                        })),
+                    };
+                    return newRow;
+                });
+            } else if (block.type === 'standing_capacity' && block.capacity) {
+                const capacity = block.capacity;
+                newBlock.seats = Array.from({length: capacity}, (_, i) => ({
+                    id: crypto.randomUUID(),
+                    label: `Slot ${i + 1}`,
+                    status: SeatStatus.AVAILABLE,
+                }));
+            }
+            return newBlock;
+        });
+
+        setCurrentAssignedLayout({
+            name: selectedLayout.name,
+            layout: {
+                blocks: transformedBlocks,
+            },
+        });
+    }, [selectedLayout, mode]);
+
+    // Check if we need to auto-navigate to step 1 when going to step 2 without a layout
+    useEffect(() => {
+        if (mode === 'create' && !selectedLayout && !initialConfig) {
+            toast.error("Please select a layout first");
+            setMode('select');
+        }
+    }, [mode, selectedLayout, initialConfig]);
+
+    // Handle step navigation
+    const handleStepClick = (stepId: string) => {
+        // If trying to go to create step but no layout is selected, redirect to select
+        if (stepId === 'create' && !selectedLayout) {
+            toast.error("Please select a layout first");
+            setMode('select');
+            return;
+        }
+
+        // If trying to go to assign step but no layout is prepared, redirect to select
+        if (stepId === 'assign' && !currentAssignedLayout && !selectedLayout) {
+            toast.error("Please select and configure a layout first");
+            setMode('select');
+            return;
+        }
+
+        setMode(stepId as 'select' | 'create' | 'assign');
+    };
+
+    // Handle layout selection
+    const handleLayoutSelect = (template: SeatingLayoutTemplateResponse) => {
+        setSelectedLayout(template.layoutData);
+        setSelectedTemplateId(template.id);
+    };
+
+    // Handle create from scratch
+    const handleCreateFromScratch = () => {
+        setSelectedLayout(null);
+        setSelectedTemplateId(null);
+        setMode('create');
+    };
+
+    // Handle delete confirmation - open dialog
+    const handleDeleteConfirm = (id: string, name: string) => {
+        setLayoutToDelete({id, name});
+        setIsDeleteDialogOpen(true);
+    };
+
+    // Handle actual deletion
+    const handleDeleteLayout = async () => {
+        if (!layoutToDelete) return;
+
+        try {
+            await deleteSeatingLayoutTemplate(layoutToDelete.id);
+            toast.success(`Layout "${layoutToDelete.name}" deleted successfully`);
+
+            // Refresh the templates list
+            await loadTemplates();
+
+            // If deleted template was selected, clear selection
+            if (selectedTemplateId === layoutToDelete.id) {
+                setSelectedLayout(null);
+                setSelectedTemplateId(null);
+            }
+        } catch (error) {
+            toast.error("Failed to delete layout template");
+            console.error(error);
+        } finally {
+            setIsDeleteDialogOpen(false);
+            setLayoutToDelete(null);
+        }
+    };
+
+    // Handle tier assignments updates from the editor
+    const handleTierAssignmentUpdate = (layoutWithTiers: SessionSeatingMapRequest) => {
+        setCurrentAssignedLayout(layoutWithTiers);
+    };
+
+    const handleTierAssignmentSave = () => {
+        if (!currentAssignedLayout) {
+            toast.error("No layout data available");
+            return;
+        }
+
+        // Check if all seats and standing blocks have tier assignments
+        let hasUnassignedElements = false;
+
+        for (const block of currentAssignedLayout.layout.blocks) {
+            // Check seated blocks (rows with seats)
+            if (block.type === 'seated_grid' && block.rows) {
+                for (const row of block.rows) {
+                    for (const seat of row.seats) {
+                        // Seat must either have a tierId or be marked as RESERVED
+                        if (!seat.tierId && seat.status !== 'RESERVED') {
+                            hasUnassignedElements = true;
+                            break;
+                        }
+                    }
+                    if (hasUnassignedElements) break;
+                }
+            }
+
+            // Check standing capacity blocks
+            if (block.type === 'standing_capacity' && block.seats) {
+                // For standing blocks, check if at least one seat has a tier assignment
+                const hasAnyAssignedSeat = block.seats.some(seat => seat.tierId);
+                if (!hasAnyAssignedSeat && block.seats.length > 0) {
+                    hasUnassignedElements = true;
+                    break;
+                }
+            }
+
+            if (hasUnassignedElements) break;
+        }
+
+        if (hasUnassignedElements) {
+            toast.error("Please assign all seats to a tier or mark them as reserved. Standing areas must also have tier assignments.");
+            return;
+        }
+        onSave(currentAssignedLayout);
+    };
+
+    const handleSave = async (layoutData: LayoutData) => {
+        const request = {
+            name: layoutData.name,
+            organizationId,
+            layoutData,
+        };
+
+        try {
+            // If we're editing an existing template, update it instead of creating a new one
+            if (selectedTemplateId) {
+                const data = await updateSeatingLayoutTemplate(selectedTemplateId, request);
+                toast.success(`Layout "${data.name}" updated successfully!`);
+                setSelectedLayout(data.layoutData);
+                setMode("assign");
+                await loadTemplates();
+            } else {
+                console.log("Creating new seating layout template", request);
+                const data = await createSeatingLayoutTemplate(request);
+                toast.success(`Layout "${data.name}" saved successfully!`);
+                setSelectedLayout(data.layoutData);
+                setSelectedTemplateId(data.id);
+                setMode("assign");
+                await loadTemplates();
+            }
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message || 'Failed to save layout');
+            } else {
+                toast.error('An unexpected error occurred while saving the layout');
+            }
+            console.error(err);
+        }
+    };
+
+    // Navigation between steps
+    const goToPrevStep = () => {
+        if (mode === 'create') {
+            setMode('select');
+        } else if (mode === 'assign') {
+            setMode('create');
+
+            // Check if we have a layout to edit
+            if (!selectedLayout) {
+                toast.error("No layout available to edit");
+                setMode('select');
+            }
+        }
+    };
+
+    const goToNextStep = () => {
+        if (mode === 'select') {
+            if (!selectedLayout) {
+                toast.error("Please select a layout first");
+                return;
+            }
+            setMode('create');
+        } else if (mode === 'create') {
+            setMode('assign');
+        }
+    };
+
+    // Render different steps based on current mode
+    const renderCurrentStep = () => {
+        switch (mode) {
+            case 'create':
+                return (
+                    <div className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden"}>
+                        <LayoutEditor
+                            className={"h-[80vh] ring-1 ring-primary rounded-lg overflow-hidden flex flex-col"}
+                            containerHeight="flex-grow"
+                            onSave={handleSave}
+                            initialData={selectedLayout ?? undefined}
+                            toolboxPlacement={'header'}
+                        />
+                    </div>
+                );
+            case 'assign':
+                // If we have initialConfig or currentAssignedLayout, show the TierAssignmentEditor
+                const layoutToEdit = currentAssignedLayout || initialConfig;
+
+                return layoutToEdit ? (
+                    <TierAssignmentEditor
+                        layoutData={layoutToEdit}
+                        onChange={handleTierAssignmentUpdate}
+                        tiers={tiers}
+                    />
+                ) : (
+                    <div className="p-4 text-center">
+                        <p>No layout data available.</p>
+                        <Button
+                            variant="outline"
+                            onClick={() => setMode('select')}
+                            className="mt-4"
+                        >
+                            Go to layout selection
+                        </Button>
+                    </div>
+                );
+            case 'select':
+            default:
+                return (
+                    <LayoutSelector
+                        templates={templates}
+                        selectedTemplateId={selectedTemplateId}
+                        isLoading={isLoading}
+                        onLayoutSelect={handleLayoutSelect}
+                        onCreateFromScratch={handleCreateFromScratch}
+                        onDeleteLayout={handleDeleteConfirm}
+                    />
+                );
+        }
+    };
+
+    return (
+        <>
+            <ProgressSteps
+                steps={steps}
+                currentMode={mode}
+                onStepClick={handleStepClick}
+            />
+
+            {renderCurrentStep()}
+
+            <NavigationButtons
+                currentMode={mode}
+                canProgress={!!selectedLayout}
+                onPrevious={goToPrevStep}
+                onNext={goToNextStep}
+                onFinish={handleTierAssignmentSave}
+            />
+
+            <DeleteConfirmationDialog
+                isOpen={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                layoutName={layoutToDelete?.name}
+                onConfirmDelete={handleDeleteLayout}
+            />
+        </>
+    );
+}

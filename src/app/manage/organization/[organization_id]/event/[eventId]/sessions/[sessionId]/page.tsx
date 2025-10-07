@@ -16,7 +16,6 @@ import { SessionStatus } from "@/types/enums/sessionStatus";
 import dynamic from "next/dynamic";
 import { deleteSession } from "@/lib/actions/sessionActions";
 import { toast } from "sonner";
-import "leaflet/dist/leaflet.css";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,42 +29,9 @@ import {
 import { SessionSeatingLayout } from "./_components/SessionSeatingLayout";
 import { SeatingCapacitySummary } from "./_components/seatingCapacitySummary";
 
-// Dynamically load just the map component for venue details
+// Dynamically import the new VenueMap component
 const VenueMap = dynamic(
-    () => import("react-leaflet").then(mod => {
-        // Create a custom component that just renders the map
-        const MapComponent = ({ center, venueName }: { center: [number, number], venueName: string }) => {
-            const { MapContainer, TileLayer, Marker, Popup } = mod;
-            
-            // Fix default marker icons (required for Leaflet in Next.js)
-            React.useEffect(() => {
-                const L = require("leaflet");
-                delete L.Icon.Default.prototype._getIconUrl;
-                L.Icon.Default.mergeOptions({
-                    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-                    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-                    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png"
-                });
-            }, []);
-            
-            return (
-                <MapContainer
-                    center={center}
-                    zoom={15}
-                    style={{ width: "100%", height: "100%" }}
-                >
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    />
-                    <Marker position={center}>
-                        <Popup>{venueName || "Event Venue"}</Popup>
-                    </Marker>
-                </MapContainer>
-            );
-        };
-        return MapComponent;
-    }),
+    () => import('./_components/VenueMap'),
     { ssr: false }
 );
 
@@ -121,9 +87,9 @@ const SessionPage = () => {
     const isOnline = session.sessionType === SessionType.ONLINE;
     const { venueDetails, layoutData, status } = session;
     const statusProps = getStatusProperties(status);
-    
+
     // For the map - set default to Colombo if no coordinates
-    const mapCenter: [number, number] = 
+    const mapCenter: [number, number] =
         venueDetails?.latitude && venueDetails?.longitude
             ? [venueDetails.latitude, venueDetails.longitude]
             : [6.9271, 79.8612]; // Default to Colombo
@@ -190,8 +156,8 @@ const SessionPage = () => {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <div className="flex items-center">
-                                        {isOnline ? 
-                                            <LinkIcon className="h-5 w-5 text-blue-500" /> : 
+                                        {isOnline ?
+                                            <LinkIcon className="h-5 w-5 text-blue-500" /> :
                                             <MapPin className="h-5 w-5 text-emerald-500" />
                                         }
                                     </div>
@@ -204,25 +170,25 @@ const SessionPage = () => {
                         <h1 className="text-2xl font-semibold">{event.title}</h1>
                     </div>
                     <p className="text-muted-foreground">
-                        {startDate.toDateString() === endDate.toDateString() 
+                        {startDate.toDateString() === endDate.toDateString()
                             ? `Session on ${format(startDate, 'EEEE, MMMM d, yyyy')}`
                             : `Session from ${format(startDate, 'MMM d')} to ${format(endDate, 'MMM d, yyyy')}`
                         }
                     </p>
                 </div>
                 <div className="flex space-x-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex items-center gap-1" 
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1"
                         onClick={handleShare}
                     >
                         <Share2 className="h-4 w-4" />
                         Share
                     </Button>
-                    <Button 
-                        variant="destructive" 
-                        size="sm" 
+                    <Button
+                        variant="destructive"
+                        size="sm"
                         className="flex items-center gap-1"
                         onClick={() => setIsDeleteDialogOpen(true)}
                         disabled={status === SessionStatus.ON_SALE || status === SessionStatus.SOLD_OUT}
@@ -233,14 +199,14 @@ const SessionPage = () => {
                 </div>
             </div>
 
-                        {/* Status banner */}
+            {/* Status banner */}
             <div className={`w-full p-3 mb-4 rounded-md flex items-center gap-3 bg-muted/30 border ${status === SessionStatus.CANCELED ? 'border-destructive' : ''}`}>
                 <div className={`p-2 rounded-full ${statusProps.color} bg-muted`}>
                     {React.createElement(statusProps.icon, { className: "h-5 w-5" })}
                 </div>
                 <div className="flex-1">
                     <h3 className="font-medium flex items-center gap-2">
-                        Session Status: 
+                        Session Status:
                         <Badge variant={statusProps.variant} className="text-sm">
                             {status || 'PENDING'}
                         </Badge>
@@ -265,8 +231,8 @@ const SessionPage = () => {
                         <Calendar className="h-5 w-5" />
                         Session Information
                     </CardTitle>
-                    <Badge 
-                        variant={statusProps.variant} 
+                    <Badge
+                        variant={statusProps.variant}
                         className="text-xs sm:text-sm mt-2 sm:mt-0"
                     >
                         {React.createElement(statusProps.icon, { className: "h-3 w-3 mr-1 inline" })}
@@ -365,9 +331,9 @@ const SessionPage = () => {
                             {/* Capacity summary for online events */}
                             {layoutData && layoutData.layout.blocks.length > 0 && (
                                 <div className="mt-4">
-                                    <SeatingCapacitySummary 
-                                        session={session} 
-                                        tiers={event.tiers || []} 
+                                    <SeatingCapacitySummary
+                                        session={session}
+                                        tiers={event.tiers || []}
                                     />
                                 </div>
                             )}
@@ -392,16 +358,16 @@ const SessionPage = () => {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Map for physical events */}
                                 <div className="h-[300px] rounded-md overflow-hidden border">
-                                    <VenueMap 
+                                    <VenueMap
                                         center={mapCenter}
                                         venueName={venueDetails?.name || "Event Venue"}
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Add a note about the map */}
                             <div className="text-xs text-muted-foreground mt-2 italic">
                                 Map shows approximate location based on venue coordinates
@@ -419,9 +385,9 @@ const SessionPage = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="w-full">
-                            <SessionSeatingLayout 
-                                session={session} 
-                                tiers={event.tiers || []} 
+                            <SessionSeatingLayout
+                                session={session}
+                                tiers={event.tiers || []}
                             />
                         </div>
                     </CardContent>
@@ -440,7 +406,7 @@ const SessionPage = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                             onClick={handleDelete}
                             disabled={isDeleting}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
