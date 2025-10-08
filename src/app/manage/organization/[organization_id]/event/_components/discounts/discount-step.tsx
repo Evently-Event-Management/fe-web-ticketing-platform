@@ -1,6 +1,6 @@
 'use client';
 
-import { DiscountList } from "./discount-creation-list";
+import { DiscountList } from "./discount-list";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import {CreateEventFormData, DiscountDTO, discountSchema, sessionWithSeatingSchema} from "@/lib/validators/event";
 import {useEffect, useState} from "react";
@@ -15,6 +15,7 @@ interface DiscountStepProps {
 export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
     const [editingDiscount, setEditingDiscount] = useState<DiscountDTO | null>(null);
+
     const { control, watch } = useFormContext<CreateEventFormData>();
 
     const tiers = watch("tiers");
@@ -113,6 +114,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
                 onToggleStatus={handleToggleStatus}
                 onEdit={handleGoToEditView}
                 filters={false}
+                isShareable={false}
             />
         </div>
     );

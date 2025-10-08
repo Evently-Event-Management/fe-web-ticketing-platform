@@ -195,6 +195,7 @@
                             tiers={event.tiers || []}
                             sessions={event.sessions || []}
                             onToggleStatus={handleToggleStatus}
+                            isShareable={true}
                         />
                     )}
                 </div>

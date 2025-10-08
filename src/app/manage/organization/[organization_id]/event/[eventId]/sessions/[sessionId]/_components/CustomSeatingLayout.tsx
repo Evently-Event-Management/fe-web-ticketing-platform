@@ -24,7 +24,7 @@ export const CustomSeatingLayout: React.FC<SeatingLayoutProps> = ({ session, tie
             case SeatStatus.RESERVED:
                 return { opacity: 0.3, cursor: 'not-allowed' };
             case SeatStatus.BOOKED:
-                return { opacity: 1, border: '2px solid #3B82F6', cursor: 'not-allowed' }; // Blue border for booked seats
+                return { opacity: 1, border: '2px solid #22C55E', cursor: 'not-allowed' }; // Green border for booked seats
             default:
                 return { opacity: 1 };
         }
@@ -196,7 +196,7 @@ export const CustomSeatingLayout: React.FC<SeatingLayoutProps> = ({ session, tie
                     <span className="text-sm">Reserved</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-card border-2 border-blue-500"></div>
+                    <div className="w-4 h-4 rounded-full bg-card border-2 border-green-500"></div>
                     <span className="text-sm">Booked</span>
                 </div>
             </div>
