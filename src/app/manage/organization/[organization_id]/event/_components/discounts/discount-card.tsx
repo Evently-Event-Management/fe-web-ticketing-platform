@@ -73,7 +73,6 @@ export function DiscountCard({
         navigator.clipboard.writeText(code).then(() => toast.success(`Code "${code}" copied!`));
     }
 
-    // Pre-format dates to prevent 'unknown' type errors in JSX
     const formatDate = (dateString?: string | null) => {
         if (!dateString) return null;
         return format(new Date(dateString), 'MMM d, p');
@@ -82,7 +81,6 @@ export function DiscountCard({
     const activeFromDate = formatDate(discount.activeFrom);
     const expiresAtDate = formatDate(discount.expiresAt);
 
-    // Use a safe fallback for arrays that might be undefined
     const applicableSessionIds = discount.applicableSessionIds || [];
     const sessionsCount = sessions?.length || 0;
 
@@ -92,14 +90,14 @@ export function DiscountCard({
 
     return (
         <>
-            <Card key={discount.id} className="hover:shadow-md transition-shadow gap-4">
-                <CardHeader className="flex items-start justify-between py-0">
+            <Card key={discount.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="flex flex-row items-start justify-between">
                     <div className="flex items-center gap-4 flex-1">
                         <div
                             className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
                             {getDiscountIcon(discount.parameters.type)}
                         </div>
-                        <div className="flex-1 ">
+                        <div className="flex-1">
                             <div className="flex items-center gap-3">
                                 <h3 className="text-lg font-semibold">{discount.code}</h3>
                                 <Badge variant={discount.active ? "default" : "secondary"}>
@@ -107,13 +105,13 @@ export function DiscountCard({
                                 </Badge>
                                 {discount.public && (
                                     <Badge variant="outline">
-                                        <Eye className="h-3 w-3 mr-1" />
+                                        <Eye className="h-3 w-3 mr-1"/>
                                         Public
                                     </Badge>
                                 )}
                                 {!discount.public && (
                                     <Badge variant="outline">
-                                        <EyeOff className="h-3 w-3 mr-1" />
+                                        <EyeOff className="h-3 w-3 mr-1"/>
                                         Private
                                     </Badge>
                                 )}
@@ -133,8 +131,8 @@ export function DiscountCard({
                             />
                         )}
                         <Button type={'button'} variant="outline" size="sm"
-                            onClick={() => copyToClipboard(discount.code)}>
-                            <Copy className="h-4 w-4" />
+                                onClick={() => copyToClipboard(discount.code)}>
+                            <Copy className="h-4 w-4"/>
                         </Button>
                         {isShareable && (
                             <Button
@@ -143,32 +141,29 @@ export function DiscountCard({
                                 size="sm"
                                 onClick={() => setIsShareDialogOpen(true)}
                             >
-                                <Share2 className="h-4 w-4" />
+                                <Share2 className="h-4 w-4"/>
                             </Button>
                         )}
                         {!isReadOnly && onEdit && onDelete && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm">
-                                        <MoreHorizontal className="h-4 w-4" />
+                                        <MoreHorizontal className="h-4 w-4"/>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onSelect={() => onEdit(discount)}>
-                                        <Edit className="h-4 w-4 mr-2" />
+                                        <Edit className="h-4 w-4 mr-2"/>
                                         Edit
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="text-destructive"
-                                        onSelect={(e) => {
-                                            // Prevent the dropdown from closing
-                                            e.preventDefault();
-                                        }}
+                                        onSelect={(e) => e.preventDefault()}
                                     >
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <div className="flex items-center w-full cursor-pointer">
-                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                    <Trash2 className="h-4 w-4 mr-2"/>
                                                     Delete
                                                 </div>
                                             </AlertDialogTrigger>
@@ -197,61 +192,69 @@ export function DiscountCard({
                         )}
                     </div>
                 </CardHeader>
-                <CardContent className="">
-                    <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4 flex-1">
-                            <div className="flex-1 space-y-2 text-sm text-muted-foreground">
-                                {discount.maxUsage != null ? (
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <Users className="h-4 w-4" />
-                                        <span>Usage Limit:</span>
-                                        <div className="relative w-28 h-5 rounded-full bg-muted overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary transition-all"
-                                                style={{ width: `${usagePercentage}%` }}
-                                            />
-                                            <span
-                                                className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white">
+                <CardContent>
+                    <div className="flex items-start justify-between gap-4">
+                        {/* --- Left Column: Details --- */}
+                        <div className="flex-1 space-y-2 text-sm text-muted-foreground">
+                            {discount.maxUsage != null ? (
+                                <div className="flex items-center gap-2 text-xs">
+                                    <Users className="h-4 w-4"/>
+                                    <span>Usage Limit:</span>
+                                    <div className="relative w-28 h-5 rounded-full bg-muted overflow-hidden">
+                                        <div
+                                            className="h-full bg-primary transition-all"
+                                            style={{width: `${usagePercentage}%`}}
+                                        />
+                                        <span
+                                            className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white">
                                                 {discount.currentUsage || 0}/{discount.maxUsage}
                                             </span>
-                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <Users className="h-4 w-4" />
-                                        <span>Uses:</span>
-                                        <span className="font-medium">{discount.currentUsage || 0}</span>
-                                    </div>
-                                )}
-
-
-                                {activeFromDate && expiresAtDate && (
-                                    <div className="flex flex-wrap gap-x-4 gap-y-2">
-                                        {activeFromDate && (
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
-                                                <span>Activates {activeFromDate}</span>
-                                            </div>
-                                        )}
-                                        {expiresAtDate && (
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
-                                                <span>Expires {expiresAtDate}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                <div className="space-y-1">
-                                    <p className="text-xs text-muted-foreground">
-                                        Applicable Tiers: {getTierNames(discount.applicableTierIds)}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Sessions: {sessionsCount > 0 && applicableSessionIds.length === sessionsCount ? "All Sessions" : `${applicableSessionIds.length} Selected`}
-                                    </p>
                                 </div>
+                            ) : (
+                                <div className="flex items-center gap-2 text-xs">
+                                    <Users className="h-4 w-4"/>
+                                    <span>Uses:</span>
+                                    <span className="font-medium">{discount.currentUsage || 0}</span>
+                                </div>
+                            )}
+
+                            {activeFromDate && expiresAtDate && (
+                                <div className="flex flex-wrap gap-x-4 gap-y-2">
+                                    {activeFromDate && (
+                                        <div className="flex items-center gap-1">
+                                            <Calendar className="h-4 w-4"/>
+                                            <span>Activates {activeFromDate}</span>
+                                        </div>
+                                    )}
+                                    {expiresAtDate && (
+                                        <div className="flex items-center gap-1">
+                                            <Calendar className="h-4 w-4"/>
+                                            <span>Expires {expiresAtDate}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground">
+                                    Applicable Tiers: {getTierNames(discount.applicableTierIds)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Sessions: {sessionsCount > 0 && applicableSessionIds.length === sessionsCount ? "All Sessions" : `${applicableSessionIds.length} Selected`}
+                                </p>
                             </div>
                         </div>
+
+                        {/* --- Right Column: Discounted Total (More Compact) --- */}
+                        {discount.discountedTotal > 0 && (
+                            <div className="text-right">
+                                <p className="text-xs text-muted-foreground font-medium">Total Discounted</p>
+                                <p className="text-2xl font-bold text-primary">
+                                    ${discount.discountedTotal.toFixed(2)}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
