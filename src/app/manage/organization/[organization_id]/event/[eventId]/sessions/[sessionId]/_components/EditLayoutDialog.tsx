@@ -29,17 +29,10 @@ export function EditLayoutDialog({
     organizationId,
     onSave
 }: EditLayoutDialogProps) {
-    const [layoutData, setLayoutData] = useState<SessionSeatingMapRequest | undefined>(initialLayout);
-    
-    const handleLayoutChange = (layout: SessionSeatingMapRequest) => {
-        setLayoutData(layout);
-    };
-    
-    const handleSave = () => {
-        if (layoutData) {
-            onSave({ layoutData });
-            onOpenChange(false);
-        }
+    // Direct save function that will be passed to the editors
+    const handleDirectSave = (layout: SessionSeatingMapRequest) => {
+        onSave({ layoutData: layout });
+        onOpenChange(false);
     };
     
     return (
@@ -52,14 +45,14 @@ export function EditLayoutDialog({
                 <div className="overflow-y-auto p-6 h-[500px]">
                     {sessionType === SessionType.PHYSICAL ? (
                         <PhysicalLayoutEditor
-                            onSave={handleLayoutChange}
+                            onSave={handleDirectSave}
                             initialConfig={initialLayout}
                             tiers={tiers}
                             organizationId={organizationId}
                         />
                     ) : (
                         <OnlineLayoutEditor
-                            onSave={handleLayoutChange}
+                            onSave={handleDirectSave}
                             initialConfig={initialLayout}
                             tiers={tiers}
                         />
@@ -69,9 +62,6 @@ export function EditLayoutDialog({
                 <DialogFooter className="p-4 border-t bg-muted/40">
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
-                    </Button>
-                    <Button type="button" onClick={handleSave}>
-                        Save Changes
                     </Button>
                 </DialogFooter>
             </DialogContent>
