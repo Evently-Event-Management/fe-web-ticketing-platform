@@ -270,6 +270,7 @@ const SessionPage = () => {
                 venueDetails={venueDetails}
                 canEditVenue={canEditVenue}
                 onEditVenue={() => setIsEditLocationDialogOpen(true)}
+                isDialogOpen={isEditLocationDialogOpen || isChangeStatusDialogOpen || isEditTimeDialogOpen || isDeleteDialogOpen}
             />
 
             {/* Seating Layout Section */}

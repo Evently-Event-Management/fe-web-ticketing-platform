@@ -121,7 +121,7 @@ export function LocationEditDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-4xl p-0 grid grid-rows-[auto_1fr_auto] max-h-[90vh]">
+            <DialogContent className="sm:max-w-4xl p-0 grid grid-rows-[auto_1fr_auto] max-h-[90vh] z-50">
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Edit Location for Session {sessionIndex + 1}</DialogTitle>
                 </DialogHeader>
@@ -142,11 +142,13 @@ export function LocationEditDialog({
                             </div>
                             <div className="flex flex-col h-full gap-4">
                                 {open ? (
-                                    <MapContainer center={markerPosition} zoom={15} style={{ width: '100%', height: '300px', borderRadius: 'var(--radius)' }}>
-                                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                        <Marker position={markerPosition} draggable={true} eventHandlers={{ dragend: handleMarkerDragEnd }} />
-                                        <LocationMarker setMarkerPosition={setMarkerPosition} />
-                                    </MapContainer>
+                                    <div className="relative z-[60]">
+                                        <MapContainer center={markerPosition} zoom={15} style={{ width: '100%', height: '300px', borderRadius: 'var(--radius)' }}>
+                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                            <Marker position={markerPosition} draggable={true} eventHandlers={{ dragend: handleMarkerDragEnd }} />
+                                            <LocationMarker setMarkerPosition={setMarkerPosition} />
+                                        </MapContainer>
+                                    </div>
                                 ) : <Skeleton className="h-full w-full" />}
                             </div>
                         </div>
