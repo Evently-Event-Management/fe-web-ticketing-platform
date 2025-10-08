@@ -10,13 +10,11 @@ import { SessionType } from "@/types/enums/sessionType";
 import { SessionStatus } from "@/types/enums/sessionStatus";
 import { 
     deleteSession, 
-    updateSessionLayout, 
     updateSessionStatus, 
     updateSessionTime, 
     updateSessionVenue,
     SessionTimeUpdateRequest,
     SessionStatusUpdateRequest,
-    SessionLayoutUpdateRequest,
     SessionVenueUpdateRequest
 } from "@/lib/actions/sessionActions";
 import { toast } from "sonner";
@@ -43,7 +41,6 @@ import {
 // Import edit dialogs
 import { EditTimeDialog } from './_components/EditTimeDialog';
 import { LocationEditDialog } from './_components/LocationEditDialog';
-import { EditLayoutDialog } from './_components/EditLayoutDialog';
 import { ChangeStatusDialog } from './_components/ChangeStatusDialog';
 
 // Helper function to get status badge variant and color
@@ -77,7 +74,6 @@ const SessionPage = () => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isEditTimeDialogOpen, setIsEditTimeDialogOpen] = useState(false);
     const [isEditLocationDialogOpen, setIsEditLocationDialogOpen] = useState(false);
-    const [isEditLayoutDialogOpen, setIsEditLayoutDialogOpen] = useState(false);
     const [isChangeStatusDialogOpen, setIsChangeStatusDialogOpen] = useState(false);
     
     // Operation states
@@ -182,21 +178,7 @@ const SessionPage = () => {
         }
     };
 
-    // Handle layout update
-    const handleLayoutUpdate = async (layoutData: SessionLayoutUpdateRequest) => {
-        try {
-            setIsSaving(true);
-            await updateSessionLayout(sessionId, layoutData);
-            toast.success('Seating layout updated successfully');
-            await refetchSession(sessionId);
-            setIsEditLayoutDialogOpen(false);
-        } catch (error) {
-            console.error('Error updating seating layout:', error);
-            toast.error('Failed to update seating layout');
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    // Layout update is now handled in a separate page
 
     // Handle status change
     const handleStatusUpdate = async (statusData: SessionStatusUpdateRequest) => {
@@ -296,7 +278,6 @@ const SessionPage = () => {
                     session={session}
                     tiers={event.tiers}
                     canEditLayout={canEditLayout}
-                    onEditLayout={() => setIsEditLayoutDialogOpen(true)}
                 />
             )}
 
@@ -321,17 +302,6 @@ const SessionPage = () => {
                 initialData={venueDetails}
                 onSave={handleVenueUpdate}
                 sessionIndex={0}
-            />
-            
-            {/* Edit Layout Dialog */}
-            <EditLayoutDialog
-                open={isEditLayoutDialogOpen}
-                onOpenChange={setIsEditLayoutDialogOpen}
-                initialLayout={layoutData}
-                sessionType={session.sessionType}
-                tiers={event.tiers}
-                organizationId={organizationId}
-                onSave={handleLayoutUpdate}
             />
             
             {/* Change Status Dialog */}
