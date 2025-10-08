@@ -15,7 +15,6 @@ import {
     updateSessionVenue,
     SessionTimeUpdateRequest,
     SessionStatusUpdateRequest,
-    SessionVenueUpdateRequest
 } from "@/lib/actions/sessionActions";
 import { toast } from "sonner";
 import {
@@ -42,6 +41,7 @@ import {
 import { EditTimeDialog } from './_components/EditTimeDialog';
 import { LocationEditDialog } from './_components/LocationEditDialog';
 import { ChangeStatusDialog } from './_components/ChangeStatusDialog';
+import {VenueDetails} from "@/lib/validators/event";
 
 // Helper function to get status badge variant and color
 const getStatusProperties = (status: string | undefined) => {
@@ -66,7 +66,6 @@ const getStatusProperties = (status: string | undefined) => {
 const SessionPage = () => {
     const params = useParams();
     const sessionId = params.sessionId as string;
-    const organizationId = params.organization_id as string;
     const router = useRouter();
     const { event, refetchSession } = useEventContext();
     
@@ -104,12 +103,6 @@ const SessionPage = () => {
     const isOnline = session.sessionType === SessionType.ONLINE;
     const { venueDetails, layoutData, status } = session;
     const statusProps = getStatusProperties(status);
-
-    // For the map - set default to Colombo if no coordinates
-    const mapCenter: [number, number] =
-        venueDetails?.latitude && venueDetails?.longitude
-            ? [venueDetails.latitude, venueDetails.longitude]
-            : [6.9271, 79.8612]; // Default to Colombo
 
     // Calculate event duration
     const getDuration = () => {
@@ -163,7 +156,7 @@ const SessionPage = () => {
     };
 
     // Handle location/venue update
-    const handleVenueUpdate = async (venueDetails: any) => {
+    const handleVenueUpdate = async (venueDetails: VenueDetails) => {
         try {
             setIsSaving(true);
             await updateSessionVenue(sessionId, { venueDetails });
