@@ -100,9 +100,7 @@ export default function CreateSessionPage() {
 
         const formData = methods.getValues()
         const validationResult = await currentSchema.safeParseAsync(formData)
-
-        console.log(validationResult)
-
+c
         if (validationResult.success) {
             setStep((s) => Math.min(totalSteps, s + 1))
         } else {
@@ -181,6 +179,7 @@ export default function CreateSessionPage() {
     // Custom props for step components that will be needed to make them work independently
     const schedulingStepProps = {
         // Add any props needed for SchedulingStep
+        currentSessionCount: event.sessions?.length || 0
     };
 
     const seatingStepProps = {
