@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useEventContext } from "@/providers/EventProvider";
 import { toast } from "sonner";
 import { SessionType } from '@/types/enums/sessionType';
@@ -17,9 +16,7 @@ export default function EditLayoutPage() {
     const params = useParams();
     const router = useRouter();
     const { event, refetchSession } = useEventContext();
-    
-    const [isSaving, setIsSaving] = useState(false);
-    
+
     const sessionId = params.sessionId as string;
     const organizationId = params.organization_id as string;
     const eventId = params.eventId as string;
@@ -47,7 +44,6 @@ export default function EditLayoutPage() {
     
     const handleSave = async (layout: SessionSeatingMapRequest) => {
         try {
-            setIsSaving(true);
             const updateData: SessionLayoutUpdateRequest = { layoutData: layout };
             await updateSessionLayout(sessionId, updateData);
             toast.success('Seating layout updated successfully');
@@ -56,7 +52,6 @@ export default function EditLayoutPage() {
         } catch (error) {
             console.error('Error updating seating layout:', error);
             toast.error('Failed to update seating layout');
-            setIsSaving(false);
         }
     };
 

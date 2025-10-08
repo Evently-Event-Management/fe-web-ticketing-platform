@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { LinkIcon, MapPin, Share2, Trash2, ChevronLeft, ArrowLeft } from 'lucide-react';
+import { LinkIcon, MapPin, Share2, Trash2, ChevronLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { SessionType } from "@/types/enums/sessionType";
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -70,7 +69,11 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                     </p>
                 </div>
                 <div className="flex space-x-2">
-                    <Button variant="outline" className="flex items-center gap-2" onClick={onShare}>
+                    <Button 
+                        variant="outline" 
+                        className="flex items-center gap-2" 
+                        onClick={onShare}
+                    >
                         <Share2 className="h-4 w-4" />
                         <span>Share</span>
                     </Button>
