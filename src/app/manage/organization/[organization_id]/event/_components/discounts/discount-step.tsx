@@ -1,8 +1,8 @@
 'use client';
 
-import { DiscountList } from "./discount-list";
+import { DiscountList } from "./discount-creation-list";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import {CreateEventFormData, DiscountDTO, discountSchema} from "@/lib/validators/event";
+import {CreateEventFormData, DiscountDTO, discountSchema, sessionWithSeatingSchema} from "@/lib/validators/event";
 import {useEffect, useState} from "react";
 import { FullDiscountFormView } from "./full-discount-form-view";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ interface DiscountStepProps {
 export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
     const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
     const [editingDiscount, setEditingDiscount] = useState<DiscountDTO | null>(null);
-
     const { control, watch } = useFormContext<CreateEventFormData>();
 
     const tiers = watch("tiers");
@@ -77,7 +76,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
         return (
             <FullDiscountFormView
                 tiers={tiers}
-                sessions={sessions}
+                sessions={sessions.map((s) => sessionWithSeatingSchema.parse(s))}
                 onSave={(discount) => {
                     if (view === 'edit' && editingDiscount) {
                         handleUpdateDiscount(discount);
@@ -109,7 +108,7 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
             <DiscountList
                 discounts={discounts?.map((d) => discountSchema.parse(d))}
                 tiers={tiers}
-                sessions={sessions}
+                sessions={sessions?.map((s) => sessionWithSeatingSchema.parse(s))}
                 onDelete={handleDeleteDiscount}
                 onToggleStatus={handleToggleStatus}
                 onEdit={handleGoToEditView}

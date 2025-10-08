@@ -146,7 +146,7 @@ export function ChangeStatusDialog({
                     <DialogHeader>
                         <DialogTitle>Change Session Status</DialogTitle>
                         <DialogDescription>
-                            Update the session status based on your event's needs
+                            Update the session status based on your event&#39;s needs
                         </DialogDescription>
                     </DialogHeader>
                     

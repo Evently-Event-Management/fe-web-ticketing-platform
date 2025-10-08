@@ -27,6 +27,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { ShareComponent } from "@/components/ui/share/share-component";
 
 // Import page components
 import { 
@@ -74,10 +81,8 @@ const SessionPage = () => {
     const [isEditTimeDialogOpen, setIsEditTimeDialogOpen] = useState(false);
     const [isEditLocationDialogOpen, setIsEditLocationDialogOpen] = useState(false);
     const [isChangeStatusDialogOpen, setIsChangeStatusDialogOpen] = useState(false);
-    
-    // Operation states
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
+
+    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
     if (!event) {
         return (
@@ -119,55 +124,37 @@ const SessionPage = () => {
             return `${minutes} minutes`;
         }
     };
-
+    
     // Handle share
-    const handleShare = async () => {
-        try {
-            const shareUrl = window.location.href;
-            if (navigator.share) {
-                await navigator.share({
-                    title: `${event.title} - ${format(startDate, 'MMM d, yyyy')}`,
-                    text: `Join us for ${event.title} on ${format(startDate, 'EEEE, MMMM d, yyyy')}`,
-                    url: shareUrl,
-                });
-            } else {
-                await navigator.clipboard.writeText(shareUrl);
-                toast.success('Session URL copied to clipboard!');
-            }
-        } catch (error) {
-            console.error('Error sharing:', error);
-        }
+    const handleShare = () => {
+        setIsShareDialogOpen(true);
     };
 
     // Handle session time update
     const handleTimeUpdate = async (timeData: SessionTimeUpdateRequest) => {
+        const t = toast.loading('Updating session time...');
         try {
-            setIsSaving(true);
             await updateSessionTime(sessionId, timeData);
-            toast.success('Session time updated successfully');
+            toast.success('Session time updated successfully', { id: t });
             await refetchSession(sessionId);
             setIsEditTimeDialogOpen(false);
         } catch (error) {
             console.error('Error updating session time:', error);
-            toast.error('Failed to update session time');
-        } finally {
-            setIsSaving(false);
+            toast.error('Failed to update session time', { id: t });
         }
     };
 
     // Handle location/venue update
     const handleVenueUpdate = async (venueDetails: VenueDetails) => {
+        const t = toast.loading('Updating venue details...');
         try {
-            setIsSaving(true);
             await updateSessionVenue(sessionId, { venueDetails });
-            toast.success('Venue details updated successfully');
+            toast.success('Venue details updated successfully', { id: t });
             await refetchSession(sessionId);
             setIsEditLocationDialogOpen(false);
         } catch (error) {
             console.error('Error updating venue details:', error);
-            toast.error('Failed to update venue details');
-        } finally {
-            setIsSaving(false);
+            toast.error('Failed to update venue details', { id: t });
         }
     };
 
@@ -175,33 +162,30 @@ const SessionPage = () => {
 
     // Handle status change
     const handleStatusUpdate = async (statusData: SessionStatusUpdateRequest) => {
+        const t = toast.loading('Updating session status...');
         try {
-            setIsSaving(true);
             await updateSessionStatus(sessionId, statusData);
-            toast.success(`Session status updated to ${statusData.status}`);
+            toast.success(`Session status updated to ${statusData.status}`, { id: t });
             await refetchSession(sessionId);
             setIsChangeStatusDialogOpen(false);
         } catch (error) {
             console.error('Error updating session status:', error);
-            toast.error('Failed to update session status');
-        } finally {
-            setIsSaving(false);
+            toast.error('Failed to update session status', { id: t });
         }
     };
     
     // Handle delete
     const handleDelete = async () => {
+        const t = toast.loading('Deleting session...');
         try {
-            setIsDeleting(true);
             await deleteSession(sessionId);
-            toast.success('Session deleted successfully');
+            toast.success('Session deleted successfully', { id: t });
             router.push(`/manage/organization/${params.organization_id}/event/${params.eventId}`);
             await refetchSession(sessionId);
         } catch (error) {
             console.error('Error deleting session:', error);
-            toast.error('Failed to delete session');
+            toast.error('Failed to delete session', { id: t });
         } finally {
-            setIsDeleting(false);
             setIsDeleteDialogOpen(false);
         }
     };
@@ -263,7 +247,7 @@ const SessionPage = () => {
                 venueDetails={venueDetails}
                 canEditVenue={canEditVenue}
                 onEditVenue={() => setIsEditLocationDialogOpen(true)}
-                isDialogOpen={isEditLocationDialogOpen || isChangeStatusDialogOpen || isEditTimeDialogOpen || isDeleteDialogOpen}
+                isDialogOpen={isEditLocationDialogOpen || isChangeStatusDialogOpen || isEditTimeDialogOpen || isDeleteDialogOpen || isShareDialogOpen}
             />
 
             {/* Seating Layout Section */}
@@ -316,17 +300,30 @@ const SessionPage = () => {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={handleDelete}
-                            disabled={isDeleting} 
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            {isDeleting ? "Deleting..." : "Delete"}
+                            Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            
+            {/* Share Dialog */}
+            <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Share Session</DialogTitle>
+                    </DialogHeader>
+                    <ShareComponent 
+                        url={window.location.href}
+                        title={`${event.title} - ${format(startDate, 'MMM d, yyyy')}`}
+                        text={`Join us for ${event.title} on ${format(startDate, 'EEEE, MMMM d, yyyy')}`}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

@@ -6,7 +6,7 @@ import {Button} from "@/components/ui/button"
 import {Switch} from "@/components/ui/switch"
 import {
     Edit, Trash2, Copy, Eye, EyeOff, Percent, DollarSign, Gift,
-    Calendar, Users, MoreHorizontal, Share2,
+    Calendar, Users, MoreHorizontal,
 } from "lucide-react"
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import {DiscountType} from "@/types/enums/discountType";
@@ -14,8 +14,6 @@ import {DiscountDTO, SessionDTO, TierDTO} from "@/lib/validators/event";
 import {toast} from "sonner";
 import {format} from "date-fns";
 import {getDiscountValue} from "@/lib/discountUtils";
-import {useState} from "react";
-import {DiscountShareDialog} from "./discount-share-dialog";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel,
     AlertDialogContent,
@@ -58,7 +56,6 @@ export function DiscountCard({
                                  onEdit,
                                  isReadOnly = false
                              }: DiscountCardProps) {
-    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
     const getTierNames = (tierIds?: string[]) => {
         const ids = tierIds || [];
@@ -133,14 +130,6 @@ export function DiscountCard({
                         <Button type={'button'} variant="outline" size="sm"
                                 onClick={() => copyToClipboard(discount.code)}>
                             <Copy className="h-4 w-4"/>
-                        </Button>
-                        <Button
-                            type={'button'}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsShareDialogOpen(true)}
-                        >
-                            <Share2 className="h-4 w-4"/>
                         </Button>
                         {!isReadOnly && onEdit && onDelete && (
                             <DropdownMenu>
@@ -251,14 +240,6 @@ export function DiscountCard({
                     </div>
                 </CardContent>
             </Card>
-
-            {/* Share Dialog */}
-            <DiscountShareDialog
-                open={isShareDialogOpen}
-                onOpenChange={setIsShareDialogOpen}
-                discount={discount}
-                sessions={sessions}
-            />
         </>
     );
 }

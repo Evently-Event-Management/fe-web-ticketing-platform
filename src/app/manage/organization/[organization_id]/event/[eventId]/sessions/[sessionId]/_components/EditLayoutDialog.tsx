@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { SessionType } from '@/types/enums/sessionType';

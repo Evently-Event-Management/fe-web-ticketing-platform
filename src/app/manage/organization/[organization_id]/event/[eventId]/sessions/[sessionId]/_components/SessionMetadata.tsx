@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { SessionStatus } from '@/types/enums/sessionStatus';
-import { getSalesWindowDuration, getSalesStartTimeDisplay } from '@/lib/utils';
+import { getSalesWindowDuration } from '@/lib/utils';
 import { Calendar, Clock, Timer, AlarmClock, Ticket, Pencil, Tag } from 'lucide-react';
 
 // A small helper component for consistent display of information items
