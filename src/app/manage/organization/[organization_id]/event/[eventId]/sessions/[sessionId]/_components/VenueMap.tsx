@@ -27,7 +27,8 @@ const VenueMap: React.FC<VenueMapProps> = ({ center, venueName }) => {
         <MapContainer
             center={center}
             zoom={15}
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", zIndex: 10 }}
+            className="z-10"
         >
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

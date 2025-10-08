@@ -34,13 +34,15 @@ interface VenueInformationProps {
     };
     canEditVenue: boolean;
     onEditVenue: () => void;
+    isDialogOpen?: boolean; // New prop to check if any dialog is open
 }
 
 export const VenueInformation: React.FC<VenueInformationProps> = ({
     isOnline,
     venueDetails,
     canEditVenue,
-    onEditVenue
+    onEditVenue,
+    isDialogOpen = false // Default to false if not provided
 }) => {
     // For the map - set default to Colombo if no coordinates
     const mapCenter: [number, number] =
@@ -119,11 +121,18 @@ export const VenueInformation: React.FC<VenueInformationProps> = ({
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-muted-foreground">LOCATION MAP</h3>
                             <div className="h-[250px] w-full rounded-md border overflow-hidden relative">
-                                {venueDetails?.latitude && venueDetails?.longitude ? (
+                                {!isDialogOpen && venueDetails?.latitude && venueDetails?.longitude ? (
                                     <VenueMap 
                                         center={mapCenter}
                                         venueName={venueDetails?.name || 'Event Location'}
                                     />
+                                ) : isDialogOpen ? (
+                                    <div className="flex items-center justify-center h-full bg-muted/10">
+                                        <div className="text-center p-4">
+                                            <MapPin className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                                            <p className="text-sm text-muted-foreground">Map temporarily hidden while dialog is open</p>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <div className="flex items-center justify-center h-full bg-muted/10">
                                         <div className="text-center p-4">
