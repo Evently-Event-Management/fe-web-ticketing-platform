@@ -21,6 +21,7 @@ export interface UpdateEventRequest {
   title?: string;
   description?: string;
   overview?: string;
+  categoryId?: string;
 }
 
 /**
