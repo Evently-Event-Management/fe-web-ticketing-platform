@@ -1,21 +1,21 @@
 "use client"
 
-import {Card, CardContent, CardHeader} from "@/components/ui/card"
-import {Badge} from "@/components/ui/badge"
-import {Button} from "@/components/ui/button"
-import {Switch} from "@/components/ui/switch"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import {
     Edit, Trash2, Copy, Eye, EyeOff, Percent, DollarSign, Gift,
     Calendar, Users, MoreHorizontal, Share2,
 } from "lucide-react"
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
-import {DiscountType} from "@/types/enums/discountType";
-import {DiscountDTO, SessionDTO, TierDTO} from "@/lib/validators/event";
-import {toast} from "sonner";
-import {format} from "date-fns";
-import {getDiscountValue} from "@/lib/discountUtils";
-import {useState} from "react";
-import {DiscountShareDialog} from "./discount-share-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DiscountType } from "@/types/enums/discountType";
+import { DiscountDTO, SessionDTO, TierDTO } from "@/lib/validators/event";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { getDiscountValue } from "@/lib/discountUtils";
+import { useState } from "react";
+import { DiscountShareDialog } from "./discount-share-dialog";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel,
     AlertDialogContent,
@@ -33,31 +33,33 @@ interface DiscountCardProps {
     onToggleStatus?: (id: string) => void,
     onEdit?: (discount: DiscountDTO) => void,
     isReadOnly?: boolean,
+    isShareable?: boolean,
 }
 
 // --- Helper Functions ---
 const getDiscountIcon = (type: DiscountType) => {
     switch (type) {
         case DiscountType.PERCENTAGE:
-            return <Percent className="h-5 w-5"/>;
+            return <Percent className="h-5 w-5" />;
         case DiscountType.FLAT_OFF:
-            return <DollarSign className="h-5 w-5"/>;
+            return <DollarSign className="h-5 w-5" />;
         case DiscountType.BUY_N_GET_N_FREE:
-            return <Gift className="h-5 w-5"/>;
+            return <Gift className="h-5 w-5" />;
         default:
-            return <Percent className="h-5 w-5"/>;
+            return <Percent className="h-5 w-5" />;
     }
 }
 
 export function DiscountCard({
-                                 discount,
-                                 tiers,
-                                 sessions,
-                                 onDelete,
-                                 onToggleStatus,
-                                 onEdit,
-                                 isReadOnly = false
-                             }: DiscountCardProps) {
+    discount,
+    tiers,
+    sessions,
+    onDelete,
+    onToggleStatus,
+    onEdit,
+    isReadOnly = false,
+    isShareable = true
+}: DiscountCardProps) {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
     const getTierNames = (tierIds?: string[]) => {
@@ -105,13 +107,13 @@ export function DiscountCard({
                                 </Badge>
                                 {discount.public && (
                                     <Badge variant="outline">
-                                        <Eye className="h-3 w-3 mr-1"/>
+                                        <Eye className="h-3 w-3 mr-1" />
                                         Public
                                     </Badge>
                                 )}
                                 {!discount.public && (
                                     <Badge variant="outline">
-                                        <EyeOff className="h-3 w-3 mr-1"/>
+                                        <EyeOff className="h-3 w-3 mr-1" />
                                         Private
                                     </Badge>
                                 )}
@@ -131,27 +133,29 @@ export function DiscountCard({
                             />
                         )}
                         <Button type={'button'} variant="outline" size="sm"
-                                onClick={() => copyToClipboard(discount.code)}>
-                            <Copy className="h-4 w-4"/>
+                            onClick={() => copyToClipboard(discount.code)}>
+                            <Copy className="h-4 w-4" />
                         </Button>
-                        <Button
-                            type={'button'}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsShareDialogOpen(true)}
-                        >
-                            <Share2 className="h-4 w-4"/>
-                        </Button>
+                        {isShareable && (
+                            <Button
+                                type={'button'}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsShareDialogOpen(true)}
+                            >
+                                <Share2 className="h-4 w-4" />
+                            </Button>
+                        )}
                         {!isReadOnly && onEdit && onDelete && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm">
-                                        <MoreHorizontal className="h-4 w-4"/>
+                                        <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onSelect={() => onEdit(discount)}>
-                                        <Edit className="h-4 w-4 mr-2"/>
+                                        <Edit className="h-4 w-4 mr-2" />
                                         Edit
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
@@ -164,7 +168,7 @@ export function DiscountCard({
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <div className="flex items-center w-full cursor-pointer">
-                                                    <Trash2 className="h-4 w-4 mr-2"/>
+                                                    <Trash2 className="h-4 w-4 mr-2" />
                                                     Delete
                                                 </div>
                                             </AlertDialogTrigger>
@@ -199,12 +203,12 @@ export function DiscountCard({
                             <div className="flex-1 space-y-2 text-sm text-muted-foreground">
                                 {discount.maxUsage != null ? (
                                     <div className="flex items-center gap-2 text-xs">
-                                        <Users className="h-4 w-4"/>
+                                        <Users className="h-4 w-4" />
                                         <span>Usage Limit:</span>
                                         <div className="relative w-28 h-5 rounded-full bg-muted overflow-hidden">
                                             <div
                                                 className="h-full bg-primary transition-all"
-                                                style={{width: `${usagePercentage}%`}}
+                                                style={{ width: `${usagePercentage}%` }}
                                             />
                                             <span
                                                 className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white">
@@ -214,7 +218,7 @@ export function DiscountCard({
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 text-xs">
-                                        <Users className="h-4 w-4"/>
+                                        <Users className="h-4 w-4" />
                                         <span>Uses:</span>
                                         <span className="font-medium">{discount.currentUsage || 0}</span>
                                     </div>
@@ -225,13 +229,13 @@ export function DiscountCard({
                                     <div className="flex flex-wrap gap-x-4 gap-y-2">
                                         {activeFromDate && (
                                             <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4"/>
+                                                <Calendar className="h-4 w-4" />
                                                 <span>Activates {activeFromDate}</span>
                                             </div>
                                         )}
                                         {expiresAtDate && (
                                             <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4"/>
+                                                <Calendar className="h-4 w-4" />
                                                 <span>Expires {expiresAtDate}</span>
                                             </div>
                                         )}
@@ -253,12 +257,14 @@ export function DiscountCard({
             </Card>
 
             {/* Share Dialog */}
-            <DiscountShareDialog
-                open={isShareDialogOpen}
-                onOpenChange={setIsShareDialogOpen}
-                discount={discount}
-                sessions={sessions}
-            />
+            {isShareable && (
+                <DiscountShareDialog
+                    open={isShareDialogOpen}
+                    onOpenChange={setIsShareDialogOpen}
+                    discount={discount}
+                    sessions={sessions}
+                />
+            )}
         </>
     );
 }

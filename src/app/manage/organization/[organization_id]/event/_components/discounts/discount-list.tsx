@@ -18,6 +18,7 @@ interface DiscountListProps {
     onEdit?: (discount: DiscountDTO) => void,
     filters?: boolean,
     isReadOnly?: boolean,
+    isShareable?: boolean,
 }
 
 export function DiscountList({
@@ -28,7 +29,8 @@ export function DiscountList({
                                  onToggleStatus,
                                  onEdit,
                                  filters = true,
-                                 isReadOnly = false
+                                 isReadOnly = false,
+                                 isShareable = true
                              }: DiscountListProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterType, setFilterType] = useState<string>("all")
@@ -109,6 +111,7 @@ export function DiscountList({
                         onToggleStatus={onToggleStatus}
                         onEdit={onEdit}
                         isReadOnly={isReadOnly}
+                        isShareable={isShareable}
                     />
                 ))}
             </div>
