@@ -10,22 +10,28 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { UpdateEventRequest, updateEventDetails, uploadEventCoverPhoto, removeCoverPhoto } from "@/lib/actions/eventUpdateActions";
+import { deleteEvent } from "@/lib/actions/eventActions";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, ImageUp, X, Trash2, Save } from "lucide-react";
+import { Loader2, ImageUp, X, Trash2, Save, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/imageUtils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { GeminiMarkdownEditor } from "@/app/manage/organization/[organization_id]/event/_components/GenAIMarkdownEditor";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategoryResponse } from "@/types/category";
+import { getAllCategories } from "@/lib/actions/categoryActions";
 
 // Define validation schema for event updates
 const updateEventSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }).max(255),
   description: z.string().optional(),
   overview: z.string().optional(),
+  categoryId: z.string().uuid({ message: "Please select a valid category" }).optional(),
+  categoryName: z.string().optional(),
 });
 
 type UpdateEventForm = z.infer<typeof updateEventSchema>;
@@ -36,6 +42,9 @@ export default function EventSettingsPage() {
   const [activeTab, setActiveTab] = useState("cover-photos");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form setup
@@ -45,8 +54,15 @@ export default function EventSettingsPage() {
       title: event?.title || "",
       description: event?.description || "",
       overview: event?.overview || "",
+      categoryId: event?.categoryId || "",
+      categoryName: event?.categoryName || "",
     },
   });
+
+  // Fetch categories
+  useEffect(() => {
+    getAllCategories().then(setCategories);
+  }, [organization]);
 
   // Update form when event data changes
   useEffect(() => {
@@ -55,6 +71,8 @@ export default function EventSettingsPage() {
         title: event.title,
         description: event.description || "",
         overview: event.overview || "",
+        categoryId: event.categoryId || "",
+        categoryName: event.categoryName || "",
       });
     }
   }, [event, form]);
@@ -70,6 +88,7 @@ export default function EventSettingsPage() {
         title: data.title,
         description: data.description,
         overview: data.overview,
+        categoryId: data.categoryId,
       };
       
       // Update the event details
@@ -159,6 +178,31 @@ export default function EventSettingsPage() {
     setCoverFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleDeleteEvent = async () => {
+    if (!event?.id) return;
+    if (confirmationText !== event.title) {
+      toast.error("Please type the event name correctly to confirm deletion");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteEvent(event.id);
+      toast.success("Event deleted successfully");
+      
+      // Redirect to organization events page
+      if (organization?.id) {
+        window.location.href = `/manage/organization/${organization.id}/events`;
+      } else {
+        window.location.href = `/manage`;
+      }
+    } catch (error) {
+      console.error("Failed to delete event:", error);
+      toast.error("Failed to delete event. Please try again.");
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading || !event) {
     return (
       <div className="p-4 md:p-8 w-full flex items-center justify-center">
@@ -173,9 +217,10 @@ export default function EventSettingsPage() {
         <h1 className="text-2xl font-bold mb-6">Event Settings</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 w-full max-w-md mb-8">
+          <TabsList className="grid grid-cols-3 w-full max-w-md mb-8">
             <TabsTrigger value="cover-photos">Cover Photos</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="danger" className="text-destructive">Danger Zone</TabsTrigger>
           </TabsList>
           
           <Form {...form}>
@@ -213,6 +258,48 @@ export default function EventSettingsPage() {
                         <FormMessage/>
                       </FormItem>
                     )}/>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <FormField control={form.control} name="categoryId" render={({field}) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              // Find the full category object to get its name
+                              let selectedCategoryName: string | undefined;
+                              for (const parentCat of categories) {
+                                const subCat = parentCat.subCategories.find(sc => sc.id === value);
+                                if (subCat) {
+                                  selectedCategoryName = subCat.name;
+                                  break;
+                                }
+                              }
+                              // Set both the ID and the name in the form state
+                              field.onChange(value);
+                              form.setValue('categoryName', selectedCategoryName);
+                            }}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a category for your event" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories.map((parentCat) => (
+                                <SelectGroup key={parentCat.id}>
+                                  <SelectLabel>{parentCat.name}</SelectLabel>
+                                  {parentCat.subCategories.map((subCat) => (
+                                    <SelectItem key={subCat.id} value={subCat.id}>{subCat.name}</SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage/>
+                        </FormItem>
+                      )}/>
+                    </div>
 
                     {/* Overview with GeminiMarkdownEditor */}
                     <div className="border-t pt-6">
@@ -409,6 +496,73 @@ export default function EventSettingsPage() {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                       />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="danger" className="space-y-8">
+                <div className="space-y-8">
+                  {/* Danger Zone Section */}
+                  <div className="border border-destructive rounded-md p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <AlertTriangle className="h-6 w-6 text-destructive" />
+                      <h3 className="text-lg font-semibold text-destructive">Danger Zone</h3>
+                    </div>
+
+                    <p className="text-sm mb-8">
+                      The actions here can't be undone. Please be certain before proceeding.
+                    </p>
+
+                    <div className="space-y-6">
+                      <div className="border-t border-border pt-6">
+                        <h4 className="font-medium mb-2">Delete this event</h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Permanently delete this event including all sessions, tickets, and related data.
+                          This action is not reversible.
+                        </p>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" type="button">Delete Event</Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the event 
+                                "{event.title}" and all associated data including tickets, orders, and sessions.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="py-4">
+                              <p className="text-sm font-medium mb-2">
+                                To confirm, type "{event.title}" in the field below:
+                              </p>
+                              <Input 
+                                value={confirmationText}
+                                onChange={(e) => setConfirmationText(e.target.value)}
+                                placeholder={`Type ${event.title} to confirm`}
+                                className="mt-2"
+                              />
+                            </div>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setConfirmationText("")}>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                disabled={confirmationText !== event.title || isDeleting}
+                                onClick={handleDeleteEvent}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                {isDeleting ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                )}
+                                Delete Event
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </div>
                 </div>
