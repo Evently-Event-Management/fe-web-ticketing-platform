@@ -8,7 +8,6 @@ import {ArrowUpDown} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import {SessionStatusBadge} from "@/components/SessionStatusBadge";
-import {useParams} from "next/navigation";
 
 // This file is deprecated - see SessionTableColumnFactory instead
 // Keeping this file to avoid breaking existing imports

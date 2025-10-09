@@ -2,12 +2,10 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format, parseISO } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
-import { ArrowUpRightIcon, CalendarIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
-import { SessionStatus } from "@/types/enums/sessionStatus";
+import { ArrowUpRightIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { SessionSummary } from "@/types/eventAnalytics";
 import { SessionSummary as OrderSessionSummary } from "@/lib/actions/analyticsActions";
 import { useRouter } from "next/navigation";
