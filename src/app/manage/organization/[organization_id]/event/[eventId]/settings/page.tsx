@@ -4,6 +4,8 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useEventContext } from "@/providers/EventProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from "next/image";
+import Autoplay from 'embla-carousel-autoplay';
 import { ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +21,7 @@ import { toast } from "sonner";
 import { compressImage } from "@/lib/imageUtils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { GeminiMarkdownEditor } from "@/app/manage/organization/[organization_id]/event/_components/GenAIMarkdownEditor";
+import { GeminiMarkdownEditorStandAlone } from "@/app/manage/organization/[organization_id]/event/[eventId]/sessions/[sessionId]/_components/GenAIMarkdownEditorStandalone";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CategoryResponse } from "@/types/category";
@@ -328,11 +330,13 @@ export default function EventSettingsPage() {
                         render={({field}) => (
                           <FormItem>
                             <FormControl>
-                              <GeminiMarkdownEditor
+                              <GeminiMarkdownEditorStandAlone
                                 value={field.value || ''}
                                 onChange={field.onChange}
-                                getValues={form.getValues as any}
                                 organizationName={organization?.name || 'Our Organization'}
+                                eventTitle={form.getValues("title")}
+                                eventDescription={form.getValues("description")}
+                                eventCategory={form.getValues("categoryName")}
                               />
                             </FormControl>
                             <FormMessage/>
@@ -370,16 +374,25 @@ export default function EventSettingsPage() {
                     {event.coverPhotos && event.coverPhotos.length > 0 && (
                       <div className="space-y-4 border-b pb-6">
                         <h4 className="font-medium">Current Photos</h4>
-                        <Carousel className="w-full">
+                        <Carousel 
+                          plugins={[Autoplay({delay: 4000, stopOnInteraction: true})]}
+                          className="w-full rounded-lg overflow-hidden shadow-lg"
+                          opts={{loop: true}}
+                        >
                           <CarouselContent>
                             {event.coverPhotos.map((photo, index) => (
                               <CarouselItem key={index}>
-                                <div className="relative rounded-lg overflow-hidden aspect-video">
-                                  <img 
+                                <div className="relative aspect-[21/9] w-full bg-gray-200 dark:bg-gray-800">
+                                  <Image 
                                     src={photo} 
                                     alt={`Event cover ${index + 1}`} 
-                                    className="w-full h-full object-cover"
+                                    className="object-cover w-full h-full"
+                                    fill
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = 'https://placehold.co/1280x720/31343C/FFFFFF?text=Image+Not+Found';
+                                    }}
                                   />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                                   <div className="absolute top-2 right-2 flex gap-2">
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
@@ -416,8 +429,12 @@ export default function EventSettingsPage() {
                               </CarouselItem>
                             ))}
                           </CarouselContent>
-                          <CarouselPrevious className="left-2" />
-                          <CarouselNext className="right-2" />
+                          <CarouselPrevious 
+                            className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10" 
+                          />
+                          <CarouselNext 
+                            className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10" 
+                          />
                         </Carousel>
                       </div>
                     )}
@@ -428,31 +445,46 @@ export default function EventSettingsPage() {
                       
                       {coverFiles.length > 0 ? (
                         <div className="space-y-4">
-                          <Carousel className="w-full">
+                          <Carousel 
+                            plugins={[Autoplay({delay: 4000, stopOnInteraction: true})]}
+                            className="w-full rounded-lg overflow-hidden shadow-lg"
+                            opts={{loop: true}}
+                          >
                             <CarouselContent>
                               {coverFiles.map((file, index) => (
                                 <CarouselItem key={index} className="relative">
-                                  <div className="aspect-[16/9] w-full relative overflow-hidden rounded-lg">
-                                    <img 
+                                  <div className="aspect-[21/9] w-full relative bg-gray-200 dark:bg-gray-800">
+                                    <Image
                                       src={URL.createObjectURL(file)} 
-                                      alt={`New cover ${index + 1}`} 
+                                      alt={`New cover ${index + 1}`}
                                       className="object-cover w-full h-full"
+                                      fill
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'https://placehold.co/1280x720/31343C/FFFFFF?text=Image+Not+Found';
+                                      }}
                                     />
-                                    <Button 
-                                      type="button" 
-                                      variant="destructive" 
-                                      size="icon"
-                                      className="absolute top-3 right-3 h-8 w-8 z-10 opacity-80 hover:opacity-100"
-                                      onClick={() => removeImageFromUpload(index)}
-                                    >
-                                      <X className="h-4 w-4"/>
-                                    </Button>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                                   </div>
+                                  <Button 
+                                    type="button" 
+                                    variant="destructive" 
+                                    size="icon"
+                                    className="absolute top-3 right-3 h-8 w-8 z-10 opacity-80 hover:opacity-100"
+                                    onClick={() => removeImageFromUpload(index)}
+                                  >
+                                    <X className="h-4 w-4"/>
+                                  </Button>
                                 </CarouselItem>
                               ))}
                             </CarouselContent>
-                            <CarouselPrevious type="button" className="left-3"/>
-                            <CarouselNext type="button" className="right-3"/>
+                            <CarouselPrevious 
+                              type="button" 
+                              className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10"
+                            />
+                            <CarouselNext 
+                              type="button" 
+                              className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10"
+                            />
                           </Carousel>
                           
                           <div className="flex items-center justify-center gap-4">
@@ -530,7 +562,7 @@ export default function EventSettingsPage() {
                     </div>
 
                     <p className="text-sm mb-8">
-                      The actions here can't be undone. Please be certain before proceeding.
+                      The actions here can&#39;t be undone. Please be certain before proceeding.
                     </p>
 
                     <div className="space-y-6">
@@ -550,12 +582,12 @@ export default function EventSettingsPage() {
                               <AlertDialogTitle>Delete Event</AlertDialogTitle>
                               <AlertDialogDescription>
                                 This action cannot be undone. This will permanently delete the event 
-                                "{event.title}" and all associated data including tickets, orders, and sessions.
+                                &#34;{event.title}&#34; and all associated data including tickets, orders, and sessions.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <div className="py-4">
                               <p className="text-sm font-medium mb-2">
-                                To confirm, type "{event.title}" in the field below:
+                                To confirm, type &#34;{event.title}&#34; in the field below:
                               </p>
                               <Input 
                                 value={confirmationText}
