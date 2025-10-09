@@ -7,7 +7,9 @@ import {
     Home,
     BarChart2,
     CalendarCheck,
-    Settings, Tag,
+    Settings, 
+    Tag,
+    ShoppingCart,
 } from "lucide-react";
 import {EventProvider} from "@/providers/EventProvider";
 
@@ -34,6 +36,7 @@ export default function EventDetailsLayout({
         if (pathname === `${basePath}/sessions`) return "sessions";
         if (pathname === `${basePath}/settings`) return "settings";
         if (pathname === `${basePath}/discounts`) return "discounts";
+        if (pathname === `${basePath}/orders`) return "orders";
         
         return "overview";
     };
@@ -52,6 +55,9 @@ export default function EventDetailsLayout({
             case "settings":
                 router.push(`${basePath}/settings`);
                 break;
+            case "orders":
+                router.push(`${basePath}/orders`);
+                break;
             case "discounts":
                 router.push(`${basePath}/discounts`);
                 break;
@@ -65,6 +71,7 @@ export default function EventDetailsLayout({
         {name: "Overview", value: "overview", icon: Home},
         {name: "Analytics", value: "analytics", icon: BarChart2},
         {name: "Sessions", value: "sessions", icon: CalendarCheck},
+        {name: "Orders", value: "orders", icon: ShoppingCart},
         {name: "Discounts", value: "discounts", icon: Tag},
         {name: "Settings", value: "settings", icon: Settings},
     ];

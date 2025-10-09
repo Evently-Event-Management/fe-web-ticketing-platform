@@ -60,6 +60,35 @@ export interface SessionOrderAnalytics {
     sales_by_tier: TierSalesMetrics[];
 }
 
+export interface TicketResponse {
+    ticket_id: string;
+    order_id: string;
+    seat_id: string;
+    seat_label: string;
+    colour: string;
+    tier_id: string;
+    tier_name: string;
+    price_at_purchase: number;
+    issued_at: string;
+    checked_in: boolean;
+    checked_in_time: string; // always present, even if "0001-01-01T00:00:00Z"
+}
+
+export interface OrderDetailsResponse {
+    OrderID: string;
+    UserID: string;
+    EventID: string;
+    SessionID: string;
+    Status: 'pending' | 'completed' | 'cancelled';
+    SubTotal: number;
+    DiscountID: string;
+    DiscountCode: string;
+    DiscountAmount: number;
+    Price: number;
+    CreatedAt: string;
+    TotalCount?: number; // Total count for pagination
+    tickets: TicketResponse[];
+}
 // API endpoints
 const ORDER_API_PATH = '/order/analytics';
 const ANALYTICS_API_PATH = '/event-query/v1/analytics';
@@ -131,4 +160,58 @@ export const getSessionRevenueAnalytics = async (eventId: string, sessionId: str
  */
 export const getSessionsRevenueAnalytics = async (eventId: string): Promise<SessionSummaryResponse> => {
     return await apiFetch<SessionSummaryResponse>(`${ORDER_API_PATH}/events/${eventId}/sessions`);
+};
+
+/**
+ * Retrieves detailed order information for an event with optional filtering and sorting
+ * 
+ * @param eventId The ID of the event
+ * @param options Optional parameters for filtering, sorting and pagination
+ * @param options.sessionId Optional session ID to filter orders by
+ * @param options.status Optional order status filter ('pending', 'completed', or 'cancelled')
+ * @param options.sort Optional field to sort by (e.g. 'price', 'order_date')
+ * @param options.order Optional sort direction ('asc' or 'desc')
+ * @param options.limit Optional maximum number of results to return
+ * @param options.offset Optional offset for pagination
+ * @returns Detailed order information including customer details and order metrics
+ */
+export const getEventOrderDetails = async (
+    eventId: string,
+    options?: {
+        sessionId?: string;
+        status?: 'pending' | 'completed' | 'cancelled';
+        sort?: string;
+        order?: 'asc' | 'desc';
+        limit?: number;
+        offset?: number;
+    }
+): Promise<OrderDetailsResponse[]> => {
+    const params = new URLSearchParams();
+    
+    if (options?.sessionId) {
+        params.append('sessionId', options.sessionId);
+    }
+    
+    if (options?.status) {
+        params.append('status', options.status);
+    }
+    
+    if (options?.sort) {
+        params.append('sort', options.sort);
+    }
+    
+    if (options?.order) {
+        params.append('order', options.order);
+    }
+    
+    if (options?.limit !== undefined) {
+        params.append('limit', options.limit.toString());
+    }
+    
+    if (options?.offset !== undefined) {
+        params.append('offset', options.offset.toString());
+    }
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    return await apiFetch<OrderDetailsResponse[]>(`${ORDER_API_PATH}/events/${eventId}/orders${queryString}`);
 };
