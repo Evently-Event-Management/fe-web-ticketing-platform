@@ -4,11 +4,9 @@ import {useEffect, useState, useCallback} from "react";
 import {EventAnalytics, SessionSummary} from "@/types/eventAnalytics";
 import {getBatchedGaInsights} from "@/lib/actions/public/server/eventActions";
 import {EventAnalyticsView} from "./_components/EventAnalyticsView";
-import {useSessionColumns} from "./_components/SessionTableColumnFactory";
-import {DataTable} from "@/components/DataTable";
+import {SessionPerformanceGrid} from "./_components/SessionPerformanceGrid";
 import {Skeleton} from "@/components/ui/skeleton";
-import {getAllSessionsAnalytics, getEventAnalytics} from "@/lib/actions/public/analyticsActions";
-import {getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
+import {getAllSessionsAnalytics, getEventAnalytics, getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
 import { AlertTriangle } from "lucide-react";
 import { useEventContext } from "@/providers/EventProvider";
 import { Button } from "@/components/ui/button";
@@ -188,7 +186,7 @@ export default function AnalyticsPage() {
                 isGaLoading={isGaLoading}
                 isRevenueLoading={isRevenueLoading}
             />
-            <DataTable columns={useSessionColumns()} data={sessions} isLoading={isAnalyticsLoading}/>
+            <SessionPerformanceGrid sessions={sessions} isLoading={isAnalyticsLoading} />
         </div>
     );
 }

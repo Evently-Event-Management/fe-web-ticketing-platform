@@ -44,6 +44,8 @@ export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({
         ? revenueAnalytics.total_before_discounts - revenueAnalytics.total_revenue
         : 0;
 
+    const total_before_discounts = revenueAnalytics?.total_before_discounts || analytics.totalRevenue + totalDiscountSavings;
+
     return (
         <div className="space-y-6">
             {/* Top Level KPI Cards */}
@@ -53,9 +55,9 @@ export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({
                     title="Revenue Performance"
                     value={formatCurrency(revenueAnalytics?.total_revenue || analytics.totalRevenue, 'LKR', 'en-LK')}
                     subtitle={`${formatCurrency(avgRevenuePerTicket || analytics.averageRevenuePerTicket, 'LKR', 'en-LK')} avg. per ticket`}
-                    secondaryValue={formatCurrency(totalDiscountSavings, 'LKR', 'en-LK')}
+                    secondaryValue={formatCurrency(total_before_discounts, 'LKR', 'en-LK')}
                     secondaryLabel={totalDiscountSavings > 0
-                        ? `${((totalDiscountSavings / revenueAnalytics!.total_before_discounts) * 100).toFixed(1)}% discount savings`
+                        ? `${((totalDiscountSavings / total_before_discounts) * 100).toFixed(1)}% discount savings`
                         : "No discounts applied"}
                     icon={
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">

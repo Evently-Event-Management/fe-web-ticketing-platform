@@ -45,6 +45,8 @@ export const SessionAnalyticsView: React.FC<{
         ? sessionAnalytics.total_before_discounts - sessionAnalytics.total_revenue
         : 0;
 
+    const total_before_discounts = sessionAnalytics?.total_before_discounts || analytics.sessionRevenue + totalDiscountSavings;
+
     return (
         <div className="container mx-auto space-y-8">
             <div>
@@ -64,9 +66,9 @@ export const SessionAnalyticsView: React.FC<{
                     title="Revenue Performance"
                     value={formatCurrency(sessionAnalytics?.total_revenue || analytics.sessionRevenue, 'LKR', 'en-LK')}
                     subtitle={`${formatCurrency(avgRevenuePerTicket, 'LKR', 'en-LK')} avg. per ticket`}
-                    secondaryValue={formatCurrency(totalDiscountSavings, 'LKR', 'en-LK')}
+                    secondaryValue={formatCurrency(total_before_discounts, 'LKR', 'en-LK')}
                     secondaryLabel={totalDiscountSavings > 0 
-                        ? `${((totalDiscountSavings / sessionAnalytics!.total_before_discounts) * 100).toFixed(1)}% discount savings` 
+                        ? `${((totalDiscountSavings / total_before_discounts) * 100).toFixed(1)}% discount savings` 
                         : "No discounts applied"}
                     icon={
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
