@@ -4,9 +4,8 @@ import {useEffect, useState, useCallback} from "react";
 import {SessionAnalytics} from "@/types/eventAnalytics";
 import {SessionAnalyticsView} from "../../../analytics/_components/SessionAnalyticsView";
 import {Skeleton} from "@/components/ui/skeleton";
-import {getSessionAnalytics} from "@/lib/actions/public/analyticsActions";
+import {getSessionAnalytics, getSessionRevenueAnalytics} from "@/lib/actions/analyticsActions";
 import {useParams, useRouter, useSearchParams} from "next/navigation";
-import {getSessionAnalytics as getSessionRevenueAnalytics} from "@/lib/actions/analyticsActions";
 
 export default function SessionAnalyticsPage() {
     const [sessionAnalytics, setSessionAnalytics] = useState<SessionAnalytics | null>(null);
