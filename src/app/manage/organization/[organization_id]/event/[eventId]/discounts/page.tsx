@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEventContext } from "@/providers/EventProvider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Plus, RefreshCcw } from "lucide-react";
@@ -9,6 +9,10 @@ import { createDiscount, DiscountResponse, deleteDiscount, updateDiscount } from
 import { toast } from "sonner";
 import { DiscountList } from "@/app/manage/organization/[organization_id]/event/_components/discounts/discount-list";
 import { DiscountDTO } from "@/lib/validators/event";
+import { EventDiscountAnalytics, getEventDiscountAnalytics } from "@/lib/actions/analyticsActions";
+import { DiscountAnalyticsCards } from "./_components/DiscountAnalyticsCards";
+import { DiscountUsageChart } from "./_components/DiscountUsageChart";
+// Removed Tabs import
 import {
     FullDiscountFormView
 } from "@/app/manage/organization/[organization_id]/event/_components/discounts/full-discount-form-view";
@@ -18,6 +22,8 @@ export default function DiscountManagementPage() {
 
     const [mode, setMode] = useState<'view' | 'create' | 'edit'>('view');
     const [editingDiscount, setEditingDiscount] = useState<DiscountResponse | null>(null);
+    const [discountAnalytics, setDiscountAnalytics] = useState<EventDiscountAnalytics | null>(null);
+    const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
 
 
     const handleOpenCreateForm = () => {
@@ -34,6 +40,26 @@ export default function DiscountManagementPage() {
         setMode('view');
         setEditingDiscount(null);
     };
+    
+    // Load discount analytics data
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            if (!event?.id) return;
+            
+            try {
+                setIsAnalyticsLoading(true);
+                const analyticsData = await getEventDiscountAnalytics(event.id);
+                setDiscountAnalytics(analyticsData);
+            } catch (err) {
+                console.error("Failed to load discount analytics:", err);
+                // Don't show error toast since analytics are supplementary
+            } finally {
+                setIsAnalyticsLoading(false);
+            }
+        };
+        
+        fetchAnalytics();
+    }, [event?.id]);
 
 
 
@@ -173,31 +199,67 @@ export default function DiscountManagementPage() {
                         </Button>
                     </div>
                 </div>
-
-                {error ? (
-                    <div className="p-4 border border-destructive/50 rounded-md bg-destructive/10 text-destructive">
-                        {error}
-                    </div>
-                ) : isLoading ? (
-                    <Skeleton className="h-64 w-full" />
-                ) : event && (!event.discounts || event.discounts.length === 0) ? (
-                    <div className="text-center p-8 border rounded-md">
-                        <p className="mb-4">No discounts found</p>
-                        <Button onClick={handleOpenCreateForm} variant="outline">
-                            Create your first discount
-                        </Button>
-                    </div>
-                ) : (
-                    <DiscountList
-                        discounts={event.discounts || []}
-                        onEdit={handleOpenEditForm}
-                        onDelete={handleDeleteDiscount}
-                        tiers={event.tiers || []}
-                        sessions={event.sessions || []}
-                        onToggleStatus={handleToggleStatus}
-                        isShareable={true}
-                    />
-                )}
+                
+                {/* Analytics Section */}
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4">Discount Analytics</h2>
+                    {isAnalyticsLoading ? (
+                        <>
+                            <div className="grid gap-4 md:grid-cols-3 mb-8">
+                                {Array.from({length: 3}).map((_, i) => (
+                                    <Skeleton key={i} className="h-32" />
+                                ))}
+                            </div>
+                            <Skeleton className="h-[350px]" />
+                        </>
+                    ) : !discountAnalytics || !discountAnalytics.discount_usage.length ? (
+                        <div className="text-center p-8 border rounded-md mb-8">
+                            <p className="mb-4">No discount usage data available</p>
+                            <p className="text-sm text-muted-foreground">
+                                Once customers start using your discount codes, analytics will appear here.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="mb-8">
+                                <DiscountAnalyticsCards 
+                                    data={discountAnalytics} 
+                                    isLoading={isAnalyticsLoading} 
+                                />
+                            </div>
+                            <DiscountUsageChart data={discountAnalytics.discount_usage} />
+                        </>
+                    )}
+                </div>
+                
+                {/* Discount Management Section */}
+                <div>
+                    <h2 className="text-xl font-semibold mb-4">Discount Management</h2>
+                    {error ? (
+                        <div className="p-4 border border-destructive/50 rounded-md bg-destructive/10 text-destructive">
+                            {error}
+                        </div>
+                    ) : isLoading ? (
+                        <Skeleton className="h-64 w-full" />
+                    ) : event && (!event.discounts || event.discounts.length === 0) ? (
+                        <div className="text-center p-8 border rounded-md">
+                            <p className="mb-4">No discounts found</p>
+                            <Button onClick={handleOpenCreateForm} variant="outline">
+                                Create your first discount
+                            </Button>
+                        </div>
+                    ) : (
+                        <DiscountList
+                            discounts={event.discounts || []}
+                            onEdit={handleOpenEditForm}
+                            onDelete={handleDeleteDiscount}
+                            tiers={event.tiers || []}
+                            sessions={event.sessions || []}
+                            onToggleStatus={handleToggleStatus}
+                            isShareable={true}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );
