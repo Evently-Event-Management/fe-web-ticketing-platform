@@ -8,6 +8,7 @@ import {columns} from "./_components/SessionTableColumns";
 import {DataTable} from "@/components/DataTable";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getAllSessionsAnalytics, getEventAnalytics} from "@/lib/actions/public/analyticsActions";
+import {getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
 import { AlertTriangle } from "lucide-react";
 import { useEventContext } from "@/providers/EventProvider";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,34 @@ import { RefreshCw } from "lucide-react";
 export default function AnalyticsPage() {
     const { event, isLoading: isEventLoading } = useEventContext();
     const [analyticsData, setAnalyticsData] = useState<EventAnalytics | null>(null);
+    const [revenueAnalytics, setRevenueAnalytics] = useState<{
+        total_revenue: number;
+        total_before_discounts: number;
+        total_tickets_sold: number;
+        daily_sales: Array<{date: string; revenue: number; tickets_sold: number}>;
+    } | null>(null);
     const [sessions, setSessions] = useState<SessionSummary[]>([]);
     const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
+    const [isRevenueLoading, setIsRevenueLoading] = useState(true);
     const [isGaLoading, setIsGaLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Fetch revenue analytics data (new)
+    const fetchRevenueAnalytics = useCallback(async () => {
+        if (!event?.id) return;
+        
+        try {
+            setIsRevenueLoading(true);
+            
+            const revenueData = await getEventRevenueAnalytics(event.id);
+            setRevenueAnalytics(revenueData);
+        } catch (err) {
+            console.error('Failed to load revenue analytics:', err);
+            // Don't set main error state since this is supplementary data
+        } finally {
+            setIsRevenueLoading(false);
+        }
+    }, [event?.id]);
 
     // Fetch analytics data (page-specific)
     const fetchAnalyticsData = useCallback(async () => {
@@ -86,16 +111,18 @@ export default function AnalyticsPage() {
     // Function to refresh all analytics data
     const refreshAllData = useCallback(() => {
         fetchAnalyticsData();
+        fetchRevenueAnalytics();
         fetchGaData();
-    }, [fetchAnalyticsData, fetchGaData]);
+    }, [fetchAnalyticsData, fetchRevenueAnalytics, fetchGaData]);
 
     // Initial load of analytics data when event is loaded
     useEffect(() => {
         if (event?.id) {
             fetchAnalyticsData();
+            fetchRevenueAnalytics();
             fetchGaData();
         }
-    }, [event?.id, fetchAnalyticsData, fetchGaData]);
+    }, [event?.id, fetchAnalyticsData, fetchRevenueAnalytics, fetchGaData]);
 
     if (isEventLoading) {
         return <div className="p-8"><Skeleton className="h-[600px] w-full"/></div>;
@@ -150,7 +177,9 @@ export default function AnalyticsPage() {
             </div>
             <EventAnalyticsView
                 analytics={analyticsData}
+                revenueAnalytics={revenueAnalytics || undefined}
                 isGaLoading={isGaLoading}
+                isRevenueLoading={isRevenueLoading}
             />
             <DataTable columns={columns} data={sessions} isLoading={isAnalyticsLoading}/>
         </div>
