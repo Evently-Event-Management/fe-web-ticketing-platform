@@ -30,17 +30,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
     const params = useParams();
     const backUrl = `/manage/organization/${params.organization_id}/event/${params.eventId}/sessions`;
     return (
-        <div className="space-y-4">
-            {/* Back button */}
-            <div>
-                <Link href={backUrl} passHref>
-                    <Button variant="ghost" className="pl-0 flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                        <ChevronLeft className="h-4 w-4" />
-                        <span>Back to Sessions</span>
-                    </Button>
-                </Link>
-            </div>
-            
+        <div className="space-y-4">            
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <div className="flex items-center gap-2">

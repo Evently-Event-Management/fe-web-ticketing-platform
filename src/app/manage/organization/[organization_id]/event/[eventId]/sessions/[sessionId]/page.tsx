@@ -229,7 +229,7 @@ const SessionPage = () => {
                            session?.status === SessionStatus.ON_SALE;
 
     return (
-        <div className="space-y-6 p-6">
+        <div className="space-y-6">
             {/* Action buttons and header */}
             <SessionHeader
                 title={event.title}

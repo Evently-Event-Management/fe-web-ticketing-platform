@@ -26,10 +26,15 @@ export default function EventDetailsLayout({
 
     // Determine the active tab based on the current path
     const getActiveTab = () => {
-        if (pathname.includes("/analytics")) return "analytics";
-        if (pathname.includes("/sessions")) return "sessions";
-        if (pathname.includes("/settings")) return "settings";
-        if (pathname.includes('/discounts')) return 'discounts';
+        // Check if we're in a session page (including session analytics)
+        if (pathname.match(/\/sessions\/[^\/]+(?:\/analytics)?$/)) return "sessions";
+        
+        // For main event tabs
+        if (pathname === `${basePath}/analytics`) return "analytics";
+        if (pathname === `${basePath}/sessions`) return "sessions";
+        if (pathname === `${basePath}/settings`) return "settings";
+        if (pathname === `${basePath}/discounts`) return "discounts";
+        
         return "overview";
     };
 

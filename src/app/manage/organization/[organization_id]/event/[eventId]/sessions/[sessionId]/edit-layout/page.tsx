@@ -56,11 +56,11 @@ export default function EditLayoutPage() {
     };
 
     return (
-        <div className="container max-w-7xl mx-auto p-6">
+        <div className="w-full">
             {/* Header with back button */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Link href={returnUrl} passHref>
+                    <Link href={`${returnUrl}?tab=details`} passHref>
                         <Button variant="ghost" className="gap-2 pl-0">
                             <ChevronLeft className="h-4 w-4" />
                             <span>Back to Session</span>

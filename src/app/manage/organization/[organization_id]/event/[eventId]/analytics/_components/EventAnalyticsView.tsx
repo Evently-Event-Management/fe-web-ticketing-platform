@@ -13,7 +13,7 @@ import {
     TierDistributionChart
 } from "@/app/manage/organization/[organization_id]/event/[eventId]/analytics/_components/TierDistribution";
 import { DailySalesChart } from "./DailySalesChart";
-import { DailySalesMetrics } from "@/lib/actions/analyticsActions";
+import { DailySalesMetrics, TierSalesMetrics } from "@/lib/actions/analyticsActions";
 
 interface EventAnalyticsViewProps {
     analytics: EventAnalytics;
@@ -22,6 +22,7 @@ interface EventAnalyticsViewProps {
         total_before_discounts: number;
         total_tickets_sold: number;
         daily_sales: DailySalesMetrics[];
+        sales_by_tier?: TierSalesMetrics[];
     };
     isGaLoading?: boolean;
     isRevenueLoading?: boolean;
@@ -107,7 +108,7 @@ export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({
                 
                 {/* Tier Charts */}
                 <TierDistributionChart data={analytics.salesByTier}/>
-                <TierSalesChart data={analytics.salesByTier}/>
+                <TierSalesChart data={revenueAnalytics?.sales_by_tier || analytics.salesByTier}/>
 
                 {/* Google Analytics Charts */}
                 {isGaLoading ? (
