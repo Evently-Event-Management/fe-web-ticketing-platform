@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useEventContext } from "@/providers/EventProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ApiError } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -185,20 +186,32 @@ export default function EventSettingsPage() {
       return;
     }
 
+    const t = toast.loading('Deleting event...');
+
     try {
       setIsDeleting(true);
       await deleteEvent(event.id);
-      toast.success("Event deleted successfully");
+      toast.success("Event deleted successfully", { id: t });
       
       // Redirect to organization events page
       if (organization?.id) {
-        window.location.href = `/manage/organization/${organization.id}/events`;
+        window.location.href = `/manage/organization/${organization.id}/event`;
       } else {
         window.location.href = `/manage`;
       }
     } catch (error) {
       console.error("Failed to delete event:", error);
-      toast.error("Failed to delete event. Please try again.");
+      // Check if it's our custom ApiError
+      if (error instanceof ApiError) {
+        // Handle the API error with the server message
+        toast.error(error.message, { id: t });
+      } else if (error instanceof Error) {
+        // For other Error instances, use their message
+        toast.error(error.message, { id: t });
+      } else {
+        // For completely unknown errors, use a generic message
+        toast.error("Failed to delete event. Please try again.", { id: t });
+      }
       setIsDeleting(false);
     }
   };
@@ -214,7 +227,14 @@ export default function EventSettingsPage() {
   return (
     <div className="p-4 md:p-8 w-full">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Event Settings</h1>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Event Settings</h1>
+            <p className="text-muted-foreground">
+              Manage and customize settings for {event.title}
+            </p>
+          </div>
+        </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 w-full max-w-md mb-8">
