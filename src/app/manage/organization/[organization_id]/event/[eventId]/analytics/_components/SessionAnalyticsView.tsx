@@ -1,5 +1,6 @@
 import {SessionAnalytics} from "@/types/eventAnalytics";
 import {formatCurrency, formatDate, formatDateTimeShort, formatISODuration} from "@/lib/utils";
+import { TierSalesMetrics } from "@/lib/actions/analyticsActions";
 import {AnalyticsCard} from "./AnalyticsCard";
 import {ArrowLeft, Clock, DollarSign, Ticket} from "lucide-react";
 import {TierSalesChart} from "./TierSalesChart";
@@ -21,6 +22,13 @@ export const SessionAnalyticsView: React.FC<{
         total_before_discounts: number;
         total_tickets_sold: number;
         daily_sales: Array<{date: string; revenue: number; tickets_sold: number}>;
+        sales_by_tier?: Array<{
+            tier_id: string;
+            tier_name: string;
+            tier_color: string;
+            tickets_sold: number;
+            revenue: number;
+        }>;
     },
     isLoading?: boolean
 }> = ({analytics, sessionAnalytics, isLoading = false}) => {
@@ -38,13 +46,8 @@ export const SessionAnalyticsView: React.FC<{
         : 0;
 
     return (
-        <div className="container mx-auto p-4 md:p-8 space-y-8">
+        <div className="container mx-auto space-y-8">
             <div>
-                <Link href={eventAnalyticsPath}
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
-                    <ArrowLeft className="h-4 w-4"/>
-                    Back to Event Overview
-                </Link>
                 <h1 className="text-3xl font-bold tracking-tight">{analytics.eventTitle}</h1>
                 <div className="flex items-center gap-4 mt-2">
                     <p className="text-muted-foreground">
@@ -115,7 +118,7 @@ export const SessionAnalyticsView: React.FC<{
             
             {/* Charts */}
             <div className="grid gap-8 lg:grid-cols-2">
-                <TierSalesChart data={analytics.salesByTier}/>
+                <TierSalesChart data={sessionAnalytics?.sales_by_tier || analytics.salesByTier}/>
                 <BlockOccupancyChart data={analytics.occupancyByBlock}/>
                 <TierDistributionChart data={analytics.salesByTier}/>
                 <SeatStatusChart seatStatusBreakdown={analytics.seatStatusBreakdown}/>

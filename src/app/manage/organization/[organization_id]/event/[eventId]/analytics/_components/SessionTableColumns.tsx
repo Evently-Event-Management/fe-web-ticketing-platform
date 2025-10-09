@@ -8,6 +8,10 @@ import {ArrowUpDown} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import {SessionStatusBadge} from "@/components/SessionStatusBadge";
+import {useParams} from "next/navigation";
+
+// This file is deprecated - see SessionTableColumnFactory instead
+// Keeping this file to avoid breaking existing imports
 
 export const columns: ColumnDef<SessionSummary>[] = [
     {
@@ -16,7 +20,7 @@ export const columns: ColumnDef<SessionSummary>[] = [
         cell: ({row}) => {
             const session = row.original;
             return (
-                <Link href={`analytics/${session.sessionId}`}
+                <Link href={`../sessions/${session.sessionId}/analytics`}
                       className="font-medium text-primary hover:underline">
                     {format(parseISO(session.startTime), "PPp")}
                 </Link>

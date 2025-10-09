@@ -100,7 +100,6 @@ export default function CreateSessionPage() {
 
         const formData = methods.getValues()
         const validationResult = await currentSchema.safeParseAsync(formData)
-c
         if (validationResult.success) {
             setStep((s) => Math.min(totalSteps, s + 1))
         } else {

@@ -2,10 +2,10 @@
 
 import {useEffect, useState, useCallback} from "react";
 import {SessionAnalytics} from "@/types/eventAnalytics";
-import {SessionAnalyticsView} from "../_components/SessionAnalyticsView";
+import {SessionAnalyticsView} from "../../../analytics/_components/SessionAnalyticsView";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getSessionAnalytics} from "@/lib/actions/public/analyticsActions";
-import {useParams} from "next/navigation";
+import {useParams, useRouter, useSearchParams} from "next/navigation";
 import {getSessionAnalytics as getSessionRevenueAnalytics} from "@/lib/actions/analyticsActions";
 
 export default function SessionAnalyticsPage() {
@@ -15,13 +15,30 @@ export default function SessionAnalyticsPage() {
         total_before_discounts: number;
         total_tickets_sold: number;
         daily_sales: Array<{date: string; revenue: number; tickets_sold: number}>;
+        sales_by_tier?: Array<{
+            tier_id: string;
+            tier_name: string;
+            tier_color: string;
+            tickets_sold: number;
+            revenue: number;
+        }>;
     } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isRevenueLoading, setIsRevenueLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const params = useParams();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const eventId = params.eventId as string;
     const sessionId = params.sessionId as string;
+    
+    // Make sure the correct tab is selected
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab !== 'analytics') {
+            router.push(`?tab=analytics`);
+        }
+    }, [searchParams, router]);
 
     // Fetch core session data
     useEffect(() => {
@@ -66,7 +83,7 @@ export default function SessionAnalyticsPage() {
 
     if (isLoading || !sessionAnalytics) {
         return (
-            <div className="container mx-auto p-4 md:p-8 space-y-8">
+            <div className="container mx-auto space-y-8">
                 <Skeleton className="h-8 w-1/4 mb-4"/>
                 <Skeleton className="h-6 w-1/2 mb-8"/>
                 <div className="grid gap-4 md:grid-cols-3 mb-8">

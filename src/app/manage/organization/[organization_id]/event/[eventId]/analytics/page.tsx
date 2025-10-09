@@ -4,7 +4,7 @@ import {useEffect, useState, useCallback} from "react";
 import {EventAnalytics, SessionSummary} from "@/types/eventAnalytics";
 import {getBatchedGaInsights} from "@/lib/actions/public/server/eventActions";
 import {EventAnalyticsView} from "./_components/EventAnalyticsView";
-import {columns} from "./_components/SessionTableColumns";
+import {useSessionColumns} from "./_components/SessionTableColumnFactory";
 import {DataTable} from "@/components/DataTable";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getAllSessionsAnalytics, getEventAnalytics} from "@/lib/actions/public/analyticsActions";
@@ -22,6 +22,13 @@ export default function AnalyticsPage() {
         total_before_discounts: number;
         total_tickets_sold: number;
         daily_sales: Array<{date: string; revenue: number; tickets_sold: number}>;
+        sales_by_tier?: Array<{
+            tier_id: string;
+            tier_name: string;
+            tier_color: string;
+            tickets_sold: number;
+            revenue: number;
+        }>;
     } | null>(null);
     const [sessions, setSessions] = useState<SessionSummary[]>([]);
     const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
@@ -181,7 +188,7 @@ export default function AnalyticsPage() {
                 isGaLoading={isGaLoading}
                 isRevenueLoading={isRevenueLoading}
             />
-            <DataTable columns={columns} data={sessions} isLoading={isAnalyticsLoading}/>
+            <DataTable columns={useSessionColumns()} data={sessions} isLoading={isAnalyticsLoading}/>
         </div>
     );
 }
