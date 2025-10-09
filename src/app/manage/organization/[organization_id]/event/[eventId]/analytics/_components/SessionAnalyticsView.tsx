@@ -1,12 +1,10 @@
 import {SessionAnalytics} from "@/types/eventAnalytics";
 import {formatCurrency, formatDate, formatDateTimeShort, formatISODuration} from "@/lib/utils";
-import { TierSalesMetrics } from "@/lib/actions/analyticsActions";
 import {AnalyticsCard} from "./AnalyticsCard";
-import {ArrowLeft, Clock, DollarSign, Ticket} from "lucide-react";
+import {Clock, DollarSign, Ticket} from "lucide-react";
 import {TierSalesChart} from "./TierSalesChart";
 import {BlockOccupancyChart} from "./BlockOccupancyChart";
 import {SessionStatusBadge} from "@/components/SessionStatusBadge";
-import Link from "next/link";
 import {usePathname} from 'next/navigation';
 import {SeatStatusChart} from "./SeatStatusChart";
 import {DailySalesChart} from "./DailySalesChart";

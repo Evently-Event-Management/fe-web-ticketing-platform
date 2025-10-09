@@ -153,7 +153,7 @@ export const DailySalesChart: React.FC<DailySalesChartProps> = ({ data }) => {
               </div>
             )}
             <div className="text-muted-foreground leading-none">
-              Showing daily sales and revenue over the event's sales period
+              Showing daily sales and revenue over the event&#39;s sales period
             </div>
           </div>
         </div>
