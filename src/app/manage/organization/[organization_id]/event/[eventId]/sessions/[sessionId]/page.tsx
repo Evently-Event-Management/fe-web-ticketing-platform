@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useEventContext } from "@/providers/EventProvider";
 import { useParams, useRouter } from "next/navigation";
 import { format, parseISO } from 'date-fns';
+import { ApiError } from "@/lib/api";
 import { AlertTriangle, Calendar, Clock, Tag } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { SessionType } from "@/types/enums/sessionType";
@@ -140,7 +141,13 @@ const SessionPage = () => {
             setIsEditTimeDialogOpen(false);
         } catch (error) {
             console.error('Error updating session time:', error);
-            toast.error('Failed to update session time', { id: t });
+            if (error instanceof ApiError) {
+                toast.error(`Failed to update session time: ${error.message}`, { id: t });
+            } else if (error instanceof Error) {
+                toast.error(`Failed to update session time: ${error.message}`, { id: t });
+            } else {
+                toast.error('Failed to update session time', { id: t });
+            }
         }
     };
 
@@ -154,7 +161,13 @@ const SessionPage = () => {
             setIsEditLocationDialogOpen(false);
         } catch (error) {
             console.error('Error updating venue details:', error);
-            toast.error('Failed to update venue details', { id: t });
+            if (error instanceof ApiError) {
+                toast.error(`Failed to update venue details: ${error.message}`, { id: t });
+            } else if (error instanceof Error) {
+                toast.error(`Failed to update venue details: ${error.message}`, { id: t });
+            } else {
+                toast.error('Failed to update venue details', { id: t });
+            }
         }
     };
 
@@ -170,7 +183,13 @@ const SessionPage = () => {
             setIsChangeStatusDialogOpen(false);
         } catch (error) {
             console.error('Error updating session status:', error);
-            toast.error('Failed to update session status', { id: t });
+            if (error instanceof ApiError) {
+                toast.error(`Failed to update session status: ${error.message}`, { id: t });
+            } else if (error instanceof Error) {
+                toast.error(`Failed to update session status: ${error.message}`, { id: t });
+            } else {
+                toast.error('Failed to update session status', { id: t });
+            }
         }
     };
     
@@ -184,7 +203,13 @@ const SessionPage = () => {
             await refetchSession(sessionId);
         } catch (error) {
             console.error('Error deleting session:', error);
-            toast.error('Failed to delete session', { id: t });
+            if (error instanceof ApiError) {
+                toast.error(`Failed to delete session: ${error.message}`, { id: t });
+            } else if (error instanceof Error) {
+                toast.error(`Failed to delete session: ${error.message}`, { id: t });
+            } else {
+                toast.error('Failed to delete session', { id: t });
+            }
         } finally {
             setIsDeleteDialogOpen(false);
         }
