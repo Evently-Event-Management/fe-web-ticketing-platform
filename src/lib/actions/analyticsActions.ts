@@ -27,7 +27,7 @@ export interface EventDiscountAnalytics {
   discount_usage: DiscountUsage[];
 }
 
-export interface SessionAnalytics {
+export interface SessionOrderAnalytics {
   event_id: string;
   session_id: string;
   total_revenue: number;
@@ -65,6 +65,6 @@ export const getEventDiscountAnalytics = (eventId: string): Promise<EventDiscoun
  * @param sessionId The ID of the session
  * @returns Session revenue analytics including total revenue, tickets sold, and daily sales
  */
-export const getSessionAnalytics = (eventId: string, sessionId: string): Promise<SessionAnalytics> => {
-  return apiFetch<SessionAnalytics>(`${API_BASE_PATH}/events/${eventId}/sessions/${sessionId}`);
+export const getSessionAnalytics = (eventId: string, sessionId: string): Promise<SessionOrderAnalytics> => {
+  return apiFetch<SessionOrderAnalytics>(`${API_BASE_PATH}/events/${eventId}/sessions/${sessionId}`);
 };
