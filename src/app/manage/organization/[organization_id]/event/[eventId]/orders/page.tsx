@@ -7,7 +7,6 @@ import { getEventOrderDetails, OrderDetailsResponse } from "@/lib/actions/analyt
 import OrdersTable from "./_components/OrdersTable";
 import OrderDetailView from "./_components/OrderDetailView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 
 // Transform OrderDetailsResponse to the simplified OrderDetails for the table
@@ -116,8 +115,6 @@ export default function OrdersPage() {
     setCurrentPage(1);
   };
 
-  // No search change handler needed
-
   // Handle session filter
   const handleSessionChange = (sessionId: string | null) => {
     setCurrentSession(sessionId);
@@ -138,68 +135,73 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
-      
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList>
-          <TabsTrigger 
-            value="all" 
-            onClick={() => handleSessionChange(null)}
-            className="flex-1"
-          >
-            All Sessions
-          </TabsTrigger>
-          {event?.sessions && event.sessions.map((session) => (
+    <div className="p-4 md:p-8 w-full">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Order Management</h1>
+            <p className="text-muted-foreground">
+              View and manage orders for {event?.title}
+            </p>
+          </div>
+        </div>
+        
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList>
             <TabsTrigger 
-              key={session.id} 
-              value={session.id}
-              onClick={() => handleSessionChange(session.id)}
+              value="all" 
+              onClick={() => handleSessionChange(null)}
               className="flex-1"
             >
-              {new Date(session.startTime).toLocaleDateString()}
+              All Sessions
             </TabsTrigger>
-          ))}
-        </TabsList>
-        
-        <TabsContent value="all" className="mt-6">
-          <OrdersTable
-            orders={transformOrderData(orders)}
-            isLoading={isLoading}
-            onStatusChange={handleStatusChange}
-            onViewOrder={handleViewOrder}
-            totalOrders={totalOrders}
-            page={currentPage}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-          />
-        </TabsContent>
-        
-        {event?.sessions && event.sessions.map((session) => (
-          <TabsContent key={session.id} value={session.id} className="mt-6">
-            <Card>
-              <CardContent className="pt-6">
-                <OrdersTable
-                  orders={transformOrderData(orders)}
-                  isLoading={isLoading}
-                  onStatusChange={handleStatusChange}
-                  onViewOrder={handleViewOrder}
-                  totalOrders={totalOrders}
-                  page={currentPage}
-                  pageSize={pageSize}
-                  onPageChange={handlePageChange}
-                />
-              </CardContent>
-            </Card>
+            {event?.sessions && event.sessions.map((session) => (
+              <TabsTrigger 
+                key={session.id} 
+                value={session.id}
+                onClick={() => handleSessionChange(session.id)}
+                className="flex-1"
+              >
+                {new Date(session.startTime).toLocaleDateString()}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          <TabsContent value="all" className="mt-6">
+            <OrdersTable
+              orders={transformOrderData(orders)}
+              isLoading={isLoading}
+              onStatusChange={handleStatusChange}
+              onViewOrder={handleViewOrder}
+              totalOrders={totalOrders}
+              page={currentPage}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+            />
           </TabsContent>
-        ))}
-      </Tabs>
-      
-      <OrderDetailView
-        isOpen={showOrderDetail}
-        onClose={() => setShowOrderDetail(false)}
-        orderDetails={selectedOrder}
-      />
+          
+          {event?.sessions && event.sessions.map((session) => (
+            <TabsContent key={session.id} value={session.id} className="mt-6">
+              <OrdersTable
+                orders={transformOrderData(orders)}
+                isLoading={isLoading}
+                onStatusChange={handleStatusChange}
+                onViewOrder={handleViewOrder}
+                totalOrders={totalOrders}
+                page={currentPage}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
+        
+        <OrderDetailView
+          isOpen={showOrderDetail}
+          onClose={() => setShowOrderDetail(false)}
+          orderDetails={selectedOrder}
+        />
+      </div>
     </div>
   );
 }

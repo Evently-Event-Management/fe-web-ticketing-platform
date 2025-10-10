@@ -18,15 +18,48 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-// No icons needed
+import { Copy, Check } from "lucide-react";
 import { OrderDetailsResponse } from "@/lib/actions/analyticsActions";
 import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface OrderDetailViewProps {
   isOpen: boolean;
   onClose: () => void;
   orderDetails: OrderDetailsResponse | null;
 }
+
+// Copy button component
+const CopyButton = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Copied to clipboard");
+      
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      toast.error("Failed to copy text");
+    }
+  };
+
+  return (
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      className="h-6 w-6 p-0 ml-1" 
+      onClick={handleCopy}
+    >
+      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+    </Button>
+  );
+};
 
 const OrderDetailView = ({
   isOpen,
@@ -54,34 +87,56 @@ const OrderDetailView = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-[90vw] w-[90vw] md:max-w-[1200px] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Order Details</DialogTitle>
-          <DialogDescription>
-            Order #{orderDetails.OrderID.substring(0, 8)}...
+          <DialogDescription className="flex items-center">
+            Order #{orderDetails.OrderID}
+            <CopyButton text={orderDetails.OrderID} />
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="overflow-y-auto pr-1" style={{ maxHeight: "calc(90vh - 120px)" }}>
+          <div className="space-y-6">
           {/* Order Summary */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Order Date</p>
-              <p className="font-medium">{formattedDate}</p>
+          <div>
+            <h3 className="text-lg font-medium mb-2">Order Information</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Order Date</p>
+                <p className="font-medium">{formattedDate}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Status</p>
+                <Badge className={getStatusColor(orderDetails.Status)}>
+                  {orderDetails.Status}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Subtotal</p>
+                <p className="font-medium">{formatCurrency(orderDetails.SubTotal)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Price</p>
+                <p className="font-medium">{formatCurrency(orderDetails.Price)}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <Badge className={getStatusColor(orderDetails.Status)}>
-                {orderDetails.Status}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Subtotal</p>
-              <p className="font-medium">{formatCurrency(orderDetails.SubTotal)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Price</p>
-              <p className="font-medium">{formatCurrency(orderDetails.Price)}</p>
+            
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Order ID</p>
+                <div className="flex items-center bg-muted/30 p-1 rounded">
+                  <p className="font-mono text-xs overflow-auto whitespace-nowrap">{orderDetails.OrderID}</p>
+                  <CopyButton text={orderDetails.OrderID} />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">User ID</p>
+                <div className="flex items-center bg-muted/30 p-1 rounded">
+                  <p className="font-mono text-xs overflow-auto whitespace-nowrap">{orderDetails.UserID}</p>
+                  <CopyButton text={orderDetails.UserID} />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -110,22 +165,27 @@ const OrderDetailView = ({
           {/* Ticket Details */}
           <div>
             <h3 className="text-lg font-medium mb-2">Tickets ({orderDetails.tickets.length})</h3>
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto overflow-y-auto max-h-[400px]">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
-                    <TableHead>Ticket ID</TableHead>
-                    <TableHead>Seat</TableHead>
-                    <TableHead>Tier</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Checked In</TableHead>
+                    <TableHead className="min-w-[280px] md:w-1/3">Ticket ID</TableHead>
+                    <TableHead className="min-w-[100px] md:w-1/6">Seat</TableHead>
+                    <TableHead className="min-w-[100px] md:w-1/6">Tier</TableHead>
+                    <TableHead className="min-w-[100px] md:w-1/6">Price</TableHead>
+                    <TableHead className="min-w-[100px] md:w-1/6">Checked In</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {orderDetails.tickets.map((ticket) => (
                     <TableRow key={ticket.ticket_id}>
                       <TableCell className="font-medium">
-                        {ticket.ticket_id.substring(0, 8)}...
+                        <div className="flex items-center bg-muted/30 p-1 rounded">
+                          <span className="font-mono text-xs overflow-auto whitespace-nowrap">
+                            {ticket.ticket_id}
+                          </span>
+                          <CopyButton text={ticket.ticket_id} />
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -155,6 +215,7 @@ const OrderDetailView = ({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
+          </div>
           </div>
         </div>
       </DialogContent>
