@@ -26,6 +26,7 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CategoryResponse } from "@/types/category";
 import { getAllCategories } from "@/lib/actions/categoryActions";
+import TierManagement from "./_components/TierManagement";
 
 // Define validation schema for event updates
 const updateEventSchema = z.object({
@@ -41,7 +42,7 @@ type UpdateEventForm = z.infer<typeof updateEventSchema>;
 export default function EventSettingsPage() {
   const { event, refetchEventData, isLoading } = useEventContext();
   const { organization } = useOrganization();
-  const [activeTab, setActiveTab] = useState("cover-photos");
+  const [activeTab, setActiveTab] = useState("tiers"); // Set to tiers initially
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -238,9 +239,10 @@ export default function EventSettingsPage() {
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-full max-w-md mb-8">
+          <TabsList className="grid grid-cols-4 w-full max-w-md mb-8">
             <TabsTrigger value="cover-photos">Cover Photos</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="tiers">Tiers</TabsTrigger>
             <TabsTrigger value="danger" className="text-destructive">Danger Zone</TabsTrigger>
           </TabsList>
           
@@ -550,6 +552,10 @@ export default function EventSettingsPage() {
                     </div>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="tiers" className="space-y-8">
+                <TierManagement />
               </TabsContent>
 
               <TabsContent value="danger" className="space-y-8">
