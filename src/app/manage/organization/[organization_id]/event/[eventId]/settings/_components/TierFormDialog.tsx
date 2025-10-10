@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import { TierDTO } from "@/lib/validators/event"; // Removed to resolve path issue
 import {
   Dialog,
   DialogContent,
@@ -20,34 +19,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// import { createTier, updateTier } from "@/lib/actions/eventActions"; // Removed to resolve path issue
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { TierDTO } from "@/lib/validators/event";
-
-// --- FIX: Mocked types and functions to resolve compilation errors ---
-// In a real application, these would be imported. For this environment,
-// we define them here to make the component self-contained and runnable.
-
-// Create a TypeScript type from the schema
-type FormValues = z.infer<typeof tierFormSchema>;
-
-// Mock actions to resolve import error
-const createTier = async (eventId: string, values: FormValues): Promise<void> => {
-  console.log("Mock Action: Creating Tier", { eventId, values });
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-  console.log("Mock Action: Tier Created!");
-};
-
-const updateTier = async (eventId: string, tierId: string, values: FormValues): Promise<void> => {
-  console.log("Mock Action: Updating Tier", { eventId, tierId, values });
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-  console.log("Mock Action: Tier Updated!");
-};
-// --- END FIX ---
-
+import { createTier, updateTier } from "@/lib/actions/eventActions";
 
 interface TierFormDialogProps {
   isOpen: boolean;
@@ -67,6 +44,9 @@ const tierFormSchema = z.object({
     }),
   price: z.number().min(0, { message: "Price cannot be negative" }),
 });
+
+// Create a TypeScript type from the schema
+type FormValues = z.infer<typeof tierFormSchema>;
 
 const TierFormDialog = ({
   isOpen,
@@ -99,14 +79,25 @@ const TierFormDialog = ({
     }
   }, [form, tier, isOpen]);
 
+  // Define submit handler that will be called when the button is clicked
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
       if (isEditing && tier) {
-        await updateTier(eventId, tier.id, values);
+        // Use the real updateTier API with proper typing
+        await updateTier(eventId, tier.id, {
+          name: values.name,
+          color: values.color,
+          price: values.price
+        });
         toast.success("Tier updated successfully");
       } else {
-        await createTier(eventId, values);
+        // Use the real createTier API with proper typing
+        await createTier(eventId, {
+          name: values.name,
+          color: values.color,
+          price: values.price
+        });
         toast.success("Tier created successfully");
       }
       await onSuccess();
@@ -136,7 +127,12 @@ const TierFormDialog = ({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="space-y-4" onKeyDown={(e) => {
+            // Prevent form submission when Enter is pressed in input fields
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          }}>
             <FormField
               control={form.control}
               name="name"
@@ -224,7 +220,13 @@ const TierFormDialog = ({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="button" 
+                disabled={isSubmitting}
+                onClick={() => {
+                  form.handleSubmit(handleSubmit)();
+                }}
+              >
                 {isSubmitting
                   ? isEditing
                     ? "Updating..."
@@ -234,7 +236,7 @@ const TierFormDialog = ({
                     : "Create Tier"}
               </Button>
             </DialogFooter>
-          </form>
+          </div>
         </Form>
       </DialogContent>
     </Dialog>
