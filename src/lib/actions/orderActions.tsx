@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-import { CreateOrderRequest, CreateOrderResponse } from "@/types/order";
+import {ApiOrder, CreateOrderRequest, CreateOrderResponse, Order} from "@/types/order";
 import { OrderDetailsResponse } from "./analyticsActions";
 
 const API_BASE_PATH = '/order';
@@ -23,3 +23,21 @@ export const createPaymentIntent = (orderId: string): Promise<PaymentIntentRespo
         method: 'POST',
     });
 }
+
+export const fetchOrderById = (orderId: string): Promise<Order> => {
+    return apiFetch<Order>(`${API_BASE_PATH}/${orderId}`, {
+        method: 'GET',
+    });
+};
+
+export const fetchUserOrders = (): Promise<Order[]> => {
+    return apiFetch<Order[]>(`${API_BASE_PATH}/user/orders`, {
+        method: 'GET',
+    });
+};
+
+export const fetchOrdersByUserId = (userId: string): Promise<ApiOrder[]> => {
+    return apiFetch<ApiOrder[]>(`${API_BASE_PATH}/user/${userId}`, {
+        method: 'GET',
+    });
+};
