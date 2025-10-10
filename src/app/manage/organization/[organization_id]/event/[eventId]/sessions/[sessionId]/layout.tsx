@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEventContext } from "@/providers/EventProvider"
-import { useParams, useSearchParams, usePathname, useRouter } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import { BarChart2, ChevronLeft, Settings } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ export default function SessionLayout({ children }: { children: React.ReactNode 
 
     // Base URL for this session
     const baseUrl = `/manage/organization/${organizationId}/event/${eventId}/sessions/${sessionId}`
-    // URL to return to event page
+    // URL to return to even page
     const sessionsUrl = `/manage/organization/${organizationId}/event/${eventId}/sessions`
 
     // Get active tab based on pathname

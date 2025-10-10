@@ -5,7 +5,6 @@ import { format } from 'date-fns';
 import { LinkIcon, MapPin, Share2, Trash2, ChevronLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 interface SessionHeaderProps {
