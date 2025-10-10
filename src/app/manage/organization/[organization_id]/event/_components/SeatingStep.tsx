@@ -20,6 +20,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import {SessionType} from "@/types/enums/sessionType";
+import {CreateSessionsFormData} from "@/app/manage/organization/[organization_id]/event/[eventId]/sessions/create/page";
 
 interface SeatingStepProps {
     onConfigModeChange?: (isInConfigMode: boolean) => void;
@@ -27,7 +28,7 @@ interface SeatingStepProps {
 
 // --- Main Seating Step Component ---
 export function SeatingStep({onConfigModeChange}: SeatingStepProps) {
-    const {control, formState: {errors}, watch, getValues, setValue} = useFormContext<CreateEventFormData>();
+    const {control, formState: {errors}, watch, getValues, setValue} = useFormContext<CreateEventFormData | CreateSessionsFormData>();
     const [configuringIndex, setConfiguringIndex] = useState<number | null>(null);
     const [configuredLayoutData, setConfiguredLayoutData] = useState<SessionSeatingMapRequest | null>(null);
     const [showApplyDialog, setShowApplyDialog] = useState(false);

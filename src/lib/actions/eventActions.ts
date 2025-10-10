@@ -1,5 +1,5 @@
 import {apiFetch} from '@/lib/api';
-import {CreateEventParsed} from '@/lib/validators/event';
+import {CreateEventRequest, TierDTO} from '@/lib/validators/event';
 import {EventDetailDTO, EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 
 import {PaginatedResponse} from "@/types/paginatedResponse";
@@ -14,7 +14,7 @@ const API_BASE_PATH = '/event-seating/v1/events';
 /**
  * Creates a new event.
  */
-export const createEvent = (eventData: CreateEventParsed, coverImages: File[]): Promise<EventResponseDTO> => {
+export const createEvent = (eventData: CreateEventRequest, coverImages: File[]): Promise<EventResponseDTO> => {
     const formData = new FormData();
     formData.append('request', JSON.stringify(eventData));
     if (coverImages?.length > 0) {
@@ -58,6 +58,58 @@ export const getMyOrganizationEvents = (
  */
 export const deleteEvent = (eventId: string): Promise<void> => {
     return apiFetch<void>(`${API_BASE_PATH}/${eventId}`, {
+        method: 'DELETE',
+    });
+};
+
+// ================================================================================
+// Event Tier Management
+// ================================================================================
+
+/**
+ * Creates a new tier for an event
+ * @param eventId The ID of the event
+ * @param tierData The tier data to create
+ */
+export interface CreateTierRequest {
+    name: string;
+    color: string; // Must be a valid hex color code (e.g., #FF5733)
+    price: number;
+}
+
+export const createTier = (eventId: string, tierData: CreateTierRequest): Promise<TierDTO> => {
+    return apiFetch<TierDTO>(`${API_BASE_PATH}/${eventId}/tiers`, {
+        method: 'POST',
+        body: JSON.stringify(tierData),
+    });
+};
+
+/**
+ * Updates an existing tier for an event
+ * @param eventId The ID of the event
+ * @param tierId The ID of the tier to update
+ * @param tierData The updated tier data
+ */
+export interface UpdateTierRequest {
+    name?: string;
+    color?: string; // Must be a valid hex color code (e.g., #FF5733)
+    price?: number;
+}
+
+export const updateTier = (eventId: string, tierId: string, tierData: UpdateTierRequest): Promise<TierDTO> => {
+    return apiFetch<TierDTO>(`${API_BASE_PATH}/${eventId}/tiers/${tierId}`, {
+        method: 'PUT',
+        body: JSON.stringify(tierData),
+    });
+};
+
+/**
+ * Deletes an existing tier from an event
+ * @param eventId The ID of the event
+ * @param tierId The ID of the tier to delete
+ */
+export const deleteTier = (eventId: string, tierId: string): Promise<void> => {
+    return apiFetch<void>(`${API_BASE_PATH}/${eventId}/tiers/${tierId}`, {
         method: 'DELETE',
     });
 };

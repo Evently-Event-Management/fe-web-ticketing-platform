@@ -2,7 +2,7 @@
 
 import { DiscountList } from "./discount-list";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import {CreateEventFormData, DiscountParsed, discountSchema} from "@/lib/validators/event";
+import {CreateEventFormData, DiscountDTO, discountSchema, sessionWithSeatingSchema} from "@/lib/validators/event";
 import {useEffect, useState} from "react";
 import { FullDiscountFormView } from "./full-discount-form-view";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,16 @@ interface DiscountStepProps {
 }
 
 export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
-    // ✅ State to manage the view and which discount is being edited
     const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editingDiscount, setEditingDiscount] = useState<DiscountDTO | null>(null);
 
     const { control, watch } = useFormContext<CreateEventFormData>();
 
     const tiers = watch("tiers");
     const sessions = watch("sessions");
+    const discounts = watch("discounts");
 
-    // ✅ Destructure all necessary functions from useFieldArray
+    // Destructure all necessary functions from useFieldArray
     const { fields: discountFields, append, remove, update } = useFieldArray({
         control,
         name: "discounts",
@@ -37,56 +37,57 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
 
     // --- Event Handlers ---
 
-    const handleAddDiscount = (discount: DiscountParsed) => {
+    const handleAddDiscount = (discount: DiscountDTO) => {
         append(discount);
         setView('list');
     }
 
-    // ✅ New handler for updating an existing discount
-    const handleUpdateDiscount = (index: number, discount: DiscountParsed) => {
-        update(index, discount);
+    const handleUpdateDiscount = (discount: DiscountDTO) => {
+        const index = discountFields.findIndex(item => item.id === discount.id);
+        if (index !== -1) {
+            update(index, discount);
+        }
         setView('list');
-        setEditingIndex(null);
+        setEditingDiscount(null);
     }
 
-    // ✅ New handler for deleting a discount
-    const handleDeleteDiscount = (index: number) => {
-        remove(index);
+    const handleDeleteDiscount = (id: string) => {
+        const index = discountFields.findIndex(item => item.id === id);
+        if (index !== -1) {
+            remove(index);
+        }
     }
 
-    // ✅ New handler for toggling the 'isActive' status
-    const handleToggleStatus = (index: number) => {
-        const discount = discountFields[index];
-        update(index, { ...discount, active: !discount.active });
+    const handleToggleStatus = (id: string) => {
+        const index = discountFields.findIndex(item => item.id === id);
+        if (index !== -1) {
+            const discount = discountFields[index];
+            update(index, { ...discount, active: !discount.active });
+        }
     }
 
-    // ✅ New handler to switch to the edit view
-    const handleGoToEditView = (index: number) => {
-        setEditingIndex(index);
+    const handleGoToEditView = (discount: DiscountDTO) => {
+        setEditingDiscount(discount);
         setView('edit');
     }
 
     // --- Conditional Rendering ---
 
     if (view === 'create' || view === 'edit') {
-
-        const dataToEdit = view === 'edit' && editingIndex !== null
-            ? discountSchema.parse(discountFields[editingIndex])
-            : undefined;
         return (
             <FullDiscountFormView
                 tiers={tiers}
-                sessions={sessions}
+                sessions={sessions.map((s) => sessionWithSeatingSchema.parse(s))}
                 onSave={(discount) => {
-                    if (view === 'edit' && editingIndex !== null) {
-                        handleUpdateDiscount(editingIndex, discount);
+                    if (view === 'edit' && editingDiscount) {
+                        handleUpdateDiscount(discount);
                     } else {
                         handleAddDiscount(discount);
                     }
                 }}
                 onBack={() => setView('list')}
                 isEditing={view === 'edit'}
-                initialData={view === 'edit' && editingIndex !== null ? dataToEdit : undefined}
+                initialData={editingDiscount || undefined}
             />
         )
     }
@@ -106,13 +107,14 @@ export default function DiscountStep({onConfigModeChange}: DiscountStepProps) {
                 </Button>
             </div>
             <DiscountList
-                discounts={discountFields}
+                discounts={discounts?.map((d) => discountSchema.parse(d))}
                 tiers={tiers}
-                sessions={sessions}
+                sessions={sessions?.map((s) => sessionWithSeatingSchema.parse(s))}
                 onDelete={handleDeleteDiscount}
                 onToggleStatus={handleToggleStatus}
                 onEdit={handleGoToEditView}
                 filters={false}
+                isShareable={false}
             />
         </div>
     );

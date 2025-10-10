@@ -6,19 +6,19 @@ import {Input} from "@/components/ui/input"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Search, Filter} from "lucide-react"
 import {DiscountType} from "@/types/enums/discountType";
-import {CreateEventFormData} from "@/lib/validators/event";
-import {FieldArrayWithId} from "react-hook-form";
-import {DiscountCard} from "./discount-card"; // ✅ Import the new component
+import {DiscountDTO, SessionDTO, TierDTO} from "@/lib/validators/event";
+import {DiscountCard} from "./discount-card";
 
 interface DiscountListProps {
-    tiers: FieldArrayWithId<CreateEventFormData, "tiers", "id">[],
-    sessions?: FieldArrayWithId<CreateEventFormData, "sessions", "id">[],
-    discounts?: FieldArrayWithId<CreateEventFormData, "discounts", "id">[],
-    onDelete?: (index: number) => void,
-    onToggleStatus?: (index: number) => void,
-    onEdit?: (index: number) => void,
+    tiers: TierDTO[],
+    sessions?: SessionDTO[],
+    discounts?: DiscountDTO[],
+    onDelete?: (id: string) => void,
+    onToggleStatus?: (id: string) => void,
+    onEdit?: (discount: DiscountDTO) => void,
     filters?: boolean,
-    isReadOnly?: boolean, // ✅ New prop
+    isReadOnly?: boolean,
+    isShareable?: boolean,
 }
 
 export function DiscountList({
@@ -29,7 +29,8 @@ export function DiscountList({
                                  onToggleStatus,
                                  onEdit,
                                  filters = true,
-                                    isReadOnly = false
+                                 isReadOnly = false,
+                                 isShareable = true
                              }: DiscountListProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterType, setFilterType] = useState<string>("all")
@@ -100,24 +101,19 @@ export function DiscountList({
             )}
 
             <div className="grid gap-4">
-                {/* ✅ The mapping logic is now much cleaner */}
-                {filteredCodes.map((discount) => {
-                    const originalIndex = (discounts || []).findIndex(d => d.id === discount.id);
-                    if (originalIndex === -1) return null; // Safety check
-                    return (
-                        <DiscountCard
-                            key={discount.id}
-                            discount={discount}
-                            index={originalIndex}
-                            tiers={tiers}
-                            sessions={sessions}
-                            onDelete={onDelete}
-                            onToggleStatus={onToggleStatus}
-                            onEdit={onEdit}
-                            isReadOnly={isReadOnly}
-                        />
-                    )
-                })}
+                {filteredCodes.map((discount) => (
+                    <DiscountCard
+                        key={discount.id}
+                        discount={discount}
+                        tiers={tiers}
+                        sessions={sessions}
+                        onDelete={onDelete}
+                        onToggleStatus={onToggleStatus}
+                        onEdit={onEdit}
+                        isReadOnly={isReadOnly}
+                        isShareable={isShareable}
+                    />
+                ))}
             </div>
 
             {filteredCodes.length === 0 && (

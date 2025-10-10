@@ -3,6 +3,9 @@ import {PaginatedResponse} from "@/types/paginatedResponse";
 import {apiFetch} from "@/lib/api";
 
 const API_BASE_PATH = `${process.env.NEXT_PUBLIC_API_BASE_URL}/event-query/v1/events`;
+const ANALYTICS_API_PATH = `${process.env.NEXT_PUBLIC_API_BASE_URL}/event-query/v1/events`;
+const ORDER_API_PATH = `${process.env.NEXT_PUBLIC_API_BASE_URL}/order`;
+
 
 export async function searchEvents({
                                        searchTerm,
@@ -94,6 +97,23 @@ export async function getEventSessions({
     return await res.json();
 }
 
+export async function getTrendingEvents(limit: number = 10): Promise<EventThumbnailDTO[]> {
+    const url = `${ANALYTICS_API_PATH}/trending?limit=${limit}`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        cache: "no-store"
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch trending events: ${res.status}`);
+    }
+
+    return await res.json();
+}
+
 /**
  * Fetches event sessions for a specific event
  */
@@ -149,6 +169,46 @@ export const getDiscountByCode = (eventId: string, sessionId: string, code: stri
         method: 'GET',
     });
 };
+
+export async function getTotalSessionsCount(): Promise<number> {
+    const url = `${API_BASE_PATH}/sessions/count`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        cache: "no-store"
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch total sessions count: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.totalSessions;
+}
+
+/**
+ * Gets the total count of tickets sold
+ *
+ * @returns Promise with the total count of tickets sold
+ */
+export const getTotalTicketsSold = async (): Promise<number> => {
+    const url = `${ORDER_API_PATH}/tickets/count`;
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch total tickets sold count: ${response.status}`);
+    }
+    return (await response.json()).total_count;
+}
+
 
 export type EventSearchResult = Awaited<ReturnType<typeof searchEvents>>;
 export type EventSessionsResult = Awaited<ReturnType<typeof getEventSessions>>;
