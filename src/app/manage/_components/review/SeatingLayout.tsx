@@ -2,12 +2,12 @@ import * as React from "react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {SessionParsed, TierFormData} from "@/lib/validators/event";
+import {SessionDTO, TierFormData} from "@/lib/validators/event";
 import {getTierColor, getTierName} from "@/lib/utils";
 import {SessionType} from "@/types/enums/sessionType";
 
 interface SeatingLayoutProps {
-    session: SessionParsed;
+    session: SessionDTO;
     tiers: TierFormData[];
 }
 

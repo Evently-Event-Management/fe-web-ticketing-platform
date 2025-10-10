@@ -12,10 +12,10 @@ import {Switch} from "@/components/ui/switch"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {CalendarIcon, Percent, DollarSign, Gift} from "lucide-react"
 import {
-    DiscountParsed,
+    DiscountDTO,
     discountSchema,
-    SessionParsed,
-    TierParsed
+    SessionDTO,
+    TierDTO
 } from "@/lib/validators/event"
 import {TierSelector} from "./tier-selector"
 import {SessionSelector} from "./session-selector"
@@ -24,12 +24,12 @@ import {toast} from "sonner";
 import {formatToDateTimeLocalString} from "@/lib/utils";
 
 interface DiscountCodeFormProps {
-    tiers: TierParsed[],
-    sessions: SessionParsed[],
-    onSave: (discount: DiscountParsed) => void,
+    tiers: TierDTO[],
+    sessions: SessionDTO[],
+    onSave: (discount: DiscountDTO) => void,
     isQuickCreate?: boolean,
     isEditing?: boolean,
-    initialData?: DiscountParsed,
+    initialData?: DiscountDTO,
 }
 
 type PercentageParams = {
@@ -97,7 +97,7 @@ export function DiscountCodeForm({
             return;
         }
 
-        onSave(validatedResult.data as DiscountParsed)
+        onSave(validatedResult.data as DiscountDTO)
 
         // ✅ UX IMPROVEMENT: Reset the local form for the next entry
         form.reset({

@@ -1,6 +1,6 @@
 // --- Session List Item ---
 import {useFormContext} from "react-hook-form";
-import {CreateEventFormData, SessionWithSeatingData} from "@/lib/validators/event";
+import {CreateEventFormData, SessionFormData} from "@/lib/validators/event";
 import {AlertCircle, Armchair, Info, Users} from "lucide-react";
 import {format, parseISO} from "date-fns";
 import {Badge} from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {SessionType} from "@/types/enums/sessionType";
 
 export function SessionListItemSeating({field, index, onConfigure}: {
-    field: SessionWithSeatingData;
+    field: SessionFormData;
     index: number;
     onConfigure: () => void;
 }) {

@@ -13,10 +13,11 @@ import {
 import {SingleSessionDialog} from "@/app/manage/organization/[organization_id]/event/_components/SingleSessionDialog";
 import {SessionListItem} from "@/app/manage/organization/[organization_id]/event/_components/SessionListItem";
 import {useLimits} from "@/providers/LimitProvider";
+import {CreateSessionsFormData} from "@/app/manage/organization/[organization_id]/event/[eventId]/sessions/create/page";
 
 // --- Main Scheduling Step Component ---
-export function SchedulingStep() {
-    const {control, formState: {errors}} = useFormContext<CreateEventFormData>();
+export function SchedulingStep({currentSessionCount}: { currentSessionCount?: number }) {
+    const {control, formState: {errors}} = useFormContext<CreateEventFormData | CreateSessionsFormData>();
     const [isRecurringDialogOpen, setIsRecurringDialogOpen] = useState(false);
     const [isSingleSessionDialogOpen, setIsSingleSessionDialogOpen] = useState(false);
     const {myLimits} = useLimits();
@@ -44,7 +45,7 @@ export function SchedulingStep() {
     };
 
     // Disable add buttons if we've reached the maximum
-    const hasReachedLimit = fields.length >= maxSessions;
+    const hasReachedLimit = fields.length + (currentSessionCount || 0) >= maxSessions;
 
     const openSingleSessionDialog = () => {
         if (hasReachedLimit) {
@@ -74,7 +75,7 @@ export function SchedulingStep() {
                 <div className="flex w-full justify-between">
                     {maxSessions > 0 && (
                         <span className="block mt-1">
-                                Session limit: {fields.length}/{maxSessions}
+                                Session limit: {(currentSessionCount || 0) > 0 ? `${currentSessionCount! + fields.length}/${maxSessions}` : `${fields.length}/${maxSessions}`}
                             </span>
                     )}
                     <div className="flex items-center gap-2">
@@ -104,7 +105,7 @@ export function SchedulingStep() {
 
             <div className="space-y-6">
                 {fields.map((field, index) => (
-                    <SessionListItem key={field.id} field={field} index={index} onRemoveAction={remove}/>
+                    <SessionListItem key={field.id} index={index} onRemoveAction={remove}/>
                 ))}
 
                 {fields.length === 0 && (
