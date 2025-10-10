@@ -1,124 +1,181 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { Loader2, CreditCard, Calendar } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import { stripePromise } from '@/lib/stripe';
-import PaymentForm from '@/components/PaymentForm';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { fetchOrdersByUserId } from '@/lib/actions/orderActions';
-import { Order } from '@/types/order';
-import { Loader2 } from 'lucide-react';
-import { OrderDebugView } from '@/components/OrderDebugView';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
 
-export default function OrderPaymentPage() {
-    const params = useParams();
-    const orderId = params.orderId as string;
-    const [order, setOrder] = useState<Order | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+import { createPaymentIntent, PaymentIntentResponse } from '@/lib/actions/orderActions';
+import OrderSummary from '@/components/orders/OrderSummary';
+import CheckoutForm from '@/components/orders/CheckoutForm';
 
-    useEffect(() => {
-        async function loadOrder() {
-            try {
-                // For now, using a placeholder user ID. In a real app, this would come from auth context
-                const currentUserId = "bf5377e7-c064-4f1d-8471-ce1c883b155f"; // Replace with actual user ID from auth
-                
-                const orders = await fetchOrdersByUserId(currentUserId);
-                
-                // Find the specific order by ID
-                const foundOrder = orders.find(order => order.OrderID === orderId);
-                
-                if (foundOrder) {
-                    setOrder(foundOrder);
-                } else {
-                    setError('Order not found or does not belong to this user.');
-                }
-            } catch (err) {
-                console.error('Error loading order:', err);
-                setError('Failed to load order details. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-        }
+// Initialize Stripe with appearance for dark mode compatibility
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-        loadOrder();
-    }, [orderId]);
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-2">Loading order details...</span>
-            </div>
-        );
-    }
-
-    if (error || !order) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <div className="text-center max-w-md mx-auto">
-                    <h1 className="text-2xl font-bold mb-2">Error</h1>
-                    <p className="text-muted-foreground mb-4">
-                        {error || 'Could not find order details. Please check your order ID and try again.'}
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    // Convert the price to cents for Stripe
-    const amountInCents = typeof order.Price === 'number' 
-        ? Math.round(order.Price * 100)
-        : 100; // Default to $1.00 if price is undefined
-
-    return (
-        <div className="container max-w-4xl mx-auto py-12 px-4">
-            <Card className="w-full">
-                <CardHeader>
-                    <CardTitle className="text-2xl">Complete Your Payment</CardTitle>
-                    <CardDescription>
-                        Order ID: <span className="font-mono">{orderId}</span>
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="mb-8">
-                        <h3 className="text-lg font-medium mb-4">Order Summary</h3>
-                        <div className="flex justify-between py-2 border-b">
-                            <span>Total Amount</span>
-                            <span className="font-bold">
-                                ${typeof order.Price === 'number' 
-                                   ? order.Price.toFixed(2) 
-                                   : '0.00'}
-                            </span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b">
-                            <span>Number of Seats</span>
-                            <span>{order.SeatIDs?.length || 0}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b">
-                            <span>Status</span>
-                            <span className="capitalize">{order.Status?.toLowerCase()}</span>
-                        </div>
-                        {order.CreatedAt && (
-                            <div className="flex justify-between py-2 border-b">
-                                <span>Order Date</span>
-                                <span>{new Date(order.CreatedAt).toLocaleDateString()}</span>
-                            </div>
-                        )}
-                    </div>
-                    
-                    <div className="mt-8">
-                        <h3 className="text-lg font-medium mb-4">Payment Details</h3>
-                        <Elements stripe={stripePromise}>
-                            <PaymentForm amount={amountInCents} orderId={orderId} />
-                        </Elements>
-                    </div>
-                    
-                    {/* Debug view showing all order data */}
-                    <OrderDebugView order={order} orderId={orderId} />
-                </CardContent>
-            </Card>
-        </div>
-    );
+function LoadingState() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="text-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+        <p className="mt-4 text-muted-foreground">Initializing payment...</p>
+        <p className="text-sm text-muted-foreground mt-2">This may take a few moments.</p>
+      </div>
+    </div>
+  );
 }
+
+function ErrorState({ error }: { error: string | null }) {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-destructive">
+              <span className="bg-destructive/10 p-2 rounded-full mr-3">
+                <CreditCard className="h-6 w-6" />
+              </span>
+              Payment Error
+            </CardTitle>
+            <CardDescription>
+              We encountered an error while setting up your payment.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-destructive mb-4">{error || "Could not initialize payment intent."}</p>
+            <div className="flex gap-4">
+              <Button onClick={() => window.location.reload()} variant="default">
+                Try Again
+              </Button>
+              <Button onClick={() => router.push('/')} variant="outline">
+                Return to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export default function OrderPayment() {
+  const params = useParams();
+  const orderId = params.orderId as string;
+  const [paymentData, setPaymentData] = useState<PaymentIntentResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    const fetchPaymentIntent = async () => {
+      try {
+        const response = await createPaymentIntent(orderId);
+        setPaymentData(response);
+      } catch (err) {
+        setError('Failed to initialize payment. Please try again.');
+        console.error('Payment intent error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPaymentIntent();
+  }, [orderId]);
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error || !paymentData?.clientSecret) {
+    return <ErrorState error={error} />;
+  }
+
+  // Configure Stripe appearance based on current theme
+  const stripeOptions = {
+    clientSecret: paymentData.clientSecret,
+    appearance: {
+      theme: resolvedTheme === 'dark' ? 'night' as const : 'stripe' as const,
+      variables: {
+        colorPrimary: 'var(--color-primary)',
+        colorBackground: 'var(--color-card)',
+        colorText: 'var(--color-card-foreground)',
+        colorDanger: 'var(--color-destructive)',
+        fontFamily: 'system-ui, sans-serif',
+        borderRadius: 'var(--radius-md)',
+        spacingUnit: '4px',
+      },
+    },
+  };
+  
+  // Use the seat lock duration from the API response
+  const seatLockDuration = paymentData.seatLockDurationMins || 10; // Default to 10 minutes if not provided
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-6xl">
+        <h1 className="text-2xl font-bold mb-6">Complete Your Payment</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Payment Form Section - Takes up 2/3 on desktop */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Details</CardTitle>
+                <CardDescription>
+                  Enter your card information to complete your purchase.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Payment Form - Key ensures re-render when theme changes */}
+                <Elements 
+                  key={`stripe-elements-${resolvedTheme}`} 
+                  stripe={stripePromise} 
+                  options={stripeOptions}
+                >
+                  <CheckoutForm clientSecret={paymentData.clientSecret} orderId={orderId} />
+                </Elements>
+              </CardContent>
+              <CardFooter className="flex flex-col items-center text-xs text-muted-foreground pt-4">
+                <p>All payments are secure and encrypted.</p>
+                <p className="mt-1">You will receive a confirmation email once your payment is processed.</p>
+              </CardFooter>
+            </Card>
+          </div>
+          
+          {/* Order Summary Section - Takes up 1/3 on desktop */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Order Summary
+                </CardTitle>
+                <CardDescription>
+                  Review your order before payment.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Order Summary */}
+                {paymentData.order && (
+                  <OrderSummary 
+                    order={paymentData.order} 
+                    seatLockDurationMins={seatLockDuration} 
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Add custom CSS for Stripe elements compatibility with dark mode
+// This will be injected into the page's global styles
+export const dynamic = 'force-dynamic';
