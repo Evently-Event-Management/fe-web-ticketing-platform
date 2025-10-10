@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { processPayment } from '@/lib/actions/orderActions';
 import { Loader2 } from 'lucide-react';
 
 interface PaymentFormProps {
@@ -14,15 +12,14 @@ interface PaymentFormProps {
   orderId: string;
 }
 
-const PaymentForm = ({ amount, orderId }: PaymentFormProps) => {
+const PaymentForm = ({ amount }: PaymentFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
-  const router = useRouter();
-  
+
   const [error, setError] = useState<string | null>(null);
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentSuccess] = useState(false);
   const [billingDetails, setBillingDetails] = useState({
     name: '',
     email: '',
@@ -50,21 +47,7 @@ const PaymentForm = ({ amount, orderId }: PaymentFormProps) => {
     setError(null);
 
     try {
-      // In a real implementation, we would use Stripe's API directly
-      // But for this demo, we'll use our simplified payment endpoint
-      const paymentResult = await processPayment(orderId);
-
-      if (paymentResult.status !== 'success') {
-        setError(paymentResult.message || 'Payment failed. Please try again.');
-      } else {
-        setPaymentSuccess(true);
-        
-        // Redirect to success page with payment data after a short delay
-        setTimeout(() => {
-          const paymentData = encodeURIComponent(JSON.stringify(paymentResult));
-          router.push(`/payment-success?orderId=${orderId}&paymentData=${paymentData}`);
-        }, 1500);
-      }
+        await new Promise((resolve) => setTimeout(resolve, 10000));
     } catch (err) {
       setError('An error occurred while processing your payment. Please try again.');
       console.error(err);

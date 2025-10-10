@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-import { CreateOrderRequest, CreateOrderResponse } from "@/types/order";
+import {ApiOrder, CreateOrderRequest, CreateOrderResponse, Order} from "@/types/order";
 import { OrderDetailsResponse } from "./analyticsActions";
 
 const API_BASE_PATH = '/order';

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Receipt, Calendar, Users, CreditCard, Eye, MapPin, Clock, QrCode } from 'lucide-react';
+import { Receipt, Calendar, Users, Eye, QrCode } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiQRCodeModal } from '@/components/ApiQRCodeModal';
@@ -223,17 +223,6 @@ export default function OrdersPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    {order.PaymentAT && (
-                                        <div className="flex items-center gap-2">
-                                            <CreditCard className="h-4 w-4 text-muted-foreground" />
-                                            <div>
-                                                <div className="text-sm font-medium">Paid At</div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    {new Date(order.PaymentAT).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {order.DiscountCode && (
@@ -294,10 +283,6 @@ export default function OrdersPage() {
                                                                     {order.Status}
                                                                 </Badge>
                                                             </div>
-                                                            <div><strong>Created:</strong> {new Date(order.CreatedAt).toLocaleString()}</div>
-                                                            {order.PaymentAT && (
-                                                                <div><strong>Paid:</strong> {new Date(order.PaymentAT).toLocaleString()}</div>
-                                                            )}
                                                         </div>
                                                     </div>
                                                     

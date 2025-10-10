@@ -78,3 +78,45 @@ export interface ApiOrder {
     CreatedAt: string;
     tickets: ApiTicket[];
 }
+
+
+export interface Order {
+    OrderID: string;
+    UserID: string;
+    SessionID: string;
+    SeatIDs: string[];
+    Status: string;
+    Price: number;
+    CreatedAt: string;
+    EventID?: string; // May be included in future responses
+    UpdatedAt?: string;
+    DiscountID?: string;
+    PaymentID?: string;
+}
+
+export enum TicketStatus {
+    VALID = "VALID",
+    USED = "USED",
+    EXPIRED = "EXPIRED",
+    CANCELLED = "CANCELLED"
+}
+
+export interface Ticket {
+    TicketID: string;
+    OrderID: string;
+    SeatID: string;
+    EventID: string;
+    SessionID: string;
+    QRCode: string;
+    Status: TicketStatus;
+    IssuedAt: string;
+    ValidUntil: string;
+    EventName?: string;
+    VenueName?: string;
+    SessionDate?: string;
+    SessionTime?: string;
+    SeatRow?: string;
+    SeatNumber?: string;
+    TicketType?: string;
+    Price: number;
+}
