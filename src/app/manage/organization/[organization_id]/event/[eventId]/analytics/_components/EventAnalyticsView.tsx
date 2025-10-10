@@ -70,7 +70,7 @@ export const EventAnalyticsView: React.FC<EventAnalyticsViewProps> = ({
                 {/* Sales Performance Card */}
                 <AnalyticsCard
                     title="Sales Performance"
-                    value={(revenueAnalytics?.total_tickets_sold || analytics.totalTicketsSold).toLocaleString()}
+                    value={(analytics.totalTicketsSold).toLocaleString()}
                     secondaryValue={analytics.totalEventCapacity.toLocaleString()}
                     subtitle={`${analytics.overallSellOutPercentage.toFixed(1)}% of total capacity sold`}
                     icon={
