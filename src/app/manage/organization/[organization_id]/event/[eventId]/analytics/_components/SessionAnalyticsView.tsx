@@ -79,7 +79,7 @@ export const SessionAnalyticsView: React.FC<{
                 {/* Sales Performance Card */}
                 <AnalyticsCard
                     title="Sales Performance"
-                    value={(sessionAnalytics?.total_tickets_sold || analytics.ticketsSold).toLocaleString()}
+                    value={(analytics.ticketsSold).toLocaleString()}
                     secondaryValue={analytics.sessionCapacity.toLocaleString()}
                     subtitle={`${analytics.sellOutPercentage.toFixed(1)}% of total capacity sold`}
                     icon={
