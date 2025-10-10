@@ -350,3 +350,39 @@
     color: hsl(var(--foreground));
     font-weight: 600;
 }
+
+/* Netflix Hero Styles */
+.netflix-vignette {
+  position: relative;
+}
+
+.netflix-vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.netflix-title-reveal {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Improve text contrast in the Netflix hero section */
+.netflix-vignette h1, 
+.netflix-vignette .text-xs,
+.netflix-vignette .font-medium,
+.netflix-vignette .badge,
+.netflix-vignette button,
+.netflix-vignette span {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  color: white !important; /* Force white color regardless of theme */
+}
+
+/* Ensure all icons in the Netflix hero are white */
+.netflix-vignette svg {
+  color: white !important;
+}
