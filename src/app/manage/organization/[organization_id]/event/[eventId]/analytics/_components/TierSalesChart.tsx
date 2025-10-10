@@ -2,6 +2,7 @@
 
 import React, {useState, useMemo} from "react";
 import {TierSales} from "@/types/eventAnalytics";
+import { TierSalesMetrics } from "@/lib/actions/analyticsActions";
 import {
     Card,
     CardContent,
@@ -20,10 +21,34 @@ import {formatCurrency} from "@/lib/utils";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {DollarSign, Ticket} from "lucide-react";
 
-export const TierSalesChart: React.FC<{ data: TierSales[] }> = ({data}) => {
+export const TierSalesChart: React.FC<{ data: TierSales[] | TierSalesMetrics[] }> = ({data}) => {
     const [mode, setMode] = useState<"revenue" | "tickets">("revenue");
 
-    const chartConfig = data.reduce(
+    // Process data to normalize between TierSales and TierSalesMetrics
+    const processedData = useMemo(() => {
+        return data.map(tier => {
+            // Check if it's a TierSalesMetrics object by checking for tier_id property
+            if ('tier_id' in tier) {
+                return {
+                    tierId: tier.tier_id,
+                    tierName: tier.tier_name,
+                    tierColor: tier.tier_color,
+                    ticketsSold: tier.tickets_sold,
+                    revenue: tier.revenue
+                };
+            }
+            // It's already in TierSales format
+            return {
+                tierId: tier.tierId,
+                tierName: tier.tierName,
+                tierColor: tier.tierColor,
+                ticketsSold: tier.ticketsSold,
+                revenue: tier.totalRevenue
+            };
+        });
+    }, [data]);
+
+    const chartConfig = processedData.reduce(
         (acc, tier) => {
             acc[tier.tierName] = {
                 label: tier.tierName,
@@ -35,12 +60,12 @@ export const TierSalesChart: React.FC<{ data: TierSales[] }> = ({data}) => {
     );
 
     const totalValue = useMemo(() => {
-        return data.reduce(
+        return processedData.reduce(
             (acc, curr) =>
-                acc + (mode === "revenue" ? curr.totalRevenue : curr.ticketsSold),
+                acc + (mode === "revenue" ? curr.revenue : curr.ticketsSold),
             0
         );
-    }, [data, mode]);
+    }, [processedData, mode]);
 
     return (
         <Card className="flex flex-col h-full">
@@ -89,13 +114,13 @@ export const TierSalesChart: React.FC<{ data: TierSales[] }> = ({data}) => {
                             content={<ChartTooltipContent hideLabel/>}
                         />
                         <Pie
-                            data={data}
-                            dataKey={mode === "revenue" ? "totalRevenue" : "ticketsSold"}
+                            data={processedData}
+                            dataKey={mode === "revenue" ? "revenue" : "ticketsSold"}
                             nameKey="tierName"
                             innerRadius={60}
                             strokeWidth={5}
                         >
-                            {data.map((entry) => (
+                            {processedData.map((entry) => (
                                 <Cell key={`cell-${entry.tierId}`} fill={entry.tierColor}/>
                             ))}
                             <Label

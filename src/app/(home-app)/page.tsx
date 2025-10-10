@@ -5,71 +5,69 @@ import CategorySection from "@/app/(home-app)/_components/CategorySection";
 import {EventThumbnailDTO} from "@/types/event";
 import {sriLankaLocations} from "@/app/(home-app)/_utils/locations";
 import {LocationCard} from "@/app/(home-app)/_components/LocationCard";
-import {ArrowRight, Calendar, MapPin, Users} from "lucide-react";
+import {ArrowRight, Calendar, MapPin, Ticket} from "lucide-react";
 import Link from 'next/link';
 import {useAuth} from '@/providers/AuthProvider';
-
-const trendingEvents: EventThumbnailDTO[] = [
-    {
-        id: '1',
-        title: 'Colombo Music Fest 2025',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070&auto=format=fit=crop',
-        organizationName: 'Vibe Events',
-        categoryName: 'Music',
-        earliestSession: {
-            startTime: '2025-09-15T18:00:00Z',
-            venueName: 'Galle Face Green',
-            city: 'Colombo'
-        },
-        startingPrice: 25.00,
-        discounts: null
-    },
-    {
-        id: '2',
-        title: 'Kandy Esala Perahera Viewing',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1566766188646-5d0310191714?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        organizationName: 'Cultural SL',
-        categoryName: 'Culture',
-        earliestSession: {
-            startTime: '2025-08-28T19:00:00Z',
-            venueName: 'Temple of the Tooth',
-            city: 'Kandy'
-        },
-        startingPrice: 15.00,
-        discounts: null
-    },
-    {
-        id: '3',
-        title: 'Galle Literary Festival',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=1973&auto=format=fit=crop',
-        organizationName: 'Sri Lanka Arts',
-        categoryName: 'Arts & Literature',
-        earliestSession: {
-            startTime: '2025-10-10T10:00:00Z',
-            venueName: 'Galle Fort',
-            city: 'Galle'
-        },
-        startingPrice: null,
-        discounts: null
-    },
-    {
-        id: '4',
-        title: 'Startup Summit Sri Lanka',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format=fit=crop',
-        organizationName: 'TechHub LK',
-        categoryName: 'Tech',
-        earliestSession: {
-            startTime: '2025-11-05T09:00:00Z',
-            venueName: 'BMICH',
-            city: 'Colombo'
-        },
-        startingPrice: 50.00,
-        discounts: null
-    },
-];
+import { useEffect, useState } from 'react';
+import {getTrendingEvents, getTotalSessionsCount, getTotalTicketsSold} from '@/lib/actions/public/eventActions';
+import { Skeleton } from '@/components/ui/skeleton';
+import CounterAnimation from "@/components/ui/counter-animation";
 
 export default function HomePage() {
     const {isAuthenticated, keycloak} = useAuth();
+    const [trendingEvents, setTrendingEvents] = useState<EventThumbnailDTO[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [totalSessionsCount, setTotalSessionsCount] = useState<number>(0);
+    const [totalTicketsSold, setTotalTicketsSold] = useState<number>(0);
+    const [loadingSessionsCount, setLoadingSessionsCount] = useState<boolean>(true);
+    const [loadingTicketsCount, setLoadingTicketsCount] = useState<boolean>(true);
+
+    useEffect(() => {
+        const fetchTrendingEvents = async () => {
+            try {
+                setLoading(true);
+                const events = await getTrendingEvents(3);
+                setTrendingEvents(events);
+                setError(null);
+            } catch (err) {
+                console.error("Failed to fetch trending events:", err);
+                setError("Failed to load trending events. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchTotalSessionsCount = async () => {
+            try {
+                setLoadingSessionsCount(true);
+                const count = await getTotalSessionsCount();
+                setTotalSessionsCount(count);
+            } catch (err) {
+                console.error("Failed to fetch total sessions count:", err);
+                setTotalSessionsCount(0);
+            } finally {
+                setLoadingSessionsCount(false);
+            }
+        };
+
+        const fetchTotalTicketsSold = async () => {
+            try {
+                setLoadingTicketsCount(true);
+                const count = await getTotalTicketsSold();
+                setTotalTicketsSold(count);
+            } catch (err) {
+                console.error("Failed to fetch total tickets sold:", err);
+                setTotalTicketsSold(0);
+            } finally {
+                setLoadingTicketsCount(false);
+            }
+        };
+
+        fetchTrendingEvents();
+        fetchTotalSessionsCount();
+        fetchTotalTicketsSold();
+    }, []);
 
     return (
         <main className="min-h-screen bg-background">
@@ -79,7 +77,7 @@ export default function HomePage() {
                     <div className="max-w-4xl mx-auto text-center">
                         <h1 className="text-5xl md:text-7xl font-light tracking-tight text-foreground mb-6">
                             <span className="text-primary">Discover</span>
-                            <span className="block font-semibold text-foreground/80">Amazing Events</span>
+                            <span className="blSecureHandlerock font-semibold text-foreground/80">Amazing Events</span>
                         </h1>
                         <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light max-w-2xl mx-auto">
                             Find and book extraordinary experiences happening around you
@@ -92,7 +90,20 @@ export default function HomePage() {
                                     className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mx-auto mb-3">
                                     <Calendar className="w-6 h-6 text-primary"/>
                                 </div>
-                                <div className="text-2xl font-semibold text-foreground">1000+</div>
+                                <div className="text-2xl font-semibold text-foreground">
+                                    {loadingSessionsCount ? (
+                                        <Skeleton className="h-8 w-16 mx-auto"/>
+                                    ) : (
+                                        <>
+                                            <CounterAnimation
+                                                value={totalSessionsCount || 0}
+                                                duration={2000}
+                                                suffix="+"
+                                                startOnView={false}
+                                            />
+                                        </>
+                                    )}
+                                </div>
                                 <div className="text-sm text-muted-foreground">Events</div>
                             </div>
                             <div className="text-center">
@@ -106,10 +117,23 @@ export default function HomePage() {
                             <div className="text-center">
                                 <div
                                     className="flex items-center justify-center w-12 h-12 bg-chart-3/10 rounded-full mx-auto mb-3">
-                                    <Users className="w-6 h-6 text-chart-3"/>
+                                    <Ticket className="w-6 h-6 text-chart-3"/>
                                 </div>
-                                <div className="text-2xl font-semibold text-foreground">50K+</div>
-                                <div className="text-sm text-muted-foreground">Attendees</div>
+                                <div className="text-2xl font-semibold text-foreground">
+                                    {loadingTicketsCount ? (
+                                        <Skeleton className="h-8 w-16 mx-auto"/>
+                                    ) : (
+                                        <>
+                                            <CounterAnimation
+                                                value={totalTicketsSold || 0}
+                                                duration={2000}
+                                                suffix="+"
+                                                startOnView={false}
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                                <div className="text-sm text-muted-foreground">Tickets Sold</div>
                             </div>
                         </div>
 
@@ -150,10 +174,65 @@ export default function HomePage() {
                             Don&#39;t miss out on the most popular events happening right now
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-                        {trendingEvents.map((event) => (
-                            <EventCard key={event.id} event={event}/>
-                        ))}
+                    
+                    {error && (
+                        <div className="text-center p-6 bg-destructive/10 rounded-lg max-w-3xl mx-auto mb-8">
+                            <p className="text-destructive">{error}</p>
+                            <button 
+                                onClick={() => {
+                                    setLoading(true);
+                                    setError(null);
+                                    getTrendingEvents()
+                                        .then(events => {
+                                            setTrendingEvents(events);
+                                            setLoading(false);
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                            setError("Failed to load trending events. Please try again later.");
+                                            setLoading(false);
+                                        });
+                                }}
+                                className="mt-4 px-4 py-2 bg-muted text-foreground rounded-md hover:bg-muted/80"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    )}
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                        {loading ? (
+                            // Skeleton loading UI
+                            Array(3).fill(0).map((_, index) => (
+                                <div key={`skeleton-${index}`} className="flex flex-col space-y-3">
+                                    <Skeleton className="h-48 w-full rounded-lg" />
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <Skeleton className="h-4 w-2/3" />
+                                    <Skeleton className="h-4 w-1/4" />
+                                </div>
+                            ))
+                        ) : trendingEvents.length > 0 ? (
+                            // Display actual events
+                            trendingEvents.map((event: EventThumbnailDTO) => (
+                                <EventCard key={event.id} event={event} />
+                            ))
+                        ) : (
+                            // No events found
+                            <div className="col-span-4 text-center p-12">
+                                <p className="text-muted-foreground text-lg">No trending events found at the moment.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* View All Link */}
+                    <div className="text-center mt-12">
+                        <Link href="/events">
+                            <button className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors duration-200 text-lg">
+                                View All Events
+                                <ArrowRight className="ml-2 w-5 h-5"/>
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </section>

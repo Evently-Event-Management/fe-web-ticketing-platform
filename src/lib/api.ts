@@ -1,6 +1,20 @@
 // lib/api.ts
 import keycloak from './keycloak'; // Your Keycloak instance
 
+// Custom API Error class
+export class ApiError extends Error {
+    status: number;
+    
+    constructor(message: string, status: number) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        
+        // This is needed for proper instanceof checks with custom Error classes
+        Object.setPrototypeOf(this, ApiError.prototype);
+    }
+}
+
 // Define a generic type for our fetch function
 type ApiFetchOptions = Omit<RequestInit, 'headers'> & {
     headers?: Record<string, string>;
@@ -44,7 +58,7 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
     const response = await fetch(`${baseUrl}${endpoint}`, {...options, headers});
 
     if (!response.ok) {
-        // ✅ Corrected error handling logic
+        // ✅ Enhanced error handling logic with custom ApiError
         let errorMessage = `Request failed with status ${response.status}`;
         try {
             // Try to parse the error response as JSON
@@ -55,8 +69,8 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
             // The error response wasn't valid JSON. The default message is sufficient.
             console.warn("Could not parse error response as JSON.");
         }
-        // Throw the final, most specific error message.
-        throw new Error(errorMessage);
+        // Throw our custom ApiError with the status code
+        throw new ApiError(errorMessage, response.status);
     }
 
     // Handle empty responses or 204 No Content responses

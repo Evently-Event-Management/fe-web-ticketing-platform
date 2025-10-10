@@ -204,7 +204,6 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Configure Location for Session {index + 1}</DialogTitle>
                 </DialogHeader>
-
                 <div className="overflow-y-auto">
                     <Tabs
                         defaultValue={localFormState.sessionType === SessionType.ONLINE ? "online" : "physical"}

@@ -2,6 +2,7 @@ import {z} from 'zod';
 
 import {SessionType} from "@/types/enums/sessionType";
 import {DiscountType} from "@/types/enums/discountType";
+import { SeatStatus } from '@/types/enums/SeatStatus';
 
 
 // --- Reusable Atomic Schemas ---
@@ -46,6 +47,7 @@ const baseDiscountSchema = z.object({
     code: z.string().min(1, { message: "Discount code cannot be empty." }).transform(val => val.toUpperCase()),
     maxUsage: z.number().int().min(1).nullable().optional(),
     currentUsage: z.number().int().min(0).default(0),
+    discountedTotal: z.number().min(0).default(0),
     active: z.boolean().default(true),
     public: z.boolean().default(false),
     activeFrom: z.iso.datetime({ offset: true }).nullable(),
@@ -119,20 +121,20 @@ const venueDetailsSchema = z.object({
 });
 
 const seatSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     label: z.string(),
     tierId: z.string().optional(),
-    status: z.enum(['AVAILABLE', 'RESERVED']).optional(),
+    status: z.enum([SeatStatus.AVAILABLE, SeatStatus.RESERVED, SeatStatus.BOOKED]).default(SeatStatus.AVAILABLE),
 });
 
 const rowSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     label: z.string(),
     seats: z.array(seatSchema),
 });
 
 export const blockSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     name: z.string().min(1, "Block name is required."),
     type: z.enum(['seated_grid', 'standing_capacity', 'non_sellable']),
     position: positionSchema,
@@ -178,7 +180,7 @@ export const baseSessionSchema = z.object({
     });
 
 // 2. A session that is "complete" for Step 3.
-const sessionWithVenueSchema = baseSessionSchema
+export const sessionWithVenueSchema = baseSessionSchema
     .refine(data => data.sessionType !== null, {
         message: "A session type (Physical or Online) must be selected.",
         path: ["sessionType"],
@@ -206,7 +208,7 @@ const sessionWithVenueSchema = baseSessionSchema
 
 
 // 3. A session that is "complete" for Step 4.
-const sessionWithSeatingSchema = sessionWithVenueSchema
+export const sessionWithSeatingSchema = sessionWithVenueSchema
     .safeExtend({
         layoutData: sessionSeatingMapRequestSchema.extend({
             layout: z.object({
@@ -315,21 +317,21 @@ export const finalCreateEventSchema = step5Schema;
 // --- Type Inference ---
 
 export type CreateEventFormData = z.input<typeof finalCreateEventSchema>;
-export type CreateEventParsed = z.infer<typeof finalCreateEventSchema>;
+export type CreateEventRequest = z.infer<typeof finalCreateEventSchema>;
 export type SessionBasicData = z.infer<typeof baseSessionSchema>;
 export type SessionWithVenueData = z.infer<typeof sessionWithVenueSchema>;
 export type SessionWithSeatingData = z.infer<typeof sessionWithSeatingSchema>;
 export type SessionFormData = z.input<typeof sessionWithSeatingSchema>;
-export type SessionParsed = z.infer<typeof sessionWithSeatingSchema>;
+export type SessionDTO = z.infer<typeof sessionWithSeatingSchema>;
 export type TierFormData = z.input<typeof tierSchema>;
-export type TierParsed = z.infer<typeof tierSchema>;
+export type TierDTO = z.infer<typeof tierSchema>;
 export type VenueDetails = z.infer<typeof venueDetailsSchema>;
 export type Block = z.infer<typeof blockSchema>;
 export type Seat = z.infer<typeof seatSchema>;
 export type SessionSeatingMapRequest = z.infer<typeof sessionSeatingMapRequestSchema>;
 export type Row = z.infer<typeof rowSchema>;
 export type DiscountFormData = z.input<typeof discountSchema>;
-export type DiscountParsed = z.infer<typeof discountSchema>;
+export type DiscountDTO = z.infer<typeof discountSchema>;
 export type DiscountParameters = z.infer<typeof discountParametersUnionSchema>;
 
 
