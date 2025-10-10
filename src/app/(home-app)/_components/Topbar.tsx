@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import {useAuth} from '@/providers/AuthProvider'
-import {Ticket, ShieldCheck} from 'lucide-react'
+import {Ticket, ShieldCheck, Receipt} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -37,6 +37,14 @@ export default function Topbar() {
                     <ModeToggle/>
                     {isAuthenticated ? (
                         <>
+                            <Link href={`/orders`} className="hidden lg:inline-flex">
+                                <Button variant="ghost"
+                                        className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                    <Receipt className="size-4 mr-1"/>
+                                    My Orders
+                                </Button>
+                            </Link>
+
                             <Link href={`/manage/organization`} className="hidden lg:inline-flex">
                                 <Button variant="ghost"
                                         className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
@@ -80,6 +88,12 @@ export default function Topbar() {
                                     {/*    </div>*/}
                                     {/*)}*/}
                                     <DropdownMenuSeparator/>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/orders" className="flex items-center gap-2">
+                                            <Receipt className="size-4"/>
+                                            My Orders
+                                        </Link>
+                                    </DropdownMenuItem>
                                     {userIsAdmin && (
                                         <>
                                             <DropdownMenuItem asChild>
