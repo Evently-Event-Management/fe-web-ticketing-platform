@@ -4,8 +4,7 @@ import { useState } from "react";
 import { TierDTO } from "@/lib/validators/event";
 import { useEventContext } from "@/providers/EventProvider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import TierFormDialog from "./TierFormDialog";
@@ -156,7 +155,7 @@ const TierManagement = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete tier</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the tier "{tierToDelete?.name}"?
+              Are you sure you want to delete the tier &#34;{tierToDelete?.name}&#34;?
               {tierToDelete?.price && tierToDelete.price > 0 && (
                 <p className="mt-2 font-medium text-destructive">
                   This tier is priced at LKR {tierToDelete.price.toFixed(2)}. This action cannot be undone.

@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState, useCallback} from "react";
+import {useEffect, useState} from "react";
 import {SessionAnalytics} from "@/types/eventAnalytics";
 import {SessionAnalyticsView} from "../../../analytics/_components/SessionAnalyticsView";
 import {Skeleton} from "@/components/ui/skeleton";

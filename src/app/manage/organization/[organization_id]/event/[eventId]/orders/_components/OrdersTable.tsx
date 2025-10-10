@@ -28,7 +28,6 @@ import {
   PaginationPrevious 
 } from "@/components/ui/pagination";
 import { Eye } from "lucide-react";
-import { OrderDetailsResponse } from "@/lib/actions/analyticsActions";
 import { formatCurrency } from "@/lib/utils";
 
 // Define a simplified order interface for the table
