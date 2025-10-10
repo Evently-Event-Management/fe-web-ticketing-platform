@@ -40,7 +40,6 @@ export default function Topbar() {
                             <Link href={`/orders`} className="hidden lg:inline-flex">
                                 <Button variant="ghost"
                                         className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
-                                    <Receipt className="size-4 mr-1"/>
                                     My Orders
                                 </Button>
                             </Link>
