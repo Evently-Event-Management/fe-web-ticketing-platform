@@ -5,13 +5,13 @@ import {Clock, DollarSign, Ticket} from "lucide-react";
 import {TierSalesChart} from "./TierSalesChart";
 import {BlockOccupancyChart} from "./BlockOccupancyChart";
 import {SessionStatusBadge} from "@/components/SessionStatusBadge";
-import {usePathname} from 'next/navigation';
 import {SeatStatusChart} from "./SeatStatusChart";
 import {DailySalesChart} from "./DailySalesChart";
 import {Skeleton} from "@/components/ui/skeleton";
 import {
     TierDistributionChart
 } from "@/app/manage/organization/[organization_id]/event/[eventId]/analytics/_components/TierDistribution";
+import React from "react";
 
 export const SessionAnalyticsView: React.FC<{ 
     analytics: SessionAnalytics, 
@@ -30,9 +30,7 @@ export const SessionAnalyticsView: React.FC<{
     },
     isLoading?: boolean
 }> = ({analytics, sessionAnalytics, isLoading = false}) => {
-    const pathname = usePathname();
-    const eventAnalyticsPath = pathname.substring(0, pathname.lastIndexOf('/'));
-    
+
     // Calculate average revenue per ticket
     const avgRevenuePerTicket = analytics.ticketsSold > 0
         ? analytics.sessionRevenue / analytics.ticketsSold

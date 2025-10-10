@@ -4,7 +4,7 @@ import React from 'react';
 import { DailySalesMetrics } from '@/lib/actions/analyticsActions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { TrendingUp } from "lucide-react";
 
 import {
