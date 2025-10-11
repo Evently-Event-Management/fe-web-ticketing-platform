@@ -61,7 +61,7 @@ export const CustomSeatingLayout: React.FC<SeatingLayoutProps> = ({ session, tie
     return (
         <div className="border rounded-lg p-4">
             <h3 className="font-semibold mb-4">Seating Layout</h3>
-            <div className="relative bg-muted/30 min-h-[400px] p-4 rounded-lg overflow-auto">
+            <div className="relative bg-muted/30 min-h-[700px] p-4 rounded-lg overflow-auto">
                 {layoutData.layout.blocks.map(block => {
                     // Get tier color for the block based on first seat's tier
                     const firstSeatTierId = block.seats?.[0]?.tierId;

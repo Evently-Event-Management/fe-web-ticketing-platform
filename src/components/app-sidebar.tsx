@@ -5,12 +5,12 @@ import {
     Building2,
     CalendarRange,
     RockingChair,
-    Ticket,
     LayoutDashboard,
     CalendarDays,
     Building, Users,
 } from "lucide-react"
 import Link from "next/link";
+import Image from "next/image";
 import {useSidebar} from "@/components/ui/sidebar"
 import {NavMain} from "@/components/nav-main"
 import {NavOrg} from "@/components/nav-org"
@@ -82,8 +82,16 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                             asChild
                             className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
                         >
-                            <Link className="flex items-center space-x-2 " href="/manage/organization">
-                                <Ticket className="!size-6 text-sidebar-primary"/>
+                            <Link className="flex items-center " href="/manage/organization">
+                                <div className="relative h-14 w-14">
+                                    <Image 
+                                        src="/images/logo-high.png"
+                                        alt="Ticketly Logo"
+                                        fill
+                                        className="object-contain"
+                                        priority
+                                    />
+                                </div>
                                 {open &&
                                     <span className="text-xl font-bold text-sidebar-primary mb-0.5">Ticketly</span>}
                             </Link>
@@ -158,7 +166,15 @@ export function AppSidebarAdmin({...props}: React.ComponentProps<typeof Sidebar>
                             className={`data-[slot=sidebar-menu-button]:!p-2 ${!open ? 'justify-center' : ''}`}
                         >
                             <Link className="flex items-center space-x-2" href="/manage/admin">
-                                <Ticket className="!size-6 text-sidebar-primary"/>
+                                <div className="relative h-8 w-8">
+                                    <Image 
+                                        src="/images/logo-high.png"
+                                        alt="Ticketly Logo"
+                                        fill
+                                        className="object-contain"
+                                        priority
+                                    />
+                                </div>
                                 {open && (
                                     <div className="flex flex-col">
                                         <span className="text-xl font-bold text-sidebar-primary">Ticketly</span>

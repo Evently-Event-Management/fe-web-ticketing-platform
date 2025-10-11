@@ -114,30 +114,15 @@ export default function OrdersPage() {
     const getStatusVariant = (status: string) => {
         switch (status.toLowerCase()) {
             case 'completed':
-                return 'default';
+                return 'success';
             case 'pending':
-                return 'secondary';
+                return 'warning';
             case 'cancelled':
                 return 'destructive';
             case 'expired':
                 return 'outline';
             default:
                 return 'secondary';
-        }
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status.toLowerCase()) {
-            case 'completed':
-                return 'text-white';
-            case 'pending':
-                return 'text-amber-500';
-            case 'cancelled':
-                return 'text-red-500';
-            case 'expired':
-                return 'text-gray-500';
-            default:
-                return 'text-gray-500';
         }
     };
 
@@ -173,7 +158,7 @@ export default function OrdersPage() {
                                     <div>
                                         <CardTitle className="text-lg flex items-center gap-2">
                                             Order #{order.OrderID.slice(-8)}
-                                            <Badge variant={getStatusVariant(order.Status)} className={getStatusColor(order.Status)}>
+                                            <Badge variant={getStatusVariant(order.Status)}>
                                                 {order.Status}
                                             </Badge>
                                         </CardTitle>
@@ -279,7 +264,7 @@ export default function OrdersPage() {
                                                         <div className="space-y-1 text-sm">
                                                             <div><strong>Order ID:</strong> {order.OrderID}</div>
                                                             <div><strong>Status:</strong> 
-                                                                <Badge variant={getStatusVariant(order.Status)} className={`ml-2 ${getStatusColor(order.Status)}`}>
+                                                                <Badge variant={getStatusVariant(order.Status)} className={`ml-2`}>
                                                                     {order.Status}
                                                                 </Badge>
                                                             </div>

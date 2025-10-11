@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import {useAuth} from '@/providers/AuthProvider'
-import {Ticket, ShieldCheck, Receipt} from 'lucide-react'
+import {ShieldCheck, Receipt} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -26,9 +27,17 @@ export default function Topbar() {
             <div className="flex h-12 items-center justify-between w-full">
                 <div className="mr-4 flex">
                     <Link className="mr-6 flex items-center space-x-2" href="/">
-                        <div className="flex items-center gap-2 p-3 text-primary">
-                            <Ticket className="size-6 text-primary"/>
-                            <span className="text-xl font-bold">Ticketly</span>
+                        <div className="flex items-center gap-2 p-3">
+                            <div className="relative h-16 w-16">
+                                <Image 
+                                    src="/images/logo-high.png"
+                                    alt="Ticketly Logo"
+                                    fill
+                                    className="object-contain"
+                                    priority
+                                />
+                            </div>
+                            <span className="text-2xl font-bold text-primary">Ticketly</span>
                         </div>
                     </Link>
                 </div>
