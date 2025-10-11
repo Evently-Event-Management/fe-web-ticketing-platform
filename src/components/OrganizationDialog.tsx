@@ -35,7 +35,6 @@ export function CreateOrganizationDialog({children, onCreate}: { children: React
         if (!name.trim()) return;
 
         setIsLoading(true);
-        // ✅ Include website in the request
         const newOrgRequest: OrganizationRequest = {name, website: website.trim() || undefined};
 
         try {
@@ -43,9 +42,9 @@ export function CreateOrganizationDialog({children, onCreate}: { children: React
             toast.success(`Organization "${data.name}" created successfully!`);
             setOpen(false);
             setName('');
-            setWebsite(''); // Reset website field
+            setWebsite('');
             if (onCreate) {
-                onCreate(); // Call the optional callback if provided
+                onCreate();
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';

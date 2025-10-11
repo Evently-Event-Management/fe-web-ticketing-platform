@@ -89,6 +89,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
     const refreshOrganizations = async () => {
         const fetchedOrgs = await getMyOrganizations();
         setOrganizations(fetchedOrgs);
+        
         if (organization) {
             const activeOrg = fetchedOrgs.find(org => org.id === organization.id);
             if (activeOrg) {
@@ -96,7 +97,11 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
             } else {
                 setOrganization(null);
                 localStorage.removeItem('selectedOrgId');
-                router.push('/manage/organization/my-organizations');
+                
+                // Only redirect if there are no organizations at all
+                if (fetchedOrgs.length === 0) {
+                    router.push('/manage/organization/my-organizations');
+                }
             }
         }
     };
@@ -107,7 +112,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
             const orgDetails = await getMyOrganizationById(orgId);
             localStorage.setItem('selectedOrgId', orgId);
             setOrganization(orgDetails);
-            router.push(`/manage/organization/${orgId}`);
+            // Removed router.push - navigation should be handled by the component using this provider
         } catch (err) {
             console.error('Failed to switch organization:', err);
             setError("Failed to switch organization.");
@@ -118,9 +123,7 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
 
     const createOrganization = async (newOrgRequest: OrganizationRequest) => {
         const newOrg = await createNewOrganization(newOrgRequest);
-        // After creating, refresh the list and set the new one as active
         await refreshOrganizations();
-        await switchOrganization(newOrg.id);
         return newOrg;
     };
 
@@ -151,10 +154,16 @@ export const OrganizationProvider = ({children}: OrganizationProviderProps) => {
 
         if (organization?.id === orgId) {
             if (updatedOrgs.length > 0) {
-                await switchOrganization(updatedOrgs[0].id);
+                // Just update the selected organization without navigation
+                const nextOrg = updatedOrgs[0];
+                localStorage.setItem('selectedOrgId', nextOrg.id);
+                setOrganization(nextOrg);
             } else {
                 setOrganization(null);
                 localStorage.removeItem('selectedOrgId');
+                
+                // Only redirect if there are no organizations left
+                router.push('/manage/organization/my-organizations');
             }
         }
     };

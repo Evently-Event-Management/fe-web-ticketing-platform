@@ -1,0 +1,655 @@
+{
+    "title": "Recording 10/11/2025 at 4:03:57 PM",
+    "steps": [
+        {
+            "type": "setViewport",
+            "width": 1159,
+            "height": 951,
+            "deviceScaleFactor": 1,
+            "isMobile": false,
+            "hasTouch": false,
+            "isLandscape": false
+        },
+        {
+            "type": "navigate",
+            "url": "http://www.localhost:8090/",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://www.localhost:8090/",
+                    "title": "Ticketly"
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Login"
+                ],
+                [
+                    "header button.border"
+                ],
+                [
+                    "xpath//html/body/div[2]/header/div/div[2]/button[2]"
+                ],
+                [
+                    "pierce/header button.border"
+                ],
+                [
+                    "text/Login"
+                ]
+            ],
+            "offsetY": 15,
+            "offsetX": 24.875,
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/auth?client_id=web-frontend&redirect_uri=http%3A%2F%2Fwww.localhost%3A8090%2F&state=d8744484-3124-4869-b549-65bfd749712f&response_mode=fragment&response_type=code&scope=openid&nonce=12ee7bf7-4a35-49a7-afae-46a9d44fbca2&code_challenge=PSWjNw4WkZG7jfjWLE-okgYwg4uSjABoK2nA6_HKzcI&code_challenge_method=S256",
+                    "title": "Sign in to Event Ticketing Platform"
+                }
+            ]
+        },
+        {
+            "type": "change",
+            "value": "user@yopmail.com",
+            "selectors": [
+                [
+                    "aria/Email"
+                ],
+                [
+                    "#username"
+                ],
+                [
+                    "xpath///*[@id=\"username\"]"
+                ],
+                [
+                    "pierce/#username"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Password"
+                ],
+                [
+                    "#password"
+                ],
+                [
+                    "xpath///*[@id=\"password\"]"
+                ],
+                [
+                    "pierce/#password"
+                ]
+            ],
+            "offsetY": 18.71875,
+            "offsetX": 160
+        },
+        {
+            "type": "change",
+            "value": "user123",
+            "selectors": [
+                [
+                    "aria/Password"
+                ],
+                [
+                    "#password"
+                ],
+                [
+                    "xpath///*[@id=\"password\"]"
+                ],
+                [
+                    "pierce/#password"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Enter",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://www.localhost:8090/#state=d8744484-3124-4869-b549-65bfd749712f&session_state=7147c1af-ebb2-40d4-a3fd-f32074bfaee4&iss=http%3A%2F%2Fauth.ticketly.com%3A8080%2Frealms%2Fevent-ticketing&code=6211accf-384f-45df-b610-c4c08e3727a3.7147c1af-ebb2-40d4-a3fd-f32074bfaee4.50870560-8ac0-45be-b588-73f045003b89",
+                    "title": ""
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/[role=\"banner\"]",
+                    "aria/Create Events[role=\"button\"]"
+                ],
+                [
+                    "header a:nth-of-type(2) > button"
+                ],
+                [
+                    "xpath//html/body/div[2]/header/div/div[2]/a[2]/button"
+                ],
+                [
+                    "pierce/header a:nth-of-type(2) > button"
+                ]
+            ],
+            "offsetY": 13,
+            "offsetX": 72.984375
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/My Organizations"
+                ],
+                [
+                    "div.group-data-\\[collapsible\\=icon\\]\\:hidden a"
+                ],
+                [
+                    "xpath//html/body/div[2]/div/div[2]/div/div[2]/div[2]/ul/li/a"
+                ],
+                [
+                    "pierce/div.group-data-\\[collapsible\\=icon\\]\\:hidden a"
+                ]
+            ],
+            "offsetY": 2,
+            "offsetX": 151
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Create Organization"
+                ],
+                [
+                    "main > div > div.flex > button"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/button"
+                ],
+                [
+                    "pierce/main > div > div.flex > button"
+                ],
+                [
+                    "text/Create Organization"
+                ]
+            ],
+            "offsetY": 10,
+            "offsetX": 90.78125
+        },
+        {
+            "type": "change",
+            "value": "Test Org",
+            "selectors": [
+                [
+                    "aria/Name"
+                ],
+                [
+                    "#name"
+                ],
+                [
+                    "xpath///*[@id=\"name\"]"
+                ],
+                [
+                    "pierce/#name"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Website"
+                ],
+                [
+                    "#website"
+                ],
+                [
+                    "xpath///*[@id=\"website\"]"
+                ],
+                [
+                    "pierce/#website"
+                ]
+            ],
+            "offsetY": 25.5,
+            "offsetX": 96.75
+        },
+        {
+            "type": "change",
+            "value": "https://testorg.com",
+            "selectors": [
+                [
+                    "aria/Website"
+                ],
+                [
+                    "#website"
+                ],
+                [
+                    "xpath///*[@id=\"website\"]"
+                ],
+                [
+                    "pierce/#website"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Save Organization",
+                    "aria/[role=\"generic\"]"
+                ],
+                [
+                    "form span"
+                ],
+                [
+                    "xpath///*[@id=\"radix-_r_e_\"]/form/div[2]/button/span"
+                ],
+                [
+                    "pierce/form span"
+                ],
+                [
+                    "text/Save Organization"
+                ]
+            ],
+            "offsetY": 16.5,
+            "offsetX": 62.4375
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "html"
+                ],
+                [
+                    "xpath//html"
+                ],
+                [
+                    "pierce/html"
+                ]
+            ],
+            "offsetY": 588,
+            "offsetX": 1128
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Edit"
+                ],
+                [
+                    "div:nth-of-type(3) div:nth-of-type(3)"
+                ],
+                [
+                    "xpath///*[@id=\"radix-_r_1e_\"]/div[3]"
+                ],
+                [
+                    "pierce/div:nth-of-type(3) div:nth-of-type(3)"
+                ],
+                [
+                    "text/Edit"
+                ]
+            ],
+            "offsetY": 11,
+            "offsetX": 36
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Organization Name *"
+                ],
+                [
+                    "#name"
+                ],
+                [
+                    "xpath///*[@id=\"name\"]"
+                ],
+                [
+                    "pierce/#name"
+                ]
+            ],
+            "offsetY": 17,
+            "offsetX": 98.671875
+        },
+        {
+            "type": "change",
+            "value": "Test Org renamed",
+            "selectors": [
+                [
+                    "aria/Organization Name *"
+                ],
+                [
+                    "#name"
+                ],
+                [
+                    "xpath///*[@id=\"name\"]"
+                ],
+                [
+                    "pierce/#name"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Save Changes"
+                ],
+                [
+                    "div.lg\\:col-span-2 button"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/div[2]/div/form/div[3]/button"
+                ],
+                [
+                    "pierce/div.lg\\:col-span-2 button"
+                ],
+                [
+                    "text/Save Changes"
+                ]
+            ],
+            "offsetY": 13,
+            "offsetX": 47.75
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Website"
+                ],
+                [
+                    "#website"
+                ],
+                [
+                    "xpath///*[@id=\"website\"]"
+                ],
+                [
+                    "pierce/#website"
+                ],
+                [
+                    "text/https://testorg.com"
+                ]
+            ],
+            "offsetY": 25,
+            "offsetX": 243.671875
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "ArrowLeft"
+        },
+        {
+            "type": "keyUp",
+            "key": "ArrowLeft",
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "ArrowLeft"
+        },
+        {
+            "type": "keyUp",
+            "key": "ArrowLeft",
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "ArrowLeft"
+        },
+        {
+            "type": "keyUp",
+            "key": "ArrowLeft",
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "ArrowLeft"
+        },
+        {
+            "type": "keyUp",
+            "key": "ArrowLeft",
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "https://testorg-link-renamed.com",
+            "selectors": [
+                [
+                    "aria/Website"
+                ],
+                [
+                    "#website"
+                ],
+                [
+                    "xpath///*[@id=\"website\"]"
+                ],
+                [
+                    "pierce/#website"
+                ],
+                [
+                    "text/https://testorg.com"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Save Changes"
+                ],
+                [
+                    "div.lg\\:col-span-2 button"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/div[2]/div/form/div[3]/button"
+                ],
+                [
+                    "pierce/div.lg\\:col-span-2 button"
+                ],
+                [
+                    "text/Save Changes"
+                ]
+            ],
+            "offsetY": 7,
+            "offsetX": 40.75
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Upload Logo"
+                ],
+                [
+                    "div.lg\\:col-span-1 button"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/div[1]/div/div[2]/div[2]/button"
+                ],
+                [
+                    "pierce/div.lg\\:col-span-1 button"
+                ],
+                [
+                    "text/Upload Logo"
+                ]
+            ],
+            "offsetY": 11,
+            "offsetX": 89.8125
+        },
+        {
+            "type": "change",
+            "value": "C:\\fakepath\\Gemini_Generated_Image_5owdlz5owdlz5owd.png",
+            "selectors": [
+                [
+                    "div.lg\\:col-span-1 input"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/div[1]/div/div[2]/div[2]/input"
+                ],
+                [
+                    "pierce/div.lg\\:col-span-1 input"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "div.lg\\:col-span-2"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/div[2]"
+                ],
+                [
+                    "pierce/div.lg\\:col-span-2"
+                ]
+            ],
+            "offsetY": 380,
+            "offsetX": 349.671875
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Remove"
+                ],
+                [
+                    "main > div button.dark\\:hover\\:bg-accent\\/50"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/div[1]/div/div[2]/div[2]/button[2]"
+                ],
+                [
+                    "pierce/main > div button.dark\\:hover\\:bg-accent\\/50"
+                ],
+                [
+                    "text/Remove"
+                ]
+            ],
+            "offsetY": 13,
+            "offsetX": 43.21875
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Delete Organization"
+                ],
+                [
+                    "main > div > div.bg-card button"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[2]/div[2]/button"
+                ],
+                [
+                    "pierce/main > div > div.bg-card button"
+                ],
+                [
+                    "text/Delete Organization"
+                ]
+            ],
+            "offsetY": 13,
+            "offsetX": 24.296875
+        },
+        {
+            "type": "change",
+            "value": "Test Org ",
+            "selectors": [
+                [
+                    "aria/Please type Test Org renamed to confirm."
+                ],
+                [
+                    "#org-name"
+                ],
+                [
+                    "xpath///*[@id=\"org-name\"]"
+                ],
+                [
+                    "pierce/#org-name"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Shift"
+        },
+        {
+            "type": "keyUp",
+            "key": "Shift",
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "Test Org renamed",
+            "selectors": [
+                [
+                    "aria/Please type Test Org renamed to confirm."
+                ],
+                [
+                    "#org-name"
+                ],
+                [
+                    "xpath///*[@id=\"org-name\"]"
+                ],
+                [
+                    "pierce/#org-name"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/I understand, delete this organization",
+                    "aria/[role=\"generic\"]"
+                ],
+                [
+                    "div.flex-col-reverse span"
+                ],
+                [
+                    "xpath///*[@id=\"radix-_r_1l_\"]/div[4]/button[2]/span"
+                ],
+                [
+                    "pierce/div.flex-col-reverse span"
+                ],
+                [
+                    "text/I understand,"
+                ]
+            ],
+            "offsetY": 8.625,
+            "offsetX": 157.5625
+        }
+    ]
+}

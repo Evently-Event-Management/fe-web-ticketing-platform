@@ -1,0 +1,339 @@
+{
+    "title": "Recording 10/11/2025 at 3:14:07 PM",
+    "steps": [
+        {
+            "type": "setViewport",
+            "width": 1080,
+            "height": 760,
+            "deviceScaleFactor": 1,
+            "isMobile": false,
+            "hasTouch": false,
+            "isLandscape": false
+        },
+        {
+            "type": "navigate",
+            "url": "http://www.localhost:8090/",
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://www.localhost:8090/",
+                    "title": "Ticketly"
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Login"
+                ],
+                [
+                    "header button.border"
+                ],
+                [
+                    "xpath//html/body/div[2]/header/div/div[2]/button[2]"
+                ],
+                [
+                    "pierce/header button.border"
+                ],
+                [
+                    "text/Login"
+                ]
+            ],
+            "offsetY": 24,
+            "offsetX": 38.4749755859375,
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://auth.ticketly.com:8080/realms/event-ticketing/protocol/openid-connect/auth?client_id=web-frontend&redirect_uri=http%3A%2F%2Fwww.localhost%3A8090%2F&state=27c274aa-bf78-495d-8449-b03f3cf0a667&response_mode=fragment&response_type=code&scope=openid&nonce=ec200ae2-8330-4477-a031-e7494b77c590&code_challenge=-GU2AWMykV8duICXxxrr0XJeQzZ3ckg9W4stuDLLpB8&code_challenge_method=S256",
+                    "title": ""
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Email"
+                ],
+                [
+                    "#username"
+                ],
+                [
+                    "xpath///*[@id=\"username\"]"
+                ],
+                [
+                    "pierce/#username"
+                ]
+            ],
+            "offsetY": 26.90625,
+            "offsetX": 93.5
+        },
+        {
+            "type": "change",
+            "value": "user@yopmail.com",
+            "selectors": [
+                [
+                    "aria/Email"
+                ],
+                [
+                    "#username"
+                ],
+                [
+                    "xpath///*[@id=\"username\"]"
+                ],
+                [
+                    "pierce/#username"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "user123",
+            "selectors": [
+                [
+                    "aria/Password"
+                ],
+                [
+                    "#password"
+                ],
+                [
+                    "xpath///*[@id=\"password\"]"
+                ],
+                [
+                    "pierce/#password"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Sign In"
+                ],
+                [
+                    "#kc-login"
+                ],
+                [
+                    "xpath///*[@id=\"kc-login\"]"
+                ],
+                [
+                    "pierce/#kc-login"
+                ],
+                [
+                    "text/Sign In"
+                ]
+            ],
+            "offsetY": 17.90625,
+            "offsetX": 37.5,
+            "assertedEvents": [
+                {
+                    "type": "navigation",
+                    "url": "http://www.localhost:8090/#state=27c274aa-bf78-495d-8449-b03f3cf0a667&session_state=719be91b-76f1-4e19-b421-0e46d7b39c2e&iss=http%3A%2F%2Fauth.ticketly.com%3A8080%2Frealms%2Fevent-ticketing&code=cb4b7eaa-1042-4cee-9f0b-fa5ba707b3e8.719be91b-76f1-4e19-b421-0e46d7b39c2e.50870560-8ac0-45be-b588-73f045003b89",
+                    "title": ""
+                }
+            ]
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/[role=\"banner\"]",
+                    "aria/Create Events[role=\"button\"]"
+                ],
+                [
+                    "header a:nth-of-type(2) > button"
+                ],
+                [
+                    "xpath//html/body/div[2]/header/div/div[2]/a[2]/button"
+                ],
+                [
+                    "pierce/header a:nth-of-type(2) > button"
+                ]
+            ],
+            "offsetY": 15,
+            "offsetX": 59.9749755859375
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/My Organizations",
+                    "aria/[role=\"generic\"]"
+                ],
+                [
+                    "div.group-data-\\[collapsible\\=icon\\]\\:hidden span"
+                ],
+                [
+                    "xpath//html/body/div[2]/div/div[2]/div/div[2]/div[2]/ul/li/a/span"
+                ],
+                [
+                    "pierce/div.group-data-\\[collapsible\\=icon\\]\\:hidden span"
+                ],
+                [
+                    "text/My Organizations"
+                ]
+            ],
+            "offsetY": 4,
+            "offsetX": 106
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Create Organization"
+                ],
+                [
+                    "main > div > div.flex > button"
+                ],
+                [
+                    "xpath//html/body/div[2]/main/div/div[1]/button"
+                ],
+                [
+                    "pierce/main > div > div.flex > button"
+                ],
+                [
+                    "text/Create Organization"
+                ]
+            ],
+            "offsetY": 13.012496948242188,
+            "offsetX": 128.7874755859375
+        },
+        {
+            "type": "change",
+            "value": "Accme",
+            "selectors": [
+                [
+                    "aria/Name"
+                ],
+                [
+                    "#name"
+                ],
+                [
+                    "xpath///*[@id=\"name\"]"
+                ],
+                [
+                    "pierce/#name"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "keyDown",
+            "target": "main",
+            "key": "Shift"
+        },
+        {
+            "type": "keyUp",
+            "key": "Shift",
+            "target": "main"
+        },
+        {
+            "type": "change",
+            "value": "Accme Inc",
+            "selectors": [
+                [
+                    "aria/Name"
+                ],
+                [
+                    "#name"
+                ],
+                [
+                    "xpath///*[@id=\"name\"]"
+                ],
+                [
+                    "pierce/#name"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Website"
+                ],
+                [
+                    "#website"
+                ],
+                [
+                    "xpath///*[@id=\"website\"]"
+                ],
+                [
+                    "pierce/#website"
+                ]
+            ],
+            "offsetY": 7.600006103515625,
+            "offsetX": 131.85000610351562
+        },
+        {
+            "type": "change",
+            "value": "https://accme.inc",
+            "selectors": [
+                [
+                    "aria/Website"
+                ],
+                [
+                    "#website"
+                ],
+                [
+                    "xpath///*[@id=\"website\"]"
+                ],
+                [
+                    "pierce/#website"
+                ]
+            ],
+            "target": "main"
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "aria/Save Organization",
+                    "aria/[role=\"generic\"]"
+                ],
+                [
+                    "form span"
+                ],
+                [
+                    "xpath///*[@id=\"radix-_r_e_\"]/form/div[2]/button/span"
+                ],
+                [
+                    "pierce/form span"
+                ],
+                [
+                    "text/Save Organization"
+                ]
+            ],
+            "offsetY": 11.600006103515625,
+            "offsetX": 62.23748779296875
+        },
+        {
+            "type": "click",
+            "target": "main",
+            "selectors": [
+                [
+                    "main"
+                ],
+                [
+                    "xpath//html/body/div[2]/main"
+                ],
+                [
+                    "pierce/main"
+                ]
+            ],
+            "offsetY": 483,
+            "offsetX": 402
+        }
+    ]
+}
