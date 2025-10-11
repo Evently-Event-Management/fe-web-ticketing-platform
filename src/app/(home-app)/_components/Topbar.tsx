@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import {useAuth} from '@/providers/AuthProvider'
-import {Ticket, ShieldCheck, Receipt} from 'lucide-react'
+import {ShieldCheck, Receipt} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,

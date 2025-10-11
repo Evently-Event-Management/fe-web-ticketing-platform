@@ -31,32 +31,33 @@ export const DiscountUsageChart: React.FC<DiscountUsageChartProps> = ({ data }) 
   const [pieMode, setPieMode] = useState<"amount" | "usage">("amount");
 
   // Chart colors from globals.css
-  const chartColors = [
-    "var(--color-chart-1)", // Teal
-    "var(--color-chart-2)", // Sky Blue
-    "var(--color-chart-3)", // Indigo
-    "var(--color-chart-4)", // Lime
-    "var(--color-chart-5)", // Orange
-  ];
+    const chartColors = useMemo(
+        () => [
+            "var(--color-chart-1)", // Teal
+            "var(--color-chart-2)", // Sky Blue
+            "var(--color-chart-3)", // Indigo
+            "var(--color-chart-4)", // Lime
+            "var(--color-chart-5)", // Orange
+        ],
+        []
+    );
 
-  // Group data by discount code
-  const discountsByCode = useMemo(() => {
-    return data.reduce((acc, item, index) => {
-      const code = item.discount_code;
-      if (!acc[code]) {
-        acc[code] = {
-          discount_code: code,
-          usage_count: 0,
-          total_discount_amount: 0,
-          // Use colors from globals.css with fallback
-          color: chartColors[Object.keys(acc).length % chartColors.length],
-        };
-      }
-      acc[code].usage_count += item.usage_count;
-      acc[code].total_discount_amount += item.total_discount_amount;
-      return acc;
-    }, {} as Record<string, { discount_code: string; usage_count: number; total_discount_amount: number; color: string }>);
-  }, [data]);
+    const discountsByCode = useMemo(() => {
+        return data.reduce((acc, item) => {
+            const code = item.discount_code;
+            if (!acc[code]) {
+                acc[code] = {
+                    discount_code: code,
+                    usage_count: 0,
+                    total_discount_amount: 0,
+                    color: chartColors[Object.keys(acc).length % chartColors.length],
+                };
+            }
+            acc[code].usage_count += item.usage_count;
+            acc[code].total_discount_amount += item.total_discount_amount;
+            return acc;
+        }, {} as Record<string, { discount_code: string; usage_count: number; total_discount_amount: number; color: string }>);
+    }, [chartColors, data]);
 
   // Create pie chart data sorted by amount or usage count
   const pieChartData = useMemo(() => {

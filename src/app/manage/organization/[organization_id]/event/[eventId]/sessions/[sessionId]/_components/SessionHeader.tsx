@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { LinkIcon, MapPin, Share2, Trash2, ChevronLeft } from 'lucide-react';
+import { LinkIcon, MapPin, Share2, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useParams } from 'next/navigation';

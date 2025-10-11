@@ -300,7 +300,7 @@ export default function HomePage() {
                                     <Calendar className="w-8 h-8 text-muted-foreground" />
                                 </div>
                                 <h3 className="text-xl font-medium mb-2">No Events Found</h3>
-                                <p className="text-muted-foreground text-lg">We couldn't find any trending events at the moment. Check back later!</p>
+                                <p className="text-muted-foreground text-lg">We couldn&#39;t find any trending events at the moment. Check back later!</p>
                             </div>
                         )}
                     </div>

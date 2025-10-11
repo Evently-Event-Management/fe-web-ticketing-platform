@@ -25,15 +25,6 @@ export const CATEGORY_CONFIG: Record<string, { icon: React.ElementType; color: s
     "Community & Social": {icon: Users, color: "text-chart-1"},
 };
 
-// We're not using this skeleton component anymore as we've embedded it directly in the component
-// keeping the definition for backwards compatibility
-const CategorySkeleton = () => (
-    <div className="flex flex-col items-center gap-3 flex-shrink-0">
-        <div className="w-24 h-24 bg-muted/40 backdrop-blur-sm rounded-2xl border border-border/20"></div>
-        <div className="h-4 w-20 bg-muted/60 rounded-full"></div>
-    </div>
-);
-
 export default function CategorySection() {
     const [categories, setCategories] = useState<CategoryResponseWithParentName[]>([]);
     const [isLoading, setIsLoading] = useState(true);

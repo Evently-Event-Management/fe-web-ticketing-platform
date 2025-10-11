@@ -5,7 +5,6 @@ import {
     Building2,
     CalendarRange,
     RockingChair,
-    Ticket,
     LayoutDashboard,
     CalendarDays,
     Building, Users,

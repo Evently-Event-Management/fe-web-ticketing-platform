@@ -58,38 +58,45 @@ export const SelectionSummary = ({
     useEffect(() => {
         if (!initialDiscountCode) return;
 
-        if (initialDiscountCode) {
-            const params = new URLSearchParams(window.location.search);
-            params.delete('discount');
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.replaceState({}, '', newUrl);
-        }
+        // Remove ?discount= from the URL
+        const params = new URLSearchParams(window.location.search);
+        params.delete('discount');
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
 
         const urlDiscountCode = initialDiscountCode;
 
-        if (!appliedDiscount && publicDiscounts.length > 0) {
-            const discount = publicDiscounts.find(
-                d => d.code.toUpperCase() === urlDiscountCode.toUpperCase()
-            );
-
-            if (discount) {
-                handleApplyDiscount(discount);
-            } else {
-                (async () => {
-                    try {
-                        const result = await getDiscountByCode(eventId, sessionId, urlDiscountCode);
-                        if (result) {
-                            handleApplyDiscount(result);
-                        } else {
-                            console.log("Discount code in URL is not valid:", urlDiscountCode);
+        // Only apply if no discount already applied
+        if (!appliedDiscount) {
+            const applyDiscount = async () => {
+                try {
+                    // If discounts are preloaded (public), check them first
+                    if (publicDiscounts.length > 0) {
+                        const discount = publicDiscounts.find(
+                            d => d.code.toUpperCase() === urlDiscountCode.toUpperCase()
+                        );
+                        if (discount) {
+                            handleApplyDiscount(discount);
+                            return;
                         }
-                    } catch (e) {
-                        console.error("Error validating discount code:", e);
                     }
-                })();
-            }
+
+                    // Otherwise, fetch discount from API
+                    const result = await getDiscountByCode(eventId, sessionId, urlDiscountCode);
+                    if (result) {
+                        handleApplyDiscount(result);
+                    } else {
+                        console.log("Discount code in URL is not valid:", urlDiscountCode);
+                    }
+                } catch (e) {
+                    console.error("Error validating discount code:", e);
+                }
+            };
+
+            applyDiscount();
         }
     }, [publicDiscounts, initialDiscountCode, appliedDiscount, eventId, sessionId, handleApplyDiscount]);
+
 
 
     // Validate applied discount when cart changes
