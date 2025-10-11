@@ -70,7 +70,6 @@ const discountParametersUnionSchema = z.discriminatedUnion("type", [
 // ✅ STEP 2: Use the new union inside your main discount schema.
 export const discountSchema = baseDiscountSchema
     .extend({
-        // The 'parameters' field can be one of the shapes in our new union.
         parameters: discountParametersUnionSchema,
     })
     .superRefine((data, ctx) => {

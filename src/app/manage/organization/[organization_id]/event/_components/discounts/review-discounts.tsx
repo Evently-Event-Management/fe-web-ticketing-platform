@@ -16,7 +16,7 @@ export const DiscountReview: React.FC<DiscountReviewProps> = ({tiers, sessions, 
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold">Discount Codes</h2>
-            <DiscountList tiers={tiers} sessions={sessions} discounts={discounts} isReadOnly={true} filters={false}/>
+            <DiscountList tiers={tiers} sessions={sessions} discounts={discounts} isReadOnly={true} filters={false} isShareable={false}/>
         </div>
     );
 };
