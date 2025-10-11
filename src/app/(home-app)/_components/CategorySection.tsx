@@ -13,25 +13,24 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// --- Enhanced CATEGORY_CONFIG to better match the visual style ---
-// I've added more icons to demonstrate flexibility.
-// You can map your actual category names to these.
+// --- Enhanced CATEGORY_CONFIG with modern color scheme ---
+// Using primary and chart colors from the theme for consistency
 export const CATEGORY_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
-    // Keep your existing ones
-    "Workshops & Education": {icon: BookOpen, color: "text-blue-500"},
-    "Music": {icon: Music, color: "text-purple-500"},
-    "Arts & Theatre": {icon: Brush, color: "text-pink-500"},
-    "Performing & Visual Arts": {icon: Brush, color: "text-pink-500"},
-    "Food & Drink": {icon: Utensils, color: "text-amber-500"},
-    "Sports & Fitness": {icon: Dumbbell, color: "text-green-500"},
-    "Community & Social": {icon: Users, color: "text-teal-500"},
+    "Workshops & Education": {icon: BookOpen, color: "text-primary"},
+    "Music": {icon: Music, color: "text-chart-2"},
+    "Arts & Theatre": {icon: Brush, color: "text-chart-3"},
+    "Performing & Visual Arts": {icon: Brush, color: "text-chart-3"},
+    "Food & Drink": {icon: Utensils, color: "text-chart-1"},
+    "Sports & Fitness": {icon: Dumbbell, color: "text-chart-2"},
+    "Community & Social": {icon: Users, color: "text-chart-1"},
 };
 
-// --- Skeleton Component for a cleaner loading state ---
+// We're not using this skeleton component anymore as we've embedded it directly in the component
+// keeping the definition for backwards compatibility
 const CategorySkeleton = () => (
     <div className="flex flex-col items-center gap-3 flex-shrink-0">
-        <div className="w-24 h-24 bg-muted rounded-full"></div>
-        <div className="h-4 w-20 bg-muted rounded"></div>
+        <div className="w-24 h-24 bg-muted/40 backdrop-blur-sm rounded-2xl border border-border/20"></div>
+        <div className="h-4 w-20 bg-muted/60 rounded-full"></div>
     </div>
 );
 
@@ -67,9 +66,18 @@ export default function CategorySection() {
         return (
             <section className="py-8">
                 <div className="container">
-                    <div className="flex gap-6 md:gap-8 overflow-x-auto pb-4 animate-pulse">
-                        {[...Array(8)].map((_, i) => (
-                            <CategorySkeleton key={i} />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8 animate-pulse">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="flex flex-col items-center space-y-4">
+                                <div className="relative w-full">
+                                    <div className="aspect-square bg-muted/40 backdrop-blur-sm rounded-2xl border border-border/20 shadow-sm flex items-center justify-center">
+                                        <div className="h-10 w-10 bg-muted/60 rounded-full"></div>
+                                    </div>
+                                    {/* Decorative elements */}
+                                    <div className="absolute -z-10 w-full h-full top-2 left-2 rounded-2xl bg-primary/5 blur-sm"></div>
+                                </div>
+                                <div className="h-4 w-20 bg-muted/60 rounded-full mx-auto"></div>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -81,18 +89,27 @@ export default function CategorySection() {
         return (
             <section className="py-8">
                 <div className="container">
-                    <p className="text-center text-red-500">{error}</p>
+                    <div className="bg-destructive/10 backdrop-blur-sm rounded-xl p-6 border border-destructive/20">
+                        <div className="flex flex-col items-center">
+                            <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-destructive">
+                                    <path d="M18 6L6 18"></path>
+                                    <path d="M6 6l12 12"></path>
+                                </svg>
+                            </div>
+                            <p className="text-destructive font-medium mb-2">Oops! Something went wrong</p>
+                            <p className="text-muted-foreground text-center">{error}</p>
+                        </div>
+                    </div>
                 </div>
             </section>
         );
     }
 
-    // Note: You might need a scrollbar hiding plugin for Tailwind if you want to hide it completely
-    // e.g., `tailwind-scrollbar-hide` and then add the `scrollbar-hide` class to the div below.
     return (
         <section className="py-8">
             <div className="container">
-                <div className="flex gap-4 md:gap-6 justify-center">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8">
                     {categories.map((category) => {
                         const config = CATEGORY_CONFIG[category.name] || {
                             icon: BookOpen, // A sensible default
@@ -100,22 +117,48 @@ export default function CategorySection() {
                         };
                         const IconComponent = config.icon;
 
+                        // Extract color without 'text-' prefix for background
+                        const colorClass = config.color.replace('text-', '');
+
+                        //Hide Other category
+                        if (category.name === "Other") {
+                            return null;
+                        }
+                        
                         return (
                             <div
                                 key={category.id}
-                                className="flex flex-col items-center justify-start gap-3 group cursor-pointer"
+                                className="group cursor-pointer"
                                 onClick={() => handleCategoryClick(category.id)}
                             >
-                                <div
-                                    className="w-24 h-24 rounded-full bg-slate-100 dark:bg-muted/50 border border-transparent
-                                               flex items-center justify-center transition-all duration-300 ease-in-out
-                                               group-hover:scale-110 group-hover:shadow-md group-hover:border-slate-200 dark:group-hover:border-muted"
-                                >
-                                    <IconComponent className={`w-10 h-10 transition-colors ${config.color}`} />
+                                <div className="relative mb-4">
+                                    {/* Main card */}
+                                    <div className="aspect-square bg-background/80 backdrop-blur-sm rounded-2xl border border-border/40
+                                                   flex items-center justify-center transition-all duration-300 ease-in-out
+                                                   group-hover:scale-[1.03] group-hover:shadow-lg group-hover:border-primary/30
+                                                   relative z-10 overflow-hidden">
+                                        {/* Subtle gradient background that changes based on category */}
+                                        <div className={`absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}></div>
+                                        
+                                        {/* Icon with glowing effect on hover */}
+                                        <div className="relative">
+                                            <div className={`absolute -inset-1 ${config.color}/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                                            <div className={`relative w-16 h-16 rounded-full ${config.color}/10 flex items-center justify-center`}>
+                                                <IconComponent className={`w-8 h-8 ${config.color} transition-transform group-hover:scale-110`} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Decorative background element */}
+                                    <div className={`absolute -z-10 w-full h-full top-2 left-2 rounded-2xl ${config.color}/5 blur-sm opacity-70 transition-all duration-300 group-hover:opacity-100 group-hover:scale-105`}></div>
                                 </div>
-                                <h3 className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary">
-                                    {category.name}
-                                </h3>
+                                
+                                {/* Category name with hover effect */}
+                                <div className="text-center">
+                                    <h3 className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary">
+                                        {category.name}
+                                    </h3>
+                                </div>
                             </div>
                         );
                     })}
