@@ -27,6 +27,7 @@ interface OrganizationDashboardData {
         totalDiscounts: number;
         dailySales: DailySalesMetrics[];
     };
+    organizationReach: number;
 }
 
 interface UseOrganizationDashboardDataOptions {
@@ -36,7 +37,7 @@ interface UseOrganizationDashboardDataOptions {
 
 const DEFAULT_OPTIONS: Required<UseOrganizationDashboardDataOptions> = {
     highlightedEventCount: 3,
-    highlightedSessionCount: 6,
+    highlightedSessionCount: 4,
 };
 
 const PAGE_SIZE_FOR_EVENTS = 50;
@@ -134,10 +135,28 @@ export const useOrganizationDashboardData = (
         setError(null);
 
         try {
-            const [allEvents, sessionAnalytics, sessionsResponse] = await Promise.all([
+            const reachPromise = (async (): Promise<number> => {
+                try {
+                    const response = await fetch(`/api/analytics/organization-reach?organizationId=${organizationId}`, {
+                        method: "GET",
+                        cache: "no-store",
+                    });
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch organization reach");
+                    }
+                    const payload: {reach?: number} = await response.json();
+                    return typeof payload.reach === "number" ? payload.reach : 0;
+                } catch (err) {
+                    console.error("Failed to fetch organization reach", err);
+                    return 0;
+                }
+            })();
+
+            const [allEvents, sessionAnalytics, sessionsResponse, organizationReach] = await Promise.all([
                 fetchEventsAcrossPages(),
                 getOrganizationSessionAnalytics(organizationId),
-                getOrganizationSessions(organizationId, undefined, 0, highlightedSessionCount),
+                getOrganizationSessions(organizationId, SessionStatus.ON_SALE, 0, highlightedSessionCount),
+                reachPromise,
             ]);
 
             let approvedEvents: EventSummaryDTO[] = [];
@@ -185,6 +204,7 @@ export const useOrganizationDashboardData = (
                     totalDiscounts,
                     dailySales,
                 },
+                organizationReach,
             });
         } catch (err) {
             console.error("Failed to load organization dashboard", err);
@@ -210,7 +230,7 @@ export const useOrganizationDashboardData = (
         data,
         isLoading,
         error,
-    highlightedEvents,
+        highlightedEvents,
         sessionStatusTotals,
         refetch: loadDashboard,
     };

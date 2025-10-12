@@ -220,6 +220,39 @@ export async function getEventDeviceBreakdown(eventId: string): Promise<{
 }
 
 /**
+ * Fetches the unique audience reach for all events that belong to an organization.
+ * Reach is defined as the total number of unique users who triggered the event view
+ * within the last 30 days.
+ */
+export async function getOrganizationReach(organizationId: string): Promise<{
+    success: boolean;
+    reach?: number;
+    error?: string;
+}> {
+    try {
+        const analyticsClient = initializeAnalyticsClient();
+        const [response] = await analyticsClient.runReport({
+            property: propertyId,
+            dateRanges: [{startDate: '30daysAgo', endDate: 'today'}],
+            dimensions: [{name: 'customEvent:organization_id'}],
+            metrics: [{name: 'totalUsers'}],
+            dimensionFilter: {
+                filter: {
+                    fieldName: 'customEvent:organization_id',
+                    stringFilter: {value: organizationId, matchType: 'EXACT'}
+                }
+            },
+        });
+
+        const reach = response.rows?.[0]?.metricValues?.[0]?.value ?? '0';
+        return {success: true, reach: parseInt(reach, 10)};
+    } catch (error) {
+        console.error("Error fetching GA organization reach:", error);
+        return {success: false, error: "Failed to fetch organization reach."};
+    }
+}
+
+/**
  * Fetches all required Google Analytics insights for an event in a single batch request.
  * @param eventId The ID of the event to fetch analytics for.
  * @returns An object containing all the fetched GA data.

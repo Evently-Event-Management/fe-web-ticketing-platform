@@ -100,7 +100,7 @@ const OrganizationDashboardPage = () => {
                 </Alert>
             )}
 
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <StatsCard
                     title="Total revenue"
                     value={formatCurrency(data?.revenue.totalRevenue ?? 0, "LKR", "en-LK")}
@@ -137,6 +137,15 @@ const OrganizationDashboardPage = () => {
                     trendLabel="Pending approval"
                     trendValue={pendingEventsCount.toLocaleString("en-LK")}
                     trendVariant="warning"
+                    isLoading={isLoading}
+                />
+                <StatsCard
+                    title="Audience reach"
+                    value={(data?.organizationReach ?? 0).toLocaleString("en-LK")}
+                    subtitle="Unique viewers (30 days)"
+                    trendLabel="Events tracked"
+                    trendValue={(data?.events.length ?? 0).toLocaleString("en-LK")}
+                    trendVariant="neutral"
                     isLoading={isLoading}
                 />
             </section>
