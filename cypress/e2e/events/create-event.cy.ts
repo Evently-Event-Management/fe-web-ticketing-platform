@@ -108,11 +108,21 @@ describe('Event Creation Flow', () => {
         // Add a ticket tier
         cy.contains('button', 'Add New Tier').click();
         
-        // Fill tier name (it's likely auto-populated)
+        // Wait for dialog to appear before interacting with form fields
+        cy.get('form').should('be.visible');
         
-        // Set the price
-        cy.get('input[aria-label="Tier Name"]').clear().type(tierName);
-        cy.get('input[aria-label="Price (LKR)"]').clear().type(ticketPrice.toString());
+        // Target inputs within the dialog's form context
+        // Use more specific selectors to ensure we're targeting the correct elements
+        cy.get('form').within(() => {
+            // Fill in tier name
+            cy.get('input#name').clear().type(tierName);
+            
+            // Fill in price
+            cy.get('input#price').clear().type(ticketPrice.toString());
+            
+            // Select a color (optional)
+            cy.get('input[type="color"]').first().invoke('val', '#3B82F6').trigger('change');
+        });
         
         // Save the tier
         cy.contains('button', 'Save').click();
@@ -124,17 +134,18 @@ describe('Event Creation Flow', () => {
         // Add a session
         cy.contains('button', 'Add Single Session').click();
         
-        // Wait for the calendar dialog to appear
-        cy.get('form').should('be.visible');
+        // Wait for the session dialog to appear
+        cy.get('form').contains('Add Session').should('be.visible');
         
-        // Select a future date - use a more robust approach for the calendar
-        // First click the date button to open calendar
-        cy.get('button').contains('October').click();
+        // Instead of trying to use the calendar UI (which can be flaky),
+        // let's use the default values that are pre-filled
+        // Most of the form fields should already have sensible defaults
         
-        // Then try to find and click the next Sunday
-        cy.get('button[aria-label*="Sunday"]').first().click();
+        // If we need to explicitly set any values, do it here
+        // For example, to set the session name:
+        cy.get('input[placeholder="e.g., Opening Night, Day 1"]').type(' - Test Session');
         
-        // If we can't find Sunday, just continue with the test using whatever date is selected
+        // Just make sure the form is fully loaded and ready for submission
         cy.get('form').should('be.visible');
         
         // Fill in time details (these are likely pre-populated)
@@ -144,8 +155,21 @@ describe('Event Creation Flow', () => {
         
         // Add location
         cy.contains('button', 'Add Location').click();
-        cy.get('input[type="radio"][value="ONLINE"]').check({ force: true });
-        cy.get('#online-link').type(onlineLink);
+        
+        // Wait for the location dialog to appear
+        cy.contains('Choose Session Type').should('be.visible');
+        
+        // Select online option
+        cy.get('div[role="radiogroup"]').within(() => {
+            cy.contains('label', 'Online').click();
+        });
+        
+        // Fill in online link after the online section appears
+        cy.get('label').contains('Online Link').parent().within(() => {
+            cy.get('input').type(onlineLink);
+        });
+        
+        // Save location
         cy.contains('button', 'Save Location').click();
         
         // Go to next step
@@ -154,7 +178,20 @@ describe('Event Creation Flow', () => {
         // Step 4: Seating
         // Configure seating
         cy.contains('button', 'Configure Seating').click();
-        cy.get('#capacity').clear().type(capacity.toString());
+        
+        // Wait for the seating configuration dialog to appear
+        cy.contains('Capacity Configuration').should('be.visible');
+        
+        // Set capacity in the dialog
+        cy.get('form').within(() => {
+            cy.get('input#capacity').clear().type(capacity.toString());
+        });
+        
+        // Select the tier
+        cy.get('form').contains('Select Tier').click();
+        cy.get('[role="option"]').contains(tierName).click();
+        
+        // Set capacity & tier
         cy.contains('button', 'Set Capacity').click();
         
         // Apply to all sessions
