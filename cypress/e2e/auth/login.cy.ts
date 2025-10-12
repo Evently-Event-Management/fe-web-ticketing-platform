@@ -93,11 +93,12 @@ describe('User Login', () => {
 
     it('should navigate to the organization page after login', () => {
         // Mock organizations endpoint
-        cy.intercept('GET', '**/api/organizations', {
+        cy.intercept('GET', '**/api/**/organizations/my', {
             statusCode: 200,
             body: []
         }).as('getOrganizations');
-        
+
+
         // Clear any existing session state
         cy.clearCookies();
         cy.clearLocalStorage();
@@ -122,11 +123,11 @@ describe('User Login', () => {
         // Navigate to Create Events
         cy.contains('button', 'Create Events').click();
 
-        // Navigate to My Organizations
-        cy.contains('My Organizations').click();
-
         // Wait for the organizations to load
         cy.wait('@getOrganizations');
+
+        // Navigate to My Organizations
+        cy.contains('My Organizations').click();
 
         // Verify we're on the organizations page
         cy.url().should('include', '/manage/organization');

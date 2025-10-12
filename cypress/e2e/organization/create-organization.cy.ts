@@ -8,7 +8,6 @@ describe('Organization Creation Flow', () => {
         cy.login();
         cy.visit('/manage/organization/my-organizations');
 
-        // Mock the initial API call to ensure the page starts empty
         cy.intercept('GET', '**/api/organizations', {
             statusCode: 200,
             body: []
@@ -30,7 +29,7 @@ describe('Organization Creation Flow', () => {
         });
 
         // Assert that we show a success toast message
-        cy.contains(`Organization "${organizationName}" created successfully!`).should('be.visible');
+        cy.verifyToast(`Organization "${organizationName}" created successfully!`);
 
         // The dialog should be closed
         cy.get('form').should('not.exist');
@@ -38,6 +37,28 @@ describe('Organization Creation Flow', () => {
         // The new organization should appear in the table
         cy.get('table').contains(organizationName).should('be.visible');
         cy.get('table').contains(organizationWebsite.replace(/^https?:\/\//, '')).should('be.visible');
+        
+        // Clean up: Delete the created organization
+        // Click on the three dots (More actions) for this organization
+        cy.get('table').contains(organizationName).closest('tr').find('button[aria-haspopup="menu"]').click();
+        
+        // Click on the Delete option in the dropdown menu
+        cy.contains('Delete').click();
+        
+        // Type the organization name to confirm deletion
+        cy.get('#org-name').type(organizationName);
+        
+        // Click the delete button
+        cy.contains('button', 'I understand, delete this organization').click();
+        
+        // Verify the toast appears using our custom command
+        cy.verifyToast(`Organization "${organizationName}" has been deleted.`);
+        
+        // Wait for UI to update and the organization to be removed from the table
+        cy.wait(1000);
+        
+        // Verify the organization is no longer in the table
+        cy.contains(organizationName).should('not.exist');
     });
 
     it('should validate required fields', () => {
@@ -62,6 +83,28 @@ describe('Organization Creation Flow', () => {
         cy.contains('button', 'Save Organization').click();
 
         // Now it should succeed
-        cy.contains(`Organization "${organizationName}" created successfully!`).should('be.visible');
+        cy.verifyToast(`Organization "${organizationName}" created successfully!`);
+        
+        // Clean up: Delete the created organization
+        // Click on the three dots (More actions) for this organization
+        cy.get('table').contains(organizationName).closest('tr').find('button[aria-haspopup="menu"]').click();
+        
+        // Click on the Delete option in the dropdown menu
+        cy.contains('Delete').click();
+        
+        // Type the organization name to confirm deletion
+        cy.get('#org-name').type(organizationName);
+        
+        // Click the delete button
+        cy.contains('button', 'I understand, delete this organization').click();
+        
+        // Verify the toast appears using our custom command
+        cy.verifyToast(`Organization "${organizationName}" has been deleted.`);
+        
+        // Wait for UI to update and the organization to be removed from the table
+        cy.wait(1000);
+        
+        // Verify the organization is no longer in the table
+        cy.contains(organizationName).should('not.exist');
     });
 });

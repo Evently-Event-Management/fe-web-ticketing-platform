@@ -16,6 +16,13 @@ declare global {
              * Deletes any organizations with names containing "Test Org"
              */
             cleanupTestOrganizations(): Chainable<void>;
+
+            /**
+             * Custom command to verify toast messages with configurable timeout
+             * @param message The message text to verify
+             * @param options Options including timeout and assertion type
+             */
+            verifyToast(message: string, options?: { timeout?: number, shouldExist?: boolean }): Chainable<void>;
         }
     }
 }
@@ -25,8 +32,8 @@ declare global {
  * handling the cross-origin authentication with Keycloak.
  */
 Cypress.Commands.add('login', (
-    email = 'user@yopmail.com', // Default email
-    password = 'user123'      // Default password
+    email = 'test_user@yopmail.com', // Default email
+    password = 'test123'      // Default password
 ) => {
     // Start from the home page
     cy.clearCookies();
@@ -37,6 +44,25 @@ Cypress.Commands.add('login', (
 
     // Set a larger viewport to ensure the login button is always visible
     cy.viewport(1200, 800);
+
+/**
+ * Custom command to verify toast messages with configurable timeout
+ * Allows for checking both existence and non-existence with appropriate timeouts
+ */
+Cypress.Commands.add('verifyToast', (
+    message: string, 
+    options: { timeout?: number, shouldExist?: boolean } = { timeout: 10000, shouldExist: true }
+) => {
+    const { timeout = 10000, shouldExist = true } = options;
+
+    if (shouldExist) {
+        // Check if toast exists with the given timeout
+        cy.contains(message, { timeout }).should('be.visible');
+    } else {
+        // Check if toast does not exist, with the given timeout
+        cy.contains(message, { timeout }).should('not.exist');
+    }
+});
 
     // Click the main login button on the home page
     cy.contains('Login').click();
