@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {getMyOrganizationEvents} from "@/lib/actions/eventActions";
 import {
     DailySalesMetrics,
@@ -13,7 +13,7 @@ import {
     OrganizationSessionDTO,
     SessionAnalyticsResponse
 } from "@/lib/actions/statsActions";
-import {EventSummaryDTO} from "@/lib/validators/event";
+import {EventSummaryDTO, EventStatus} from "@/lib/validators/event";
 import {SessionStatus} from "@/types/enums/sessionStatus";
 import {PaginatedResponse} from "@/types/paginatedResponse";
 
@@ -35,7 +35,7 @@ interface UseOrganizationDashboardDataOptions {
 }
 
 const DEFAULT_OPTIONS: Required<UseOrganizationDashboardDataOptions> = {
-    highlightedEventCount: 5,
+    highlightedEventCount: 3,
     highlightedSessionCount: 6,
 };
 
@@ -97,6 +97,7 @@ export const useOrganizationDashboardData = (
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<OrganizationDashboardData | null>(null);
+    const [highlightedEvents, setHighlightedEvents] = useState<EventSummaryDTO[]>([]);
     const [sessionStatusTotals, setSessionStatusTotals] = useState<Record<SessionStatus, number>>(() => mapSessionStatusTotals(null));
 
     const fetchEventsAcrossPages = useCallback(async (): Promise<EventSummaryDTO[]> => {
@@ -139,6 +140,20 @@ export const useOrganizationDashboardData = (
                 getOrganizationSessions(organizationId, undefined, 0, highlightedSessionCount),
             ]);
 
+            let approvedEvents: EventSummaryDTO[] = [];
+            try {
+                const approvedResponse = await getMyOrganizationEvents(
+                    organizationId,
+                    EventStatus.APPROVED,
+                    undefined,
+                    0,
+                    highlightedEventCount
+                );
+                approvedEvents = approvedResponse.content.slice(0, highlightedEventCount);
+            } catch (err) {
+                console.error("Failed to fetch approved events", err);
+            }
+
             let revenueBatch: EventOrderAnalyticsBatchResponse | null = null;
             if (allEvents.length > 0) {
                 const eventIds = allEvents.map(event => event.id);
@@ -148,6 +163,8 @@ export const useOrganizationDashboardData = (
                     console.error("Failed to fetch revenue analytics batch", err);
                 }
             }
+
+            setHighlightedEvents(approvedEvents);
 
             const dailySales = uniqueDailySales(revenueBatch);
             const totalRevenue = revenueBatch?.total_revenue ?? 0;
@@ -175,35 +192,25 @@ export const useOrganizationDashboardData = (
         } finally {
             setIsLoading(false);
         }
-    }, [organizationId, fetchEventsAcrossPages, highlightedSessionCount]);
+    }, [organizationId, fetchEventsAcrossPages, highlightedSessionCount, highlightedEventCount]);
 
     useEffect(() => {
         if (!organizationId) {
             setData(null);
             setError("Missing organization identifier");
             setIsLoading(false);
+            setHighlightedEvents([]);
             return;
         }
 
         void loadDashboard();
     }, [organizationId, loadDashboard]);
 
-    const highlightedEvents = useMemo(() => {
-        if (!data?.events) {
-            return [];
-        }
-
-        return data.events
-            .slice()
-            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-            .slice(0, highlightedEventCount);
-    }, [data?.events, highlightedEventCount]);
-
     return {
         data,
         isLoading,
         error,
-        highlightedEvents,
+    highlightedEvents,
         sessionStatusTotals,
         refetch: loadDashboard,
     };
