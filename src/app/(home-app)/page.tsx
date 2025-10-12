@@ -89,7 +89,7 @@ export default function HomePage() {
                             <span className="text-sm font-medium">The premier ticketing platform</span>
                         </div>
                         
-                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary via-chart-2 to-chart-3 text-transparent bg-clip-text animate-gradient">
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary via-chart-2 to-chart-3 text-transparent bg-clip-text animate-gradient p-4">
                             Discover <span className="font-extrabold">Amazing</span> Events
                         </h1>
                         
