@@ -45,6 +45,15 @@ export interface EventOrderAnalytics {
     sales_by_tier: TierSalesMetrics[];
 }
 
+export interface EventOrderAnalyticsBatchResponse {
+    event_ids: string[];
+    total_revenue: number;
+    total_before_discounts: number;
+    total_tickets_sold: number;
+    daily_sales: DailySalesMetrics[];
+    sales_by_tier: TierSalesMetrics[];
+}
+
 export interface EventDiscountAnalytics {
     event_id: string;
     discount_usage: DiscountUsage[];
@@ -129,6 +138,28 @@ export const getSessionAnalytics = async (eventId: string, sessionId: string): P
  */
 export const getEventRevenueAnalytics = async (eventId: string): Promise<EventOrderAnalytics> => {
     return await apiFetch<EventOrderAnalytics>(`${ORDER_API_PATH}/events/${eventId}`);
+};
+
+
+/**
+ * Retrieves revenue analytics data for multiple events in a single batch request
+ * 
+ * @param eventIds Array of event IDs to fetch analytics for
+ * @returns Combined analytics for all requested events including event_ids, aggregated revenue, 
+ *          aggregated ticket sales, and sales breakdowns by day and tier
+ */
+export const getEventOrderAnalyticsBatch = async (eventIds: string[]): Promise<EventOrderAnalyticsBatchResponse> => {
+    const requestBody = {
+        eventIds: eventIds
+    };
+    
+    return await apiFetch<EventOrderAnalyticsBatchResponse>(
+        `${ORDER_API_PATH}/events/batch`,
+        {
+            method: 'POST',
+            body: JSON.stringify(requestBody)
+        }
+    );
 };
 
 /**
