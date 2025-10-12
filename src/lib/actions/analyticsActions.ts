@@ -54,6 +54,13 @@ export interface EventOrderAnalyticsBatchResponse {
     sales_by_tier: TierSalesMetrics[];
 }
 
+// Response type for /order/analytics/events/batch/individual
+export interface EventOrderAnalyticsBatchIndividualResponse {
+    eventAnalytics: {
+        [eventId: string]: EventOrderAnalytics;
+    };
+}
+
 export interface EventDiscountAnalytics {
     event_id: string;
     discount_usage: DiscountUsage[];
@@ -155,6 +162,26 @@ export const getEventOrderAnalyticsBatch = async (eventIds: string[]): Promise<E
     
     return await apiFetch<EventOrderAnalyticsBatchResponse>(
         `${ORDER_API_PATH}/events/batch`,
+        {
+            method: 'POST',
+            body: JSON.stringify(requestBody)
+        }
+    );
+};
+
+/**
+ * Retrieves individual analytics for multiple events in a single batch request
+ * Each event's analytics are returned separately in an object keyed by eventId
+ *
+ * @param eventIds Array of event IDs to fetch analytics for
+ * @returns Object with eventAnalytics mapping eventId to EventOrderAnalytics
+ */
+export const getEventOrderAnalyticsBatchIndividual = async (eventIds: string[]): Promise<EventOrderAnalyticsBatchIndividualResponse> => {
+    const requestBody = {
+        eventIds: eventIds
+    };
+    return await apiFetch<EventOrderAnalyticsBatchIndividualResponse>(
+        `${ORDER_API_PATH}/events/batch/individual`,
         {
             method: 'POST',
             body: JSON.stringify(requestBody)
