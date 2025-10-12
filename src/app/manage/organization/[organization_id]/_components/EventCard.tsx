@@ -158,7 +158,7 @@ export const EventCard: React.FC<EventCardProps> = ({event, organizationId}) => 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"/>
                 <div className="absolute inset-0 flex flex-col justify-between p-5">
                     <div className="flex flex-wrap items-center justify-between gap-2 text-white">
-                        <Badge variant={statusVariants[event.status] ?? "secondary"} className="bg-white/10 text-white hover:bg-white/20">
+                        <Badge variant={statusVariants[event.status] ?? "secondary"}>
                             {event.status}
                         </Badge>
                         <span className="rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white/90">

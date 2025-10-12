@@ -96,6 +96,15 @@ export const removeOrganizationMember = (orgId: string, userId: string): Promise
     });
 }
 
+export const updateOrganizationMemberStatus = (orgId: string, userId: string, isActive: boolean): Promise<OrganizationMemberResponse> => {
+    return apiFetch<OrganizationMemberResponse>(`${API_BASE_PATH}/${orgId}/staff/${userId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+            isActive: isActive
+        }),
+    });
+}
+
 
 // ================================================================================
 // Administrator-Only Actions

@@ -27,4 +27,5 @@ export interface OrganizationMemberResponse {
     email: string;
     name: string;
     roles: OrganizationRole[];
+    active: boolean;
 }
