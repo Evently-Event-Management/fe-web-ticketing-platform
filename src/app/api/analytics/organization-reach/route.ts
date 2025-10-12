@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {getOrganizationReach} from "@/lib/actions/public/server/eventActions";
+import {getOrganizationAudienceInsights} from "@/lib/actions/public/server/eventActions";
 
 export async function GET(request: Request) {
     const {searchParams} = new URL(request.url);
@@ -9,11 +9,11 @@ export async function GET(request: Request) {
         return NextResponse.json({error: "organizationId is required"}, {status: 400});
     }
 
-    const result = await getOrganizationReach(organizationId);
+    const result = await getOrganizationAudienceInsights(organizationId);
 
-    if (!result.success) {
-        return NextResponse.json({error: result.error ?? "Unable to fetch organization reach"}, {status: 500});
+    if (!result.success || !result.data) {
+        return NextResponse.json({error: result.error ?? "Unable to fetch organization insights"}, {status: 500});
     }
 
-    return NextResponse.json({reach: result.reach ?? 0});
+    return NextResponse.json(result.data);
 }

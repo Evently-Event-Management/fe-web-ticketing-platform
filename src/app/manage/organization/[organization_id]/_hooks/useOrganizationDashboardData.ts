@@ -16,6 +16,7 @@ import {
 import {EventSummaryDTO, EventStatus} from "@/lib/validators/event";
 import {SessionStatus} from "@/types/enums/sessionStatus";
 import {PaginatedResponse} from "@/types/paginatedResponse";
+import {DeviceBreakdown, TimeSeriesData, TrafficSource} from "@/types/eventAnalytics";
 
 interface OrganizationDashboardData {
     events: EventSummaryDTO[];
@@ -27,7 +28,13 @@ interface OrganizationDashboardData {
         totalDiscounts: number;
         dailySales: DailySalesMetrics[];
     };
-    organizationReach: number;
+    audience: {
+        totalViews: number;
+        uniqueUsers: number;
+        viewsTimeSeries: TimeSeriesData[];
+        deviceBreakdown: DeviceBreakdown[];
+        trafficSources: TrafficSource[];
+    };
 }
 
 interface UseOrganizationDashboardDataOptions {
@@ -135,7 +142,7 @@ export const useOrganizationDashboardData = (
         setError(null);
 
         try {
-            const reachPromise = (async (): Promise<number> => {
+            const audiencePromise = (async (): Promise<OrganizationDashboardData["audience"]> => {
                 try {
                     const response = await fetch(`/api/analytics/organization-reach?organizationId=${organizationId}`, {
                         method: "GET",
@@ -144,19 +151,37 @@ export const useOrganizationDashboardData = (
                     if (!response.ok) {
                         throw new Error("Failed to fetch organization reach");
                     }
-                    const payload: {reach?: number} = await response.json();
-                    return typeof payload.reach === "number" ? payload.reach : 0;
+                    const payload: {
+                        totalViews?: number;
+                        uniqueUsers?: number;
+                        viewsTimeSeries?: TimeSeriesData[];
+                        deviceBreakdown?: DeviceBreakdown[];
+                        trafficSources?: TrafficSource[];
+                    } = await response.json();
+                    return {
+                        totalViews: typeof payload.totalViews === "number" ? payload.totalViews : 0,
+                        uniqueUsers: typeof payload.uniqueUsers === "number" ? payload.uniqueUsers : 0,
+                        viewsTimeSeries: payload.viewsTimeSeries ?? [],
+                        deviceBreakdown: payload.deviceBreakdown ?? [],
+                        trafficSources: payload.trafficSources ?? [],
+                    };
                 } catch (err) {
                     console.error("Failed to fetch organization reach", err);
-                    return 0;
+                    return {
+                        totalViews: 0,
+                        uniqueUsers: 0,
+                        viewsTimeSeries: [],
+                        deviceBreakdown: [],
+                        trafficSources: [],
+                    };
                 }
             })();
 
-            const [allEvents, sessionAnalytics, sessionsResponse, organizationReach] = await Promise.all([
+            const [allEvents, sessionAnalytics, sessionsResponse, audience] = await Promise.all([
                 fetchEventsAcrossPages(),
                 getOrganizationSessionAnalytics(organizationId),
                 getOrganizationSessions(organizationId, SessionStatus.ON_SALE, 0, highlightedSessionCount),
-                reachPromise,
+                audiencePromise,
             ]);
 
             let approvedEvents: EventSummaryDTO[] = [];
@@ -204,7 +229,7 @@ export const useOrganizationDashboardData = (
                     totalDiscounts,
                     dailySales,
                 },
-                organizationReach,
+                audience,
             });
         } catch (err) {
             console.error("Failed to load organization dashboard", err);

@@ -9,6 +9,8 @@ import {WelcomeBar} from "./_components/WelcomeBar";
 import {StatsCard} from "./_components/StatsCard";
 import {RevenueChart} from "./_components/RevenueChart";
 import {SessionStatusChart} from "./_components/SessionStatusChart";
+import {AudienceViewsChart} from "./_components/AudienceViewsChart";
+import {TrafficSourcesChart} from "./_components/TrafficSourcesChart";
 import {EventsTable} from "./_components/EventsTable";
 import {SessionsTable} from "./_components/SessionsTable";
 import {useOrganization} from "@/providers/OrganizationProvider";
@@ -64,6 +66,23 @@ const OrganizationDashboardPage = () => {
         const clamped = Math.max(0, Math.min(rawRatio, 1));
         return `${Math.round(clamped * 100)}%`;
     }, [data?.revenue?.totalBeforeDiscounts, data?.revenue?.totalRevenue]);
+
+    const sessionStatusSummary = useMemo(() => {
+        const segments = [
+            {label: "On sale", value: sessionStatusTotals.ON_SALE},
+            {label: "Scheduled", value: sessionStatusTotals.SCHEDULED},
+            {label: "Sold out", value: sessionStatusTotals.SOLD_OUT},
+            {label: "Closed", value: sessionStatusTotals.CLOSED},
+        ].filter(segment => segment.value > 0);
+
+        if (segments.length === 0) {
+            return undefined;
+        }
+
+        return segments
+            .map(segment => `${segment.value.toLocaleString("en-LK")} ${segment.label}`)
+            .join(" • ");
+    }, [sessionStatusTotals]);
 
     if (!organizationId) {
         return (
@@ -125,9 +144,9 @@ const OrganizationDashboardPage = () => {
                     title="Sessions tracked"
                     value={(data?.sessionAnalytics?.totalSessions ?? 0).toLocaleString("en-LK")}
                     subtitle={`Across ${data?.events.length ?? 0} events`}
-                    trendLabel="On sale now"
-                    trendValue={sessionStatusTotals.ON_SALE.toLocaleString("en-LK")}
-                    trendVariant="positive"
+                    trendLabel={sessionStatusSummary ? "Status mix" : undefined}
+                    trendValue={sessionStatusSummary}
+                    trendVariant="neutral"
                     isLoading={isLoading}
                 />
                 <StatsCard
@@ -141,26 +160,43 @@ const OrganizationDashboardPage = () => {
                 />
                 <StatsCard
                     title="Audience reach"
-                    value={(data?.organizationReach ?? 0).toLocaleString("en-LK")}
-                    subtitle="Unique viewers (30 days)"
-                    trendLabel="Events tracked"
-                    trendValue={(data?.events.length ?? 0).toLocaleString("en-LK")}
+                    value={(data?.audience.totalViews ?? 0).toLocaleString("en-LK")}
+                    subtitle="Total views (30 days)"
+                    trendLabel="Unique viewers"
+                    trendValue={(data?.audience.uniqueUsers ?? 0).toLocaleString("en-LK")}
                     trendVariant="neutral"
                     isLoading={isLoading}
                 />
             </section>
 
             <section className="grid gap-4 xl:grid-cols-12">
-                <div className="xl:col-span-7">
+                <div className="xl:col-span-8">
                     <RevenueChart
                         data={data?.revenue.dailySales ?? []}
                         isLoading={isLoading}
                     />
                 </div>
-                <div className="xl:col-span-5">
+                <div className="xl:col-span-4">
                     <SessionStatusChart
                         analytics={data?.sessionAnalytics ?? null}
                         totals={sessionStatusTotals}
+                        isLoading={isLoading}
+                    />
+                </div>
+            </section>
+
+            <section className="grid gap-4 xl:grid-cols-12">
+                <div className="xl:col-span-8">
+                    <AudienceViewsChart
+                        data={data?.audience.viewsTimeSeries ?? []}
+                        totalViews={data?.audience.totalViews ?? 0}
+                        isLoading={isLoading}
+                    />
+                </div>
+                <div className="xl:col-span-4">
+                    <TrafficSourcesChart
+                        data={data?.audience.trafficSources ?? []}
+                        totalViews={data?.audience.totalViews ?? 0}
                         isLoading={isLoading}
                     />
                 </div>

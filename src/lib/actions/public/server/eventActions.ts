@@ -66,6 +66,19 @@ const initializeAnalyticsClient = () => {
 
 const propertyId = `properties/${process.env.GA_PROPERTY_ID}`;
 
+const normalizeDeviceCategory = (value?: string | null): DeviceBreakdown['device'] => {
+    switch ((value ?? "").toLowerCase()) {
+    case "desktop":
+        return "Desktop";
+    case "mobile":
+        return "Mobile";
+    case "tablet":
+        return "Tablet";
+    default:
+        return "Unknown";
+    }
+};
+
 /**
  * Fetches the total event view count for a specific event ID.
  */
@@ -209,7 +222,7 @@ export async function getEventDeviceBreakdown(eventId: string): Promise<{
             },
         });
         const data = response.rows?.map(row => ({
-            device: row.dimensionValues?.[0].value as 'Desktop' | 'Mobile' | 'Tablet' | 'Unknown' || 'Unknown',
+            device: normalizeDeviceCategory(row.dimensionValues?.[0].value),
             views: parseInt(row.metricValues?.[0].value || '0', 10),
         })) || [];
         return {success: true, data};
@@ -220,35 +233,122 @@ export async function getEventDeviceBreakdown(eventId: string): Promise<{
 }
 
 /**
- * Fetches the unique audience reach for all events that belong to an organization.
- * Reach is defined as the total number of unique users who triggered the event view
- * within the last 30 days.
+ * Fetches aggregated audience insights for an organization including total views,
+ * unique users (reach), daily view time series, and device breakdown.
  */
-export async function getOrganizationReach(organizationId: string): Promise<{
+export async function getOrganizationAudienceInsights(organizationId: string): Promise<{
     success: boolean;
-    reach?: number;
+    data?: {
+        totalViews: number;
+        uniqueUsers: number;
+        viewsTimeSeries: TimeSeriesData[];
+        deviceBreakdown: DeviceBreakdown[];
+        trafficSources: TrafficSource[];
+    };
     error?: string;
 }> {
     try {
         const analyticsClient = initializeAnalyticsClient();
-        const [response] = await analyticsClient.runReport({
-            property: propertyId,
-            dateRanges: [{startDate: '30daysAgo', endDate: 'today'}],
-            dimensions: [{name: 'customEvent:organization_id'}],
-            metrics: [{name: 'totalUsers'}],
-            dimensionFilter: {
-                filter: {
-                    fieldName: 'customEvent:organization_id',
-                    stringFilter: {value: organizationId, matchType: 'EXACT'}
-                }
+
+        const dateRange = {startDate: '30daysAgo', endDate: 'today'};
+
+        const requests: GaRunReportRequest[] = [
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'customEvent:organization_id'}],
+                metrics: [{name: 'eventCount'}, {name: 'totalUsers'}],
+                dimensionFilter: {
+                    filter: {
+                        fieldName: 'customEvent:organization_id',
+                        stringFilter: {value: organizationId, matchType: 'EXACT'}
+                    }
+                },
+                limit: 1,
             },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'date'}],
+                metrics: [{name: 'eventCount'}],
+                orderBys: [{dimension: {orderType: 'ALPHANUMERIC', dimensionName: 'date'}}],
+                dimensionFilter: {
+                    filter: {
+                        fieldName: 'customEvent:organization_id',
+                        stringFilter: {value: organizationId, matchType: 'EXACT'}
+                    }
+                },
+            },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'deviceCategory'}],
+                metrics: [{name: 'eventCount'}],
+                dimensionFilter: {
+                    filter: {
+                        fieldName: 'customEvent:organization_id',
+                        stringFilter: {value: organizationId, matchType: 'EXACT'}
+                    }
+                },
+            },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'sessionSource'}, {name: 'sessionMedium'}],
+                metrics: [{name: 'eventCount'}],
+                orderBys: [{metric: {metricName: 'eventCount'}, desc: true}],
+                limit: 5,
+                dimensionFilter: {
+                    filter: {
+                        fieldName: 'customEvent:organization_id',
+                        stringFilter: {value: organizationId, matchType: 'EXACT'}
+                    }
+                },
+            }
+        ];
+
+        const [batchResponse] = await analyticsClient.batchRunReports({
+            property: propertyId,
+            requests,
         });
 
-        const reach = response.rows?.[0]?.metricValues?.[0]?.value ?? '0';
-        return {success: true, reach: parseInt(reach, 10)};
+        const totalsReport = batchResponse.reports?.[0];
+        const timeSeriesReport = batchResponse.reports?.[1];
+        const deviceReport = batchResponse.reports?.[2];
+        const trafficSourcesReport = batchResponse.reports?.[3];
+
+        const totalViews = parseInt(totalsReport?.rows?.[0]?.metricValues?.[0]?.value || '0', 10);
+        const uniqueUsers = parseInt(totalsReport?.rows?.[0]?.metricValues?.[1]?.value || '0', 10);
+
+        const viewsTimeSeries: TimeSeriesData[] = timeSeriesReport?.rows?.map(row => ({
+            date: row.dimensionValues?.[0].value || 'Unknown Date',
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        const deviceBreakdown: DeviceBreakdown[] = deviceReport?.rows?.map(row => ({
+            device: normalizeDeviceCategory(row.dimensionValues?.[0].value),
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        const trafficSources: TrafficSource[] = trafficSourcesReport?.rows?.map(row => ({
+            source: row.dimensionValues?.[0].value || 'Unknown',
+            medium: row.dimensionValues?.[1].value || 'Unknown',
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        return {
+            success: true,
+            data: {
+                totalViews,
+                uniqueUsers,
+                viewsTimeSeries,
+                deviceBreakdown,
+                trafficSources,
+            }
+        };
     } catch (error) {
-        console.error("Error fetching GA organization reach:", error);
-        return {success: false, error: "Failed to fetch organization reach."};
+        console.error("Error fetching GA organization audience insights:", error);
+        return {success: false, error: "Failed to fetch organization audience insights."};
     }
 }
 
