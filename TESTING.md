@@ -1,6 +1,32 @@
 # Ticketly Platform Testing Documentation
 
-This document outlines the testing strategy, methodologies, and tools used in the Ticketly platform frontend application. It covers current testing practices and future plans for expanding test coverage.
+This document outlines the testing strategy, methodologies, and tools used in the Ticketly platform frontend application. It covers curr### Future Testing Plans
+
+The testing strategy will be expanded to include:
+
+### Additional E2E Test Scenarios
+
+1. **Event Creation and Management** ✅ (Partially Implemented)
+   - Creating events with various configurations ✅
+   - Managing event details and settings
+   - Publishing and unpublishing events
+
+   Current coverage includes:
+   - Basic event creation flow with online events
+   - Ticket tier setup
+   - Session scheduling and capacity configuration
+   
+   See: `cypress/e2e/events/create-event.cy.ts`
+
+2. **Ticket Management**
+   - Creating ticket types
+   - Setting pricing and availability
+   - Discount code application
+
+3. **Seat Booking Flows**
+   - Interactive seating map selection
+   - Reserved seating flows
+   - General admission flowss and future plans for expanding test coverage.
 
 ## Table of Contents
 

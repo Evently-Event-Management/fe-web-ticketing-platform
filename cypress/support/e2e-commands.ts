@@ -23,6 +23,13 @@ declare global {
              * @param options Options including timeout and assertion type
              */
             verifyToast(message: string, options?: { timeout?: number, shouldExist?: boolean }): Chainable<void>;
+
+            /**
+             * Custom command to clean up test events
+             * Deletes any events with names containing the specified prefix
+             * @param eventNamePrefix The prefix to search for in event names
+             */
+            cleanupTestEvents(eventNamePrefix?: string): Chainable<void>;
         }
     }
 }
@@ -44,6 +51,57 @@ Cypress.Commands.add('login', (
 
     // Set a larger viewport to ensure the login button is always visible
     cy.viewport(1200, 800);
+
+/**
+ * Custom command to clean up test events
+ * Deletes events created during testing to keep the environment clean
+ */
+Cypress.Commands.add('cleanupTestEvents', (eventNamePrefix = 'Sample Event') => {
+    // First get the current organization ID from the URL or from localStorage
+    cy.url().then(url => {
+        const orgIdMatch = url.match(/\/organization\/([^\/]+)/);
+        if (!orgIdMatch) {
+            cy.log('Could not determine organization ID for event cleanup');
+            return;
+        }
+        
+        const organizationId = orgIdMatch[1];
+        
+        // Get all events for this organization
+        cy.request({
+            method: 'GET',
+            url: `/api/organizations/${organizationId}/events`,
+            failOnStatusCode: false
+        }).then(response => {
+            if (response.status !== 200) {
+                cy.log('Could not fetch events for cleanup');
+                return;
+            }
+            
+            const events = response.body;
+            
+            // Filter events that match our test naming pattern
+            const testEvents = events.filter(event => 
+                event.title && event.title.includes(eventNamePrefix)
+            );
+            
+            // Delete each test event
+            testEvents.forEach(event => {
+                cy.request({
+                    method: 'DELETE',
+                    url: `/api/events/${event.id}`,
+                    failOnStatusCode: false
+                }).then(delResponse => {
+                    if (delResponse.status === 200 || delResponse.status === 204) {
+                        cy.log(`Successfully deleted test event: ${event.title}`);
+                    } else {
+                        cy.log(`Failed to delete test event: ${event.title}`);
+                    }
+                });
+            });
+        });
+    });
+});
 
 /**
  * Custom command to verify toast messages with configurable timeout
