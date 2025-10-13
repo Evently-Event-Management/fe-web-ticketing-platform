@@ -44,6 +44,12 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
     const navData = {
         navMain: [
             {
+                title: "Dashboard",
+                url: organization ? `/manage/organization/${organization.id}` : "#",
+                icon: LayoutDashboard,
+                isActive: true,
+            },
+            {
                 title: "Events",
                 url: "#",
                 icon: CalendarRange,
@@ -63,7 +69,6 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             },
             {
                 title: "Seating Layouts",
-                // ✅ Use the active organization ID to build the URL
                 url: organization ? `/manage/organization/${organization.id}/seating` : "#",
                 icon: RockingChair
             },

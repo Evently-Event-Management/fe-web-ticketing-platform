@@ -19,6 +19,7 @@ import {toast} from "sonner";
 import TicketItemView from '@/components/ui/TicketItemView';
 import {DiscountDTO, SelectedSeat} from "@/types/event";
 import {applyDiscount} from "@/lib/discountUtils";
+import { getEventSummery } from '@/lib/actions/public/server/eventActions';
 
 interface OrderConfirmationDialogProps {
     isOpen: boolean;
@@ -56,10 +57,16 @@ const OrderConfirmationDialog: React.FC<OrderConfirmationDialogProps> = ({
         setIsSubmitting(true);
         const t = toast.loading("Creating your order...");
         try {
+            const eventSummery = await getEventSummery(eventId);
+            if (!eventSummery || !eventSummery.organization || !eventSummery.organization.id) {
+                throw new Error("Invalid event or organization data.");
+            }
+
             const response = await createOrder({
                 event_id: eventId,
                 session_id: sessionId,
                 seat_ids: selectedSeats.map(seat => seat.id),
+                organization_id: eventSummery.organization.id,
                 discount_id: appliedDiscount?.id ?? null,
             });
 

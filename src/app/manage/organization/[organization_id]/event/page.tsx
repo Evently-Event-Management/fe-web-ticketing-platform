@@ -1,24 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import {useState, useEffect, useMemo} from 'react';
-import {useParams, useRouter} from 'next/navigation';
+import {useState, useEffect} from 'react';
+import {useParams} from 'next/navigation';
 import {useDebounce} from 'use-debounce';
-import {ColumnDef} from '@tanstack/react-table';
-import {MoreHorizontal, PlusCircle, Trash2, Eye} from 'lucide-react';
-import {format, parseISO} from 'date-fns';
+import {PlusCircle} from 'lucide-react';
 
 import {getMyOrganizationEvents} from '@/lib/actions/eventActions';
 import {EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     Select,
     SelectContent,
@@ -26,10 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {Badge} from '@/components/ui/badge';
 import Link from 'next/link';
-import Image from 'next/image';
-import {DataTable} from "@/components/DataTable";
 import {
     Pagination,
     PaginationContent, PaginationEllipsis,
@@ -37,25 +25,12 @@ import {
     PaginationLink, PaginationNext,
     PaginationPrevious
 } from '@/components/ui/pagination';
-
-// --- Helper to get status badge color ---
-const getStatusVariant = (status: EventStatus): "default" | "secondary" | "destructive" => {
-    switch (status) {
-        case 'APPROVED':
-            return 'default';
-        case 'PENDING':
-            return 'secondary';
-        case 'REJECTED':
-            return 'destructive';
-        default:
-            return 'secondary';
-    }
-};
+import {EventCard} from "../_components/EventCard";
+import {Skeleton} from "@/components/ui/skeleton";
 
 // --- Main Page Component ---
 export default function OrganizationEventsPage() {
     const params = useParams();
-    const router = useRouter();
     const organizationId = params.organization_id as string;
 
     const [events, setEvents] = useState<EventSummaryDTO[]>([]);
@@ -85,78 +60,6 @@ export default function OrganizationEventsPage() {
             setIsLoading(false);
         });
     }, [organizationId, page, debouncedSearchTerm, statusFilter]);
-
-    const columns = useMemo<ColumnDef<EventSummaryDTO>[]>(() => [
-        {
-            accessorKey: 'title',
-            header: 'Event',
-            cell: ({row}) => {
-                const event = row.original;
-                return (
-                    <div className="flex items-center gap-4">
-                        <div className="relative h-16 w-28 rounded-md overflow-hidden bg-muted">
-                            {event.coverPhoto && (
-                                <Image src={event.coverPhoto} alt={event.title} fill className="object-cover"/>
-                            )}
-                        </div>
-                        <div>
-                            <div className="font-medium">{event.title}</div>
-                            <div className="text-sm text-muted-foreground truncate max-w-xs">{event.description}</div>
-                        </div>
-                    </div>
-                );
-            }
-        },
-        {
-            accessorKey: 'status',
-            header: 'Status',
-            cell: ({row}) => (
-                <Badge variant={getStatusVariant(row.original.status)}>{row.original.status}</Badge>
-            )
-        },
-        {
-            accessorKey: 'sessionCount',
-            header: 'Sessions',
-            cell: ({row}) => (
-                <span>{row.original.sessionCount}</span>
-            )
-        },
-        {
-            accessorKey: 'earliestSessionDate',
-            header: 'Next Date',
-            cell: ({row}) => (
-                <span>{format(parseISO(row.original.earliestSessionDate), 'MMM d, yyyy')}</span>
-            )
-        },
-        {
-            id: 'actions',
-            cell: ({row}) => {
-                const event = row.original;
-                return (
-                    <div className="text-right">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4"/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem
-                                    onClick={() => router.push(`/manage/organization/${organizationId}/event/${event.id}`)}>
-                                    <Eye className="mr-2 h-4 w-4"/> View
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4"/> Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                );
-            }
-        }
-    ], [router, organizationId]);
 
     return (
         <div className="p-4 md:p-8 space-y-6">
@@ -198,11 +101,33 @@ export default function OrganizationEventsPage() {
                 </Select>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={events}
-                isLoading={isLoading}
-            />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+                {isLoading
+                    ? Array.from({length: 3}).map((_, index) => (
+                        <div key={`event-skeleton-${index}`} className="flex h-full flex-col overflow-hidden rounded-xl border border-border/60 bg-muted/20">
+                            <Skeleton className="h-24 w-full"/>
+                            <div className="space-y-3 p-4">
+                                <Skeleton className="h-4 w-48"/>
+                                <Skeleton className="h-3 w-64"/>
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                    <Skeleton className="h-10 w-full"/>
+                                    <Skeleton className="h-10 w-full"/>
+                                    <Skeleton className="h-10 w-full"/>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                    : events.length === 0
+                        ? (
+                            <div className="col-span-full flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 bg-muted/10 p-10 text-center text-sm text-muted-foreground">
+                                <p>No events found for this organization.</p>
+                                <p>Adjust your filters or create a new event.</p>
+                            </div>
+                        )
+                        : events.map(event => (
+                            <EventCard key={event.id} event={event} organizationId={organizationId}/>
+                        ))}
+            </div>
 
             {/* ✅ Pagination is now handled here */}
             {totalPages > 1 && (

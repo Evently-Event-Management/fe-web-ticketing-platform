@@ -45,6 +45,31 @@ export interface EventOrderAnalytics {
     sales_by_tier: TierSalesMetrics[];
 }
 
+export interface OrganizationOrderAnalytics {
+	organization_id: string;
+	total_revenue: number;
+	total_before_discounts: number;
+	total_tickets_sold: number;
+	daily_sales: DailySalesMetrics[];
+	sales_by_tier: TierSalesMetrics[];
+}
+
+export interface EventOrderAnalyticsBatchResponse {
+    event_ids: string[];
+    total_revenue: number;
+    total_before_discounts: number;
+    total_tickets_sold: number;
+    daily_sales: DailySalesMetrics[];
+    sales_by_tier: TierSalesMetrics[];
+}
+
+// Response type for /order/analytics/events/batch/individual
+export interface EventOrderAnalyticsBatchIndividualResponse {
+    eventAnalytics: {
+        [eventId: string]: EventOrderAnalytics;
+    };
+}
+
 export interface EventDiscountAnalytics {
     event_id: string;
     discount_usage: DiscountUsage[];
@@ -122,13 +147,67 @@ export const getSessionAnalytics = async (eventId: string, sessionId: string): P
 };
 
 /**
+ * Retrieves summary analytics for all sessions in an event from the event-query service
+ * @param eventId The event identifier
+ * @param sessionId The session identifier
+ * @returns Summary including capacity and sellout percentage
+ */
+export const getSessionAnalyticsSummary = async (eventId: string, sessionId: string): Promise<EventSessionSummary> => {
+    return await apiFetch<EventSessionSummary>(`${ANALYTICS_API_PATH}/events/${eventId}/sessions/${sessionId}/summary`);
+};
+
+/**
  * Retrieves revenue analytics data for an entire event from order service
- * 
- * @param eventId The ID of the event
- * @returns Event revenue analytics including total revenue, tickets sold, and daily sales
  */
 export const getEventRevenueAnalytics = async (eventId: string): Promise<EventOrderAnalytics> => {
     return await apiFetch<EventOrderAnalytics>(`${ORDER_API_PATH}/events/${eventId}`);
+};
+
+
+export const getOrganizationRevenueAnalytics = async (organizationId: string): Promise<OrganizationOrderAnalytics> => {
+    return await apiFetch<OrganizationOrderAnalytics>(`${ORDER_API_PATH}/organizations/${organizationId}`);
+}
+
+
+/**
+ * Retrieves revenue analytics data for multiple events in a single batch request
+ * 
+ * @param eventIds Array of event IDs to fetch analytics for
+ * @returns Combined analytics for all requested events including event_ids, aggregated revenue, 
+ *          aggregated ticket sales, and sales breakdowns by day and tier
+ */
+export const getEventOrderAnalyticsBatch = async (eventIds: string[]): Promise<EventOrderAnalyticsBatchResponse> => {
+    const requestBody = {
+        eventIds: eventIds
+    };
+    
+    return await apiFetch<EventOrderAnalyticsBatchResponse>(
+        `${ORDER_API_PATH}/events/batch`,
+        {
+            method: 'POST',
+            body: JSON.stringify(requestBody)
+        }
+    );
+};
+
+/**
+ * Retrieves individual analytics for multiple events in a single batch request
+ * Each event's analytics are returned separately in an object keyed by eventId
+ *
+ * @param eventIds Array of event IDs to fetch analytics for
+ * @returns Object with eventAnalytics mapping eventId to EventOrderAnalytics
+ */
+export const getEventOrderAnalyticsBatchIndividual = async (eventIds: string[]): Promise<EventOrderAnalyticsBatchIndividualResponse> => {
+    const requestBody = {
+        eventIds: eventIds
+    };
+    return await apiFetch<EventOrderAnalyticsBatchIndividualResponse>(
+        `${ORDER_API_PATH}/events/batch/individual`,
+        {
+            method: 'POST',
+            body: JSON.stringify(requestBody)
+        }
+    );
 };
 
 /**
