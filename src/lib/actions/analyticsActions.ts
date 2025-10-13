@@ -45,6 +45,15 @@ export interface EventOrderAnalytics {
     sales_by_tier: TierSalesMetrics[];
 }
 
+export interface OrganizationOrderAnalytics {
+	organization_id: string;
+	total_revenue: number;
+	total_before_discounts: number;
+	total_tickets_sold: number;
+	daily_sales: DailySalesMetrics[];
+	sales_by_tier: TierSalesMetrics[];
+}
+
 export interface EventOrderAnalyticsBatchResponse {
     event_ids: string[];
     total_revenue: number;
@@ -146,6 +155,11 @@ export const getSessionAnalytics = async (eventId: string, sessionId: string): P
 export const getEventRevenueAnalytics = async (eventId: string): Promise<EventOrderAnalytics> => {
     return await apiFetch<EventOrderAnalytics>(`${ORDER_API_PATH}/events/${eventId}`);
 };
+
+
+export const getOrganizationRevenueAnalytics = async (organizationId: string): Promise<OrganizationOrderAnalytics> => {
+    return await apiFetch<OrganizationOrderAnalytics>(`${ORDER_API_PATH}/organizations/${organizationId}`);
+}
 
 
 /**

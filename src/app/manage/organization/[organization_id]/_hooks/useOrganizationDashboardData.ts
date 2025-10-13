@@ -4,8 +4,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {getMyOrganizationEvents} from "@/lib/actions/eventActions";
 import {
     DailySalesMetrics,
-    EventOrderAnalyticsBatchResponse,
-    getEventOrderAnalyticsBatch,
+    getOrganizationRevenueAnalytics,
 } from "@/lib/actions/analyticsActions";
 import {
     getOrganizationSessionAnalytics,
@@ -90,30 +89,6 @@ const createInitialLoadingState = (): DashboardLoadingState => ({
     sessionAnalytics: true,
     highlightedEvents: true,
 });
-
-const uniqueDailySales = (batch: EventOrderAnalyticsBatchResponse | null): DailySalesMetrics[] => {
-    if (!batch) {
-        return [];
-    }
-
-    // Combine sales by date in case backend sends duplicates or unsorted entries
-    const grouped = batch.daily_sales.reduce<Record<string, DailySalesMetrics>>((acc, item) => {
-        const key = item.date;
-        if (!acc[key]) {
-            acc[key] = {
-                date: item.date,
-                revenue: item.revenue,
-                tickets_sold: item.tickets_sold,
-            };
-        } else {
-            acc[key].revenue += item.revenue;
-            acc[key].tickets_sold += item.tickets_sold;
-        }
-        return acc;
-    }, {});
-
-    return Object.values(grouped).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-};
 
 const mapSessionStatusTotals = (analytics: SessionAnalyticsResponse | null): Record<SessionStatus, number> => {
     const base: Record<SessionStatus, number> = {
@@ -216,43 +191,40 @@ export const useOrganizationDashboardData = (
                     .slice()
                     .sort((a, b) => new Date(a.earliestSessionDate).getTime() - new Date(b.earliestSessionDate).getTime());
                 setData(prev => ({...prev, events: sortedEvents}));
-
-                if (sortedEvents.length === 0) {
-                    setData(prev => ({...prev, revenue: createEmptyRevenue()}));
-                    return;
-                }
-
-                try {
-                    const revenueBatch = await getEventOrderAnalyticsBatch(sortedEvents.map(event => event.id));
-                    const dailySales = uniqueDailySales(revenueBatch);
-                    const totalRevenue = revenueBatch?.total_revenue ?? 0;
-                    const totalBeforeDiscounts = revenueBatch?.total_before_discounts ?? totalRevenue;
-                    const totalDiscounts = Math.max(totalBeforeDiscounts - totalRevenue, 0);
-
-                    setData(prev => ({
-                        ...prev,
-                        revenue: {
-                            totalRevenue,
-                            totalBeforeDiscounts,
-                            totalDiscounts,
-                            dailySales,
-                        },
-                    }));
-                } catch (revenueError) {
-                    console.error("Failed to fetch revenue analytics batch", revenueError);
-                    setError(prev => prev ?? "Some revenue metrics failed to load.");
-                    setData(prev => ({...prev, revenue: createEmptyRevenue()}));
-                }
             } catch (eventError) {
                 console.error("Failed to fetch organization events", eventError);
                 setError(prev => prev ?? "Event information failed to load.");
                 setData(prev => ({
                     ...prev,
                     events: [],
-                    revenue: createEmptyRevenue(),
                 }));
             } finally {
-                markSectionComplete(["events", "revenue"]);
+                markSectionComplete("events");
+            }
+        })());
+
+        tasks.push((async () => {
+            try {
+                const revenue = await getOrganizationRevenueAnalytics(organizationId);
+                const totalRevenue = revenue?.total_revenue ?? 0;
+                const totalBeforeDiscounts = revenue?.total_before_discounts ?? totalRevenue;
+                const totalDiscounts = Math.max(totalBeforeDiscounts - totalRevenue, 0);
+
+                setData(prev => ({
+                    ...prev,
+                    revenue: {
+                        totalRevenue,
+                        totalBeforeDiscounts,
+                        totalDiscounts,
+                        dailySales: revenue?.daily_sales ?? [],
+                    },
+                }));
+            } catch (revenueError) {
+                console.error("Failed to fetch revenue analytics", revenueError);
+                setError(prev => prev ?? "Revenue metrics failed to load.");
+                setData(prev => ({...prev, revenue: createEmptyRevenue()}));
+            } finally {
+                markSectionComplete("revenue");
             }
         })());
 
