@@ -213,7 +213,7 @@ export const rejectEvent_Admin = (eventId: string, reason: string): Promise<void
  * @param eventId The ID of the event to subscribe to
  */
 export const subscribeToEvent = (eventId: string): Promise<SubscriptionResponse> => {
-  return apiFetch<SubscriptionResponse>('/scheduler/event-subscription/v1/subscribe', {
+  return apiFetch<SubscriptionResponse>('/scheduler/subscription/v1/subscribe', {
     method: 'POST',
     body: JSON.stringify({
       eventId: eventId
@@ -226,7 +226,7 @@ export const subscribeToEvent = (eventId: string): Promise<SubscriptionResponse>
  * @param eventId The ID of the event to unsubscribe from
  */
 export const unsubscribeFromEvent = (eventId: string): Promise<SubscriptionResponse> => {
-  return apiFetch<SubscriptionResponse>(`/scheduler/event-subscription/v1/unsubscribe/${eventId}`, {
+  return apiFetch<SubscriptionResponse>(`/scheduler/subscription/v1/unsubscribe/${eventId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json'
@@ -239,7 +239,7 @@ export const unsubscribeFromEvent = (eventId: string): Promise<SubscriptionRespo
  * @param eventId The ID of the event to check subscription status for
  */
 export const checkEventSubscriptionStatus = (eventId: string): Promise<boolean> => {
-  return apiFetch<SubscriptionStatusResponse>(`/scheduler/event-subscription/v1/status?eventId=${eventId}`, {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/subscription/v1/status?eventId=${eventId}`, {
     method: 'GET'
   }).then(response => response.subscribed);
 };
