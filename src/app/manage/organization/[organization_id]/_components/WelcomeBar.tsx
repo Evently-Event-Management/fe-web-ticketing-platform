@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {Sparkles, ArrowRight, CalendarRange} from "lucide-react";
+import {Sparkles, ArrowRight, CalendarRange, Users, RockingChair} from "lucide-react";
 import {cn, formatCurrency} from "@/lib/utils";
 
 interface WelcomeBarProps {
@@ -57,9 +57,9 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
                             <Link href={`/manage/organization/${organizationId}/event`}>Browse events</Link>
                         </Button>
                         <Button asChild size="lg" variant="ghost" className="text-primary">
-                            <Link href={`/manage/organization/${organizationId}/event/orders`}>
-                                <CalendarRange className="mr-2 h-4 w-4"/>
-                                Review orders
+                            <Link href={`/manage/organization/${organizationId}/seating`}>
+                                <RockingChair className="mr-2 h-4 w-4"/>
+                                Manage seating layouts
                             </Link>
                         </Button>
                     </div>

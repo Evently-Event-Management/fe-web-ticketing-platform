@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import Link from "next/link";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
@@ -8,7 +8,9 @@ import {Button} from "@/components/ui/button";
 import {Skeleton} from "@/components/ui/skeleton";
 import {OrganizationSessionDTO} from "@/lib/actions/statsActions";
 import {SessionStatus} from "@/types/enums/sessionStatus";
-import {formatDateTimeShort} from "@/lib/utils";
+import {formatCurrency, formatDateTimeShort} from "@/lib/utils";
+import {getSessionAnalyticsSummary, getSessionsRevenueAnalytics, SessionSummaryResponse} from "@/lib/actions/analyticsActions";
+import type {SessionSummary as EventSessionSummary} from "@/types/eventAnalytics";
 import {ArrowUpRight} from "lucide-react";
 
 interface SessionsTableProps {
@@ -105,17 +107,131 @@ export const SessionsTable: React.FC<SessionsTableProps> = ({sessions, organizat
                                         </p>
                                     </div>
                                     <Button size="sm" variant="secondary" className="group/button" asChild>
-                                        <Link href={`/manage/organization/${organizationId}/event/sessions/${session.sessionId}`}>
+                                        <Link href={`/manage/organization/${organizationId}/event/${session.eventId}/sessions/${session.sessionId}`}>
                                             Manage
                                             <ArrowUpRight className="ml-1.5 h-4 w-4 transition group-hover/button:translate-x-0.5"/>
                                         </Link>
                                     </Button>
                                 </div>
+                                <SessionAnalyticsPreview
+                                    sessionId={session.sessionId}
+                                    eventId={session.eventId}
+                                />
                             </div>
                         ))}
                     </div>
                 )}
             </CardContent>
         </Card>
+    );
+};
+
+interface SessionAnalyticsPreviewProps {
+    sessionId: string;
+    eventId: string;
+}
+
+interface SessionMetricsState {
+    isLoading: boolean;
+    revenue?: number;
+    sellOutPercentage?: number;
+}
+
+const revenueCache = new Map<string, SessionSummaryResponse>();
+const summaryCache = new Map<string, Map<string, EventSessionSummary>>();
+
+const SessionAnalyticsPreview: React.FC<SessionAnalyticsPreviewProps> = ({sessionId, eventId}) => {
+    const [metrics, setMetrics] = useState<SessionMetricsState>({isLoading: true});
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadMetrics = async () => {
+            try {
+                const revenuePromise: Promise<SessionSummaryResponse> = revenueCache.has(eventId)
+                    ? Promise.resolve(revenueCache.get(eventId)!)
+                    : getSessionsRevenueAnalytics(eventId).then(response => {
+                        revenueCache.set(eventId, response);
+                        return response;
+                    });
+
+                const summaryPromise: Promise<EventSessionSummary> = (() => {
+                    const existingEventCache = summaryCache.get(eventId);
+                    if (existingEventCache && existingEventCache.has(sessionId)) {
+                        return Promise.resolve(existingEventCache.get(sessionId)!);
+                    }
+                    return getSessionAnalyticsSummary(eventId, sessionId).then(response => {
+                        const cacheForEvent = summaryCache.get(eventId) ?? new Map<string, EventSessionSummary>();
+                        cacheForEvent.set(sessionId, response);
+                        summaryCache.set(eventId, cacheForEvent);
+                        return response;
+                    });
+                })();
+
+                const [revenueData, summaryData] = await Promise.all([revenuePromise, summaryPromise]);
+
+                if (!isMounted) {
+                    return;
+                }
+
+                const revenueSession = revenueData.sessions.find(summary => summary.session_id === sessionId);
+                const summarySession = summaryData;
+
+                setMetrics({
+                    isLoading: false,
+                    revenue: revenueSession?.total_revenue,
+                    sellOutPercentage: summarySession?.sellOutPercentage ?? (summarySession as unknown as {sell_out_percentage?: number})?.sell_out_percentage,
+                });
+            } catch (error) {
+                console.error("Failed to load session analytics preview", error);
+                if (!isMounted) {
+                    return;
+                }
+                setMetrics({isLoading: false});
+            }
+        };
+
+        void loadMetrics();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [eventId, sessionId]);
+
+    const formattedRevenue = useMemo(() => {
+        if (typeof metrics.revenue !== "number") {
+            return "—";
+        }
+        return formatCurrency(metrics.revenue, "LKR", "en-LK");
+    }, [metrics.revenue]);
+
+    const formattedSellOut = useMemo(() => {
+        if (typeof metrics.sellOutPercentage !== "number") {
+            return "—";
+        }
+        return `${Math.round(metrics.sellOutPercentage)}%`;
+    }, [metrics.sellOutPercentage]);
+
+    return (
+        <div className="mt-6 rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
+            <div className="grid grid-cols-2 gap-4 text-xs font-medium uppercase tracking-wide text-muted-foreground/80">
+                <div>
+                    <p className="mb-1">Sellout</p>
+                    {metrics.isLoading ? (
+                        <Skeleton className="h-5 w-16"/>
+                    ) : (
+                        <p className="text-base font-semibold text-foreground">{formattedSellOut}</p>
+                    )}
+                </div>
+                <div className="text-right">
+                    <p className="mb-1">Revenue</p>
+                    {metrics.isLoading ? (
+                        <Skeleton className="ml-auto h-5 w-24"/>
+                    ) : (
+                        <p className="text-base font-semibold text-foreground">{formattedRevenue}</p>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 };

@@ -1,4 +1,3 @@
-import type { EventAnalytics as EventQueryAnalytics, SessionAnalytics as EventQuerySessionAnalytics, SessionSummary as EventSessionSummary } from '@/types/eventAnalytics';
 import { apiFetch } from '@/lib/api';
 import { SessionStatus } from '@/types/enums/sessionStatus';
 import { EventStatus } from '@/lib/validators/event';

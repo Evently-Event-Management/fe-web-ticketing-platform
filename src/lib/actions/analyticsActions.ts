@@ -147,10 +147,17 @@ export const getSessionAnalytics = async (eventId: string, sessionId: string): P
 };
 
 /**
+ * Retrieves summary analytics for all sessions in an event from the event-query service
+ * @param eventId The event identifier
+ * @param sessionId The session identifier
+ * @returns Summary including capacity and sellout percentage
+ */
+export const getSessionAnalyticsSummary = async (eventId: string, sessionId: string): Promise<EventSessionSummary> => {
+    return await apiFetch<EventSessionSummary>(`${ANALYTICS_API_PATH}/events/${eventId}/sessions/${sessionId}/summary`);
+};
+
+/**
  * Retrieves revenue analytics data for an entire event from order service
- * 
- * @param eventId The ID of the event
- * @returns Event revenue analytics including total revenue, tickets sold, and daily sales
  */
 export const getEventRevenueAnalytics = async (eventId: string): Promise<EventOrderAnalytics> => {
     return await apiFetch<EventOrderAnalytics>(`${ORDER_API_PATH}/events/${eventId}`);
