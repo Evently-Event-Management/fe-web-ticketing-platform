@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {getMyOrganizationEvents} from "@/lib/actions/eventActions";
 import {
     DailySalesMetrics,
@@ -48,6 +48,48 @@ const DEFAULT_OPTIONS: Required<UseOrganizationDashboardDataOptions> = {
 };
 
 const PAGE_SIZE_FOR_EVENTS = 50;
+
+type DashboardLoadingKey =
+    | "revenue"
+    | "audience"
+    | "events"
+    | "sessions"
+    | "sessionAnalytics"
+    | "highlightedEvents";
+
+type DashboardLoadingState = Record<DashboardLoadingKey, boolean>;
+
+const createEmptyRevenue = (): OrganizationDashboardData["revenue"] => ({
+    totalRevenue: 0,
+    totalBeforeDiscounts: 0,
+    totalDiscounts: 0,
+    dailySales: [],
+});
+
+const createEmptyAudience = (): OrganizationDashboardData["audience"] => ({
+    totalViews: 0,
+    uniqueUsers: 0,
+    viewsTimeSeries: [],
+    deviceBreakdown: [],
+    trafficSources: [],
+});
+
+const EMPTY_DASHBOARD: OrganizationDashboardData = {
+    events: [],
+    sessions: [],
+    sessionAnalytics: null,
+    revenue: createEmptyRevenue(),
+    audience: createEmptyAudience(),
+};
+
+const createInitialLoadingState = (): DashboardLoadingState => ({
+    revenue: true,
+    audience: true,
+    events: true,
+    sessions: true,
+    sessionAnalytics: true,
+    highlightedEvents: true,
+});
 
 const uniqueDailySales = (batch: EventOrderAnalyticsBatchResponse | null): DailySalesMetrics[] => {
     if (!batch) {
@@ -102,11 +144,23 @@ export const useOrganizationDashboardData = (
 ) => {
     const {highlightedEventCount, highlightedSessionCount} = {...DEFAULT_OPTIONS, ...options};
 
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [data, setData] = useState<OrganizationDashboardData | null>(null);
+    const [data, setData] = useState<OrganizationDashboardData>(EMPTY_DASHBOARD);
     const [highlightedEvents, setHighlightedEvents] = useState<EventSummaryDTO[]>([]);
-    const [sessionStatusTotals, setSessionStatusTotals] = useState<Record<SessionStatus, number>>(() => mapSessionStatusTotals(null));
+    const [sessionStatusTotals, setSessionStatusTotals] = useState<Record<SessionStatus, number>>(
+        () => mapSessionStatusTotals(null),
+    );
+    const [loadingState, setLoadingState] = useState<DashboardLoadingState>(() => createInitialLoadingState());
+    const [error, setError] = useState<string | null>(null);
+
+    const markSectionComplete = useCallback((section: DashboardLoadingKey | DashboardLoadingKey[]) => {
+        setLoadingState(prev => {
+            const sections = Array.isArray(section) ? section : [section];
+            return sections.reduce<DashboardLoadingState>((acc, key) => {
+                acc[key] = false;
+                return acc;
+            }, {...prev});
+        });
+    }, []);
 
     const fetchEventsAcrossPages = useCallback(async (): Promise<EventSummaryDTO[]> => {
         if (!organizationId) {
@@ -135,124 +189,166 @@ export const useOrganizationDashboardData = (
 
     const loadDashboard = useCallback(async () => {
         if (!organizationId) {
+            setData(EMPTY_DASHBOARD);
+            setHighlightedEvents([]);
+            setSessionStatusTotals(mapSessionStatusTotals(null));
+            setLoadingState({
+                revenue: false,
+                audience: false,
+                events: false,
+                sessions: false,
+                sessionAnalytics: false,
+                highlightedEvents: false,
+            });
+            setError("Missing organization identifier");
             return;
         }
 
-        setIsLoading(true);
         setError(null);
+        setLoadingState(createInitialLoadingState());
 
-        try {
-            const audiencePromise = (async (): Promise<OrganizationDashboardData["audience"]> => {
+        const tasks: Promise<void>[] = [];
+
+        tasks.push((async () => {
+            try {
+                const events = await fetchEventsAcrossPages();
+                const sortedEvents = events
+                    .slice()
+                    .sort((a, b) => new Date(a.earliestSessionDate).getTime() - new Date(b.earliestSessionDate).getTime());
+                setData(prev => ({...prev, events: sortedEvents}));
+
+                if (sortedEvents.length === 0) {
+                    setData(prev => ({...prev, revenue: createEmptyRevenue()}));
+                    return;
+                }
+
                 try {
-                    const response = await fetch(`/api/analytics/organization-reach?organizationId=${organizationId}`, {
-                        method: "GET",
-                        cache: "no-store",
-                    });
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch organization reach");
-                    }
-                    const payload: {
-                        totalViews?: number;
-                        uniqueUsers?: number;
-                        viewsTimeSeries?: TimeSeriesData[];
-                        deviceBreakdown?: DeviceBreakdown[];
-                        trafficSources?: TrafficSource[];
-                    } = await response.json();
-                    return {
+                    const revenueBatch = await getEventOrderAnalyticsBatch(sortedEvents.map(event => event.id));
+                    const dailySales = uniqueDailySales(revenueBatch);
+                    const totalRevenue = revenueBatch?.total_revenue ?? 0;
+                    const totalBeforeDiscounts = revenueBatch?.total_before_discounts ?? totalRevenue;
+                    const totalDiscounts = Math.max(totalBeforeDiscounts - totalRevenue, 0);
+
+                    setData(prev => ({
+                        ...prev,
+                        revenue: {
+                            totalRevenue,
+                            totalBeforeDiscounts,
+                            totalDiscounts,
+                            dailySales,
+                        },
+                    }));
+                } catch (revenueError) {
+                    console.error("Failed to fetch revenue analytics batch", revenueError);
+                    setError(prev => prev ?? "Some revenue metrics failed to load.");
+                    setData(prev => ({...prev, revenue: createEmptyRevenue()}));
+                }
+            } catch (eventError) {
+                console.error("Failed to fetch organization events", eventError);
+                setError(prev => prev ?? "Event information failed to load.");
+                setData(prev => ({
+                    ...prev,
+                    events: [],
+                    revenue: createEmptyRevenue(),
+                }));
+            } finally {
+                markSectionComplete(["events", "revenue"]);
+            }
+        })());
+
+        tasks.push((async () => {
+            try {
+                const [sessionAnalytics, sessionsResponse] = await Promise.all([
+                    getOrganizationSessionAnalytics(organizationId),
+                    getOrganizationSessions(organizationId, SessionStatus.ON_SALE, 0, highlightedSessionCount),
+                ]);
+
+                setData(prev => ({
+                    ...prev,
+                    sessions: sessionsResponse.content,
+                    sessionAnalytics,
+                }));
+                setSessionStatusTotals(mapSessionStatusTotals(sessionAnalytics));
+            } catch (sessionError) {
+                console.error("Failed to fetch session analytics", sessionError);
+                setError(prev => prev ?? "Session metrics failed to load.");
+                setData(prev => ({
+                    ...prev,
+                    sessions: [],
+                    sessionAnalytics: null,
+                }));
+                setSessionStatusTotals(mapSessionStatusTotals(null));
+            } finally {
+                markSectionComplete(["sessions", "sessionAnalytics"]);
+            }
+        })());
+
+        tasks.push((async () => {
+            try {
+                const response = await fetch(`/api/analytics/organization-reach?organizationId=${organizationId}`, {
+                    method: "GET",
+                    cache: "no-store",
+                });
+                if (!response.ok) {
+                    throw new Error("Failed to fetch organization reach");
+                }
+                const payload: {
+                    totalViews?: number;
+                    uniqueUsers?: number;
+                    viewsTimeSeries?: TimeSeriesData[];
+                    deviceBreakdown?: DeviceBreakdown[];
+                    trafficSources?: TrafficSource[];
+                } = await response.json();
+                setData(prev => ({
+                    ...prev,
+                    audience: {
                         totalViews: typeof payload.totalViews === "number" ? payload.totalViews : 0,
                         uniqueUsers: typeof payload.uniqueUsers === "number" ? payload.uniqueUsers : 0,
                         viewsTimeSeries: payload.viewsTimeSeries ?? [],
                         deviceBreakdown: payload.deviceBreakdown ?? [],
                         trafficSources: payload.trafficSources ?? [],
-                    };
-                } catch (err) {
-                    console.error("Failed to fetch organization reach", err);
-                    return {
-                        totalViews: 0,
-                        uniqueUsers: 0,
-                        viewsTimeSeries: [],
-                        deviceBreakdown: [],
-                        trafficSources: [],
-                    };
-                }
-            })();
+                    },
+                }));
+            } catch (audienceError) {
+                console.error("Failed to fetch organization reach", audienceError);
+                setError(prev => prev ?? "Audience insights failed to load.");
+                setData(prev => ({...prev, audience: createEmptyAudience()}));
+            } finally {
+                markSectionComplete("audience");
+            }
+        })());
 
-            const [allEvents, sessionAnalytics, sessionsResponse, audience] = await Promise.all([
-                fetchEventsAcrossPages(),
-                getOrganizationSessionAnalytics(organizationId),
-                getOrganizationSessions(organizationId, SessionStatus.ON_SALE, 0, highlightedSessionCount),
-                audiencePromise,
-            ]);
-
-            let approvedEvents: EventSummaryDTO[] = [];
+        tasks.push((async () => {
             try {
                 const approvedResponse = await getMyOrganizationEvents(
                     organizationId,
                     EventStatus.APPROVED,
                     undefined,
                     0,
-                    highlightedEventCount
+                    highlightedEventCount,
                 );
-                approvedEvents = approvedResponse.content.slice(0, highlightedEventCount);
-            } catch (err) {
-                console.error("Failed to fetch approved events", err);
+                setHighlightedEvents(approvedResponse.content.slice(0, highlightedEventCount));
+            } catch (highlightedError) {
+                console.error("Failed to fetch approved events", highlightedError);
+                setError(prev => prev ?? "Highlighted events failed to load.");
+                setHighlightedEvents([]);
+            } finally {
+                markSectionComplete("highlightedEvents");
             }
+        })());
 
-            let revenueBatch: EventOrderAnalyticsBatchResponse | null = null;
-            if (allEvents.length > 0) {
-                const eventIds = allEvents.map(event => event.id);
-                try {
-                    revenueBatch = await getEventOrderAnalyticsBatch(eventIds);
-                } catch (err) {
-                    console.error("Failed to fetch revenue analytics batch", err);
-                }
-            }
-
-            setHighlightedEvents(approvedEvents);
-
-            const dailySales = uniqueDailySales(revenueBatch);
-            const totalRevenue = revenueBatch?.total_revenue ?? 0;
-            const totalBeforeDiscounts = revenueBatch?.total_before_discounts ?? totalRevenue;
-            const totalDiscounts = Math.max(totalBeforeDiscounts - totalRevenue, 0);
-
-            setSessionStatusTotals(mapSessionStatusTotals(sessionAnalytics));
-
-            setData({
-                events: allEvents
-                    .slice()
-                    .sort((a, b) => new Date(a.earliestSessionDate).getTime() - new Date(b.earliestSessionDate).getTime()),
-                sessions: sessionsResponse.content,
-                sessionAnalytics,
-                revenue: {
-                    totalRevenue,
-                    totalBeforeDiscounts,
-                    totalDiscounts,
-                    dailySales,
-                },
-                audience,
-            });
-        } catch (err) {
-            console.error("Failed to load organization dashboard", err);
-            setError("We couldn't load the dashboard data. Please try again shortly.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, [organizationId, fetchEventsAcrossPages, highlightedSessionCount, highlightedEventCount]);
+        await Promise.allSettled(tasks);
+    }, [fetchEventsAcrossPages, highlightedEventCount, highlightedSessionCount, markSectionComplete, organizationId]);
 
     useEffect(() => {
-        if (!organizationId) {
-            setData(null);
-            setError("Missing organization identifier");
-            setIsLoading(false);
-            setHighlightedEvents([]);
-            return;
-        }
-
         void loadDashboard();
-    }, [organizationId, loadDashboard]);
+    }, [loadDashboard]);
+
+    const isLoading = useMemo(() => Object.values(loadingState).some(Boolean), [loadingState]);
 
     return {
         data,
+        loading: loadingState,
         isLoading,
         error,
         highlightedEvents,

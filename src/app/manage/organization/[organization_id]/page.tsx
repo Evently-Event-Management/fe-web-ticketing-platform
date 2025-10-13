@@ -26,37 +26,28 @@ const OrganizationDashboardPage = () => {
 
     const {
         data,
+        loading,
         highlightedEvents,
         sessionStatusTotals,
-        isLoading,
         error,
         refetch,
     } = useOrganizationDashboardData(organizationId);
 
     const summarizedDailyTickets = useMemo(() => {
-        if (!data?.revenue.dailySales) {
-            return 0;
-        }
         return data.revenue.dailySales.reduce<number>((acc, item: DailySalesMetrics) => acc + item.tickets_sold, 0);
-    }, [data?.revenue.dailySales]);
+    }, [data.revenue.dailySales]);
 
     const approvedOrCompletedCount = useMemo(() => {
-        if (!data?.events) {
-            return 0;
-        }
         return data.events.filter((event: EventSummaryDTO) => event.status === "APPROVED" || event.status === "COMPLETED").length;
-    }, [data?.events]);
+    }, [data.events]);
 
     const pendingEventsCount = useMemo(() => {
-        if (!data?.events) {
-            return 0;
-        }
         return data.events.filter((event: EventSummaryDTO) => event.status === "PENDING").length;
-    }, [data?.events]);
+    }, [data.events]);
 
     const discountShare = useMemo(() => {
-        const totalBefore = data?.revenue?.totalBeforeDiscounts ?? 0;
-        const totalNet = data?.revenue?.totalRevenue ?? 0;
+        const totalBefore = data.revenue.totalBeforeDiscounts ?? 0;
+        const totalNet = data.revenue.totalRevenue ?? 0;
 
         if (totalBefore <= 0) {
             return undefined;
@@ -65,7 +56,7 @@ const OrganizationDashboardPage = () => {
         const rawRatio = 1 - totalNet / totalBefore;
         const clamped = Math.max(0, Math.min(rawRatio, 1));
         return `${Math.round(clamped * 100)}%`;
-    }, [data?.revenue?.totalBeforeDiscounts, data?.revenue?.totalRevenue]);
+    }, [data.revenue.totalBeforeDiscounts, data.revenue.totalRevenue]);
 
     const sessionStatusSummary = useMemo(() => {
         const segments = [
@@ -103,7 +94,7 @@ const OrganizationDashboardPage = () => {
                 organizationName={organization?.name}
                 totalRevenue={data?.revenue.totalRevenue}
                 organizationId={organizationId}
-                isLoading={isLoading}
+                isLoading={loading.revenue || loading.events}
             />
 
             {error && (
@@ -129,7 +120,7 @@ const OrganizationDashboardPage = () => {
                     trendLabel="Tickets sold"
                     trendValue={summarizedDailyTickets.toLocaleString("en-LK")}
                     trendVariant="positive"
-                    isLoading={isLoading}
+                    isLoading={loading.revenue}
                 />
                 <StatsCard
                     title="Discounts given"
@@ -138,7 +129,7 @@ const OrganizationDashboardPage = () => {
                     trendLabel={discountShare ? "Share of gross" : undefined}
                     trendValue={discountShare}
                     trendVariant="neutral"
-                    isLoading={isLoading}
+                    isLoading={loading.revenue}
                 />
                 <StatsCard
                     title="Sessions tracked"
@@ -147,7 +138,7 @@ const OrganizationDashboardPage = () => {
                     trendLabel={sessionStatusSummary ? "Status mix" : undefined}
                     trendValue={sessionStatusSummary}
                     trendVariant="neutral"
-                    isLoading={isLoading}
+                    isLoading={loading.sessionAnalytics}
                 />
                 <StatsCard
                     title="Events live"
@@ -156,7 +147,7 @@ const OrganizationDashboardPage = () => {
                     trendLabel="Pending approval"
                     trendValue={pendingEventsCount.toLocaleString("en-LK")}
                     trendVariant="warning"
-                    isLoading={isLoading}
+                    isLoading={loading.events}
                 />
                 <StatsCard
                     title="Audience reach"
@@ -165,7 +156,7 @@ const OrganizationDashboardPage = () => {
                     trendLabel="Unique viewers"
                     trendValue={(data?.audience.uniqueUsers ?? 0).toLocaleString("en-LK")}
                     trendVariant="neutral"
-                    isLoading={isLoading}
+                    isLoading={loading.audience}
                 />
             </section>
 
@@ -173,14 +164,14 @@ const OrganizationDashboardPage = () => {
                 <div className="xl:col-span-8">
                     <RevenueChart
                         data={data?.revenue.dailySales ?? []}
-                        isLoading={isLoading}
+                        isLoading={loading.revenue}
                     />
                 </div>
                 <div className="xl:col-span-4">
                     <SessionStatusChart
                         analytics={data?.sessionAnalytics ?? null}
                         totals={sessionStatusTotals}
-                        isLoading={isLoading}
+                        isLoading={loading.sessionAnalytics}
                     />
                 </div>
             </section>
@@ -190,14 +181,14 @@ const OrganizationDashboardPage = () => {
                     <AudienceViewsChart
                         data={data?.audience.viewsTimeSeries ?? []}
                         totalViews={data?.audience.totalViews ?? 0}
-                        isLoading={isLoading}
+                        isLoading={loading.audience}
                     />
                 </div>
                 <div className="xl:col-span-4">
                     <TrafficSourcesChart
                         data={data?.audience.trafficSources ?? []}
                         totalViews={data?.audience.totalViews ?? 0}
-                        isLoading={isLoading}
+                        isLoading={loading.audience}
                     />
                 </div>
             </section>
@@ -206,12 +197,12 @@ const OrganizationDashboardPage = () => {
                 <EventsTable
                     events={highlightedEvents}
                     organizationId={organizationId}
-                    isLoading={isLoading}
+                    isLoading={loading.highlightedEvents}
                 />
                 <SessionsTable
                     sessions={data?.sessions ?? []}
                     organizationId={organizationId}
-                    isLoading={isLoading}
+                    isLoading={loading.sessions}
                 />
             </section>
         </div>
