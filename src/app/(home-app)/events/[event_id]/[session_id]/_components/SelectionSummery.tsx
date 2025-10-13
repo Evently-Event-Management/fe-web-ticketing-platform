@@ -5,7 +5,7 @@ import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {ShoppingCart, Armchair, Tag, XCircle} from 'lucide-react';
-import {SelectedSeat, DiscountDTO} from "@/types/event";
+import {SelectedSeat, DiscountDTO, EventBasicInfoDTO} from "@/types/event";
 import {useParams, useRouter} from 'next/navigation';
 import {toast} from 'sonner';
 import TicketItemView from '@/components/ui/TicketItemView';

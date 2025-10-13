@@ -21,6 +21,7 @@ export interface EventThumbnailDTO {
     title: string;
     coverPhotoUrl: string; // Only the first one
     organizationName: string;
+    organizationId: string;
     categoryName: string;
     earliestSession: {
         startTime: string; // ISO 8601 format
@@ -85,6 +86,8 @@ export interface EventBasicInfoDTO {
 
 export interface SessionInfoBasicDTO {
     id: string;
+    eventId: string;
+    organizationId: string;
     startTime: string; // ISO 8601 format
     endTime: string; // ISO 8601 format
     salesStartTime: string;

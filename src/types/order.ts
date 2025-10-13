@@ -8,6 +8,7 @@ export enum OrderStatus {
 export interface CreateOrderRequest {
     event_id: string;
     session_id: string;
+    organization_id: string;
     seat_ids: string[];
     discount_id: string | null;
 }
