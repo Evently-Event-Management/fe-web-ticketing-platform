@@ -21,6 +21,7 @@ import {SessionStatus} from "@/types/enums/sessionStatus";
 import {DiscountParameters} from "@/lib/validators/event";
 import {DiscountType} from "@/types/enums/discountType";
 import {Badge} from "@/components/ui/badge";
+import {SessionSubscribeButton} from "@/components/SessionSubscribeButton";
 
 // --- Helper Functions & Constants for Discounts ---
 
@@ -103,7 +104,12 @@ export const SessionItem = ({session}: { session: SessionInfoBasicDTO }) => {
                         <span className="font-semibold text-foreground">{formatDate(session.startTime)}</span>
                         <SessionStatusBadge status={session.status}/>
                     </div>
-                    <div>
+                    <div className="flex items-center gap-2">
+                        <SessionSubscribeButton 
+                            sessionId={session.id} 
+                            sessionTitle={`Session on ${formatDate(session.startTime)}`} 
+                            variant="outline"
+                        />
                         {session.status === SessionStatus.ON_SALE &&
                             <Button onClick={() => router.push(`${window.location.pathname}/${session.id}`)}>
                                 Buy Tickets

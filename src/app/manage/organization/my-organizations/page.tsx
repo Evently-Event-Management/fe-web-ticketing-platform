@@ -21,6 +21,7 @@ import {DeleteOrganizationDialog, CreateOrganizationDialog} from "@/components/O
 import {useRouter} from "next/navigation";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import Link from "next/link";
+import {OrganizationSubscribeButton} from "@/components/OrganizationSubscribeButton";
 
 
 export default function OrganizationsPage() {
@@ -110,6 +111,18 @@ export default function OrganizationsPage() {
                                     onClick={() => navigator.clipboard.writeText(organization.id)}
                                 >
                                     Copy organization ID
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                    }}
+                                >
+                                    <OrganizationSubscribeButton
+                                        organizationId={organization.id}
+                                        organizationName={organization.name}
+                                        variant="default"
+                                        className="w-full justify-start px-0"
+                                    />
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => {
                                     router.push(`/manage/organization/${organization.id}/edit`);
