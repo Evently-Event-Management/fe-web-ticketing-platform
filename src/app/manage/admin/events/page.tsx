@@ -137,7 +137,11 @@ export default function AdminEventsPage() {
             accessorKey: 'earliestSessionDate',
             header: 'Next Date',
             cell: ({row}) => (
-                <span>{format(parseISO(row.original.earliestSessionDate), 'MMM d, yyyy')}</span>
+                <span>
+                    {row.original.earliestSessionDate
+                        ? format(parseISO(row.original.earliestSessionDate), 'MMM d, yyyy')
+                        : 'Not scheduled'}
+                </span>
             )
         },
         {

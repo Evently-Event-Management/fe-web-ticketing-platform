@@ -42,7 +42,7 @@ interface UseOrganizationDashboardDataOptions {
 }
 
 const DEFAULT_OPTIONS: Required<UseOrganizationDashboardDataOptions> = {
-    highlightedEventCount: 3,
+    highlightedEventCount: 4,
     highlightedSessionCount: 4,
 };
 
