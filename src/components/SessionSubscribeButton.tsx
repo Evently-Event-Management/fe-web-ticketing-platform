@@ -21,7 +21,6 @@ export function SessionSubscribeButton({
 }: SessionSubscribeButtonProps) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
   // Check subscription status on mount
   useEffect(() => {
@@ -34,7 +33,6 @@ export function SessionSubscribeButton({
         console.error("Error checking subscription status:", error);
       } finally {
         setIsLoading(false);
-        setInitialCheckDone(true);
       }
     };
     

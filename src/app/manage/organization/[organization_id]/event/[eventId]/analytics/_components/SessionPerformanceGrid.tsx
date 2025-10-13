@@ -18,7 +18,6 @@ export const SessionPerformanceGrid = ({
   isLoading 
 }: SessionPerformanceGridProps) => {
   const [sessionRevenueData, setSessionRevenueData] = useState<OrderSessionSummary[]>([]);
-  const [isRevenueLoading, setIsRevenueLoading] = useState(true);
   const params = useParams();
   const { event } = useEventContext();
   
@@ -30,13 +29,10 @@ export const SessionPerformanceGrid = ({
     const fetchRevenueData = async () => {
       if (eventId) {
         try {
-          setIsRevenueLoading(true);
           const data = await getSessionsRevenueAnalytics(eventId);
           setSessionRevenueData(data.sessions);
         } catch (error) {
           console.error("Error fetching session revenue data:", error);
-        } finally {
-          setIsRevenueLoading(false);
         }
       }
     };
