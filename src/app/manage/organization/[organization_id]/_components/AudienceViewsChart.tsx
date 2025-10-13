@@ -79,7 +79,7 @@ export const AudienceViewsChart: React.FC<AudienceViewsChartProps> = ({data, tot
                                 <Line
                                     type="monotone"
                                     dataKey="views"
-                                    stroke="var(--color-chart-1)"
+                                    stroke="var(--color-chart-2)"
                                     strokeWidth={2}
                                     dot={false}
                                     activeDot={{r: 4}}
