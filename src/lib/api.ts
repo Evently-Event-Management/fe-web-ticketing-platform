@@ -65,7 +65,7 @@ export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {
             const errorBody = await response.json();
             // If successful, use the specific message from the backend, otherwise keep the default
             errorMessage = errorBody.message || errorMessage;
-        } catch (jsonError) {
+        } catch {
             // The error response wasn't valid JSON. The default message is sufficient.
             console.warn("Could not parse error response as JSON.");
         }

@@ -7,6 +7,24 @@ import {EventResponseDTO} from "@/types/event";
 
 const API_BASE_PATH = '/event-seating/v1/events';
 
+/**
+ * Subscription response interface
+ */
+export interface SubscriptionResponse {
+  eventId?: string;
+  sessionId?: string;
+  organizationId?: string;
+  message?: string;
+  error?: string;
+}
+
+/**
+ * Subscription status response interface
+ */
+export interface SubscriptionStatusResponse {
+  subscribed: boolean;
+}
+
 // ================================================================================
 // General User & Organizer Actions
 // ================================================================================
@@ -184,4 +202,118 @@ export const rejectEvent_Admin = (eventId: string, reason: string): Promise<void
         method: 'POST',
         body: JSON.stringify({reason}),
     });
+};
+
+// ================================================================================
+// Event Subscription Actions
+// ================================================================================
+
+/**
+ * Subscribe to an event to receive notifications about updates
+ * @param eventId The ID of the event to subscribe to
+ */
+export const subscribeToEvent = (eventId: string): Promise<SubscriptionResponse> => {
+  return apiFetch<SubscriptionResponse>('/scheduler/event-subscription/v1/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({
+      eventId: eventId
+    }),
+  });
+};
+
+/**
+ * Unsubscribe from an event to stop receiving notifications
+ * @param eventId The ID of the event to unsubscribe from
+ */
+export const unsubscribeFromEvent = (eventId: string): Promise<SubscriptionResponse> => {
+  return apiFetch<SubscriptionResponse>(`/scheduler/event-subscription/v1/unsubscribe/${eventId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+/**
+ * Check if the current user is subscribed to an event
+ * @param eventId The ID of the event to check subscription status for
+ */
+export const checkEventSubscriptionStatus = (eventId: string): Promise<boolean> => {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/event-subscription/v1/status?eventId=${eventId}`, {
+    method: 'GET'
+  }).then(response => response.subscribed);
+};
+
+// ================================================================================
+// Session Subscription Actions
+// ================================================================================
+
+/**
+ * Subscribe to a session to receive notifications about updates
+ * @param sessionId The ID of the session to subscribe to
+ */
+export const subscribeToSession = (sessionId: string): Promise<SubscriptionResponse> => {
+  return apiFetch<SubscriptionResponse>('/scheduler/session-subscription/v1/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId: sessionId
+    }),
+  });
+};
+
+/**
+ * Unsubscribe from a session to stop receiving notifications
+ * @param sessionId The ID of the session to unsubscribe from
+ */
+export const unsubscribeFromSession = (sessionId: string): Promise<SubscriptionResponse> => {
+  return apiFetch<SubscriptionResponse>(`/scheduler/session-subscription/v1/unsubscribe/${sessionId}`, {
+    method: 'DELETE'
+  });
+};
+
+/**
+ * Check if the current user is subscribed to a session
+ * @param sessionId The ID of the session to check subscription status for
+ */
+export const checkSessionSubscriptionStatus = (sessionId: string): Promise<boolean> => {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/session-subscription/v1/status?sessionId=${sessionId}`, {
+    method: 'GET'
+  }).then(response => response.subscribed);
+};
+
+// ================================================================================
+// Organization Subscription Actions
+// ================================================================================
+
+/**
+ * Subscribe to an organization to receive notifications about updates
+ * @param organizationId The ID of the organization to subscribe to
+ */
+export const subscribeToOrganization = (organizationId: string): Promise<SubscriptionResponse> => {
+  return apiFetch<SubscriptionResponse>('/scheduler/organization-subscription/v1/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({
+      organizationId: organizationId
+    }),
+  });
+};
+
+/**
+ * Unsubscribe from an organization to stop receiving notifications
+ * @param organizationId The ID of the organization to unsubscribe from
+ */
+export const unsubscribeFromOrganization = (organizationId: string): Promise<SubscriptionResponse> => {
+  return apiFetch<SubscriptionResponse>(`/scheduler/organization-subscription/v1/unsubscribe/${organizationId}`, {
+    method: 'DELETE'
+  });
+};
+
+/**
+ * Check if the current user is subscribed to an organization
+ * @param organizationId The ID of the organization to check subscription status for
+ */
+export const checkOrganizationSubscriptionStatus = (organizationId: string): Promise<boolean> => {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/organization-subscription/v1/status?organizationId=${organizationId}`, {
+    method: 'GET'
+  }).then(response => response.subscribed);
 };

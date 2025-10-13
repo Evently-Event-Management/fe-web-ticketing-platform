@@ -9,6 +9,7 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {LogoManagementCard} from "@/app/manage/organization/[organization_id]/edit/_components/LogoManagementCard";
 import {ProfileDetailsCard} from "@/app/manage/organization/[organization_id]/edit/_components/InfoCard";
 import {DangerZoneCard} from "@/app/manage/organization/[organization_id]/edit/_components/DangerZoneCard";
+import {OrganizationSubscribeButton} from "@/components/OrganizationSubscribeButton";
 
 export default function OrganizationSettingsPage() {
     const router = useRouter();
@@ -51,9 +52,15 @@ export default function OrganizationSettingsPage() {
 
     return (
         <div className="p-4 md:p-8 space-y-8">
-            <h1 className="text-3xl font-bold tracking-tight">
-                {organization.name} Settings
-            </h1>
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold tracking-tight">
+                    {organization.name} Settings
+                </h1>
+                <OrganizationSubscribeButton 
+                    organizationId={organization.id} 
+                    organizationName={organization.name} 
+                />
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">

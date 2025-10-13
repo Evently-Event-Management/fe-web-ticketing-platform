@@ -199,7 +199,7 @@ export const DiscountUsageChart: React.FC<DiscountUsageChartProps> = ({ data }) 
                 layout="horizontal" 
                 verticalAlign="bottom" 
                 align="center" 
-                formatter={(value, entry) => (
+                formatter={(value) => (
                   <span className="text-xs text-foreground">
                     {value}
                   </span>

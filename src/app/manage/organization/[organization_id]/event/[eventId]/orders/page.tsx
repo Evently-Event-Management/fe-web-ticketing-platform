@@ -36,7 +36,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentSession, setCurrentSession] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const pageSize = 10;
   const [totalOrders, setTotalOrders] = useState(0);
 
   // Get session ID from URL if present

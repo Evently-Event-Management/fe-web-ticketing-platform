@@ -8,7 +8,6 @@ import { formatCurrency } from "@/lib/utils";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { SessionSummary } from "@/types/eventAnalytics";
 import { SessionSummary as OrderSessionSummary } from "@/lib/actions/analyticsActions";
-import { useRouter } from "next/navigation";
 import { SessionDetailDTO } from "@/lib/validators/event";
 import { SessionStatusBadge } from "@/components/SessionStatusBadge";
 import Link from "next/link";
@@ -28,8 +27,6 @@ export const SessionPerformanceCard = ({
   organizationId,
   eventId
 }: SessionPerformanceCardProps) => {
-  const router = useRouter();
-  
   // Basic session info
   const sessionId = session.sessionId;
   const startTime = parseISO(session.startTime);
@@ -52,10 +49,6 @@ export const SessionPerformanceCard = ({
   const location = isOnline 
     ? "Online Event" 
     : sessionMetadata?.venueDetails?.name || "Venue not specified";
-  
-  const handleViewDetails = () => {
-    router.push(`/manage/organization/${organizationId}/event/${eventId}/sessions/${sessionId}/analytics`);
-  };
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all">

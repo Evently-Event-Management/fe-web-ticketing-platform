@@ -5,7 +5,6 @@ import { format } from 'date-fns';
 import { LinkIcon, MapPin, Share2, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useParams } from 'next/navigation';
 
 interface SessionHeaderProps {
     title: string;
@@ -26,8 +25,6 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
     onShare,
     onDelete
 }) => {
-    const params = useParams();
-    const backUrl = `/manage/organization/${params.organization_id}/event/${params.eventId}/sessions`;
     return (
         <div className="space-y-4">            
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
