@@ -28,7 +28,7 @@ export const EventViewsChart: React.FC<{ data: TimeSeriesData[] }> = ({ data }) 
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                    <LineChart accessibilityLayer data={data} margin={{ left: 12, right: 12 }}>
+                    <LineChart accessibilityLayer data={data} margin={{ left: 0, right: 12 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="date"

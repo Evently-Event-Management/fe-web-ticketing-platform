@@ -12,6 +12,7 @@ import {
     ShoppingCart,
 } from "lucide-react";
 import {EventProvider} from "@/providers/EventProvider";
+import {EventRevenueHero} from "./_components/EventRevenueHero";
 
 export default function EventDetailsLayout({
                                                children,
@@ -79,11 +80,13 @@ export default function EventDetailsLayout({
     return (
         <EventProvider eventId={eventId}>
             <div className="space-y-6 p-4">
+                <EventRevenueHero/>
+
                 <Tabs
                     value={getActiveTab()}
                     onValueChange={handleTabChange}
                     className="w-full"
-                    orientation={'horizontal'}
+                    orientation="horizontal"
                 >
                     <TabsList className="w-full rounded-lg shadow-sm">
                         {tabItems.map((tab) => {

@@ -24,11 +24,10 @@ interface EventContextProps {
     refetchSessions: () => Promise<void>;
     refetchSession: (sessionId: string) => Promise<void>;
     setSessions: (sessions: SessionDetailDTO[]) => void;
-    hasPendingRevenueUpdate: boolean;
-    pendingRevenueDelta: number;
-    pendingTicketCount: number;
-    acknowledgeRevenueUpdate: () => void;
+    liveRevenueTotal: number | null;
+    liveTicketsSold: number | null;
     lastRevenueUpdateAt: Date | null;
+    seedRevenueSnapshot: (payload: {totalRevenue?: number | null; totalTickets?: number | null}) => void;
 }
 
 const EventContext = createContext<EventContextProps | undefined>(undefined);
@@ -53,9 +52,8 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
-    const [hasPendingRevenueUpdate, setHasPendingRevenueUpdate] = useState(false);
-    const [pendingRevenueDelta, setPendingRevenueDelta] = useState(0);
-    const [pendingTicketCount, setPendingTicketCount] = useState(0);
+    const [liveRevenueTotal, setLiveRevenueTotal] = useState<number | null>(null);
+    const [liveTicketsSold, setLiveTicketsSold] = useState<number | null>(null);
     const [lastRevenueUpdateAt, setLastRevenueUpdateAt] = useState<Date | null>(null);
     const {organizations, organization: currentOrganization, switchOrganization} = useOrganization();
     const processedOrderIdsRef = useRef<Set<string>>(new Set());
@@ -97,9 +95,8 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
 
     useEffect(() => {
         processedOrderIdsRef.current.clear();
-        setHasPendingRevenueUpdate(false);
-        setPendingRevenueDelta(0);
-        setPendingTicketCount(0);
+        setLiveRevenueTotal(null);
+        setLiveTicketsSold(null);
         setLastRevenueUpdateAt(null);
     }, [eventId]);
 
@@ -146,9 +143,14 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
                         processedOrderIdsRef.current = new Set(trimmed);
                     }
 
-                    setHasPendingRevenueUpdate(true);
-                    setPendingRevenueDelta(prev => prev + Math.max(parsed.revenue, 0));
-                    setPendingTicketCount(prev => prev + Math.max(parsed.ticketCount, 0));
+                    setLiveRevenueTotal(prev => {
+                        const nextBase = typeof prev === "number" && Number.isFinite(prev) ? prev : 0;
+                        return nextBase + Math.max(parsed.revenue, 0);
+                    });
+                    setLiveTicketsSold(prev => {
+                        const nextBase = typeof prev === "number" && Number.isFinite(prev) ? prev : 0;
+                        return nextBase + Math.max(parsed.ticketCount, 0);
+                    });
                     setLastRevenueUpdateAt(new Date());
                 },
                 onError: (streamError) => {
@@ -160,10 +162,11 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
         return unsubscribe;
     }, [eventId]);
 
-    const acknowledgeRevenueUpdate = useCallback(() => {
-        setHasPendingRevenueUpdate(false);
-        setPendingRevenueDelta(0);
-        setPendingTicketCount(0);
+    const seedRevenueSnapshot = useCallback((payload: {totalRevenue?: number | null; totalTickets?: number | null}) => {
+        const {totalRevenue, totalTickets} = payload;
+        setLiveRevenueTotal(typeof totalRevenue === "number" && Number.isFinite(totalRevenue) ? Math.max(totalRevenue, 0) : 0);
+        setLiveTicketsSold(typeof totalTickets === "number" && Number.isFinite(totalTickets) ? Math.max(totalTickets, 0) : 0);
+        setLastRevenueUpdateAt(new Date());
     }, []);
 
 
@@ -264,11 +267,10 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
         refetchSessions: fetchSessions,
         refetchSession: fetchSession,
         setSessions,
-        hasPendingRevenueUpdate,
-        pendingRevenueDelta,
-        pendingTicketCount,
-        acknowledgeRevenueUpdate,
+        liveRevenueTotal,
+        liveTicketsSold,
         lastRevenueUpdateAt,
+        seedRevenueSnapshot,
     };
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

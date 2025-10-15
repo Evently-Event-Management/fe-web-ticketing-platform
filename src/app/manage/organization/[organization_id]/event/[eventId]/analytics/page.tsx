@@ -7,19 +7,15 @@ import {EventAnalyticsView} from "./_components/EventAnalyticsView";
 import {SessionPerformanceGrid} from "./_components/SessionPerformanceGrid";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getAllSessionsAnalytics, getEventAnalytics, getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
-import { AlertTriangle } from "lucide-react";
-import { useEventContext } from "@/providers/EventProvider";
-import {EventRevenueHero} from "./_components/EventRevenueHero";
+import {AlertTriangle, RefreshCw} from "lucide-react";
+import {useEventContext} from "@/providers/EventProvider";
+import {Button} from "@/components/ui/button";
 
 export default function AnalyticsPage() {
     const {
         event,
         isLoading: isEventLoading,
-        hasPendingRevenueUpdate,
-        pendingRevenueDelta,
-        pendingTicketCount,
-        acknowledgeRevenueUpdate,
-        lastRevenueUpdateAt,
+        seedRevenueSnapshot,
     } = useEventContext();
     const [analyticsData, setAnalyticsData] = useState<EventAnalytics | null>(null);
     const [revenueAnalytics, setRevenueAnalytics] = useState<{
@@ -44,19 +40,23 @@ export default function AnalyticsPage() {
     // Fetch revenue analytics data (new)
     const fetchRevenueAnalytics = useCallback(async () => {
         if (!event?.id) return;
-        
+
         try {
             setIsRevenueLoading(true);
-            
+
             const revenueData = await getEventRevenueAnalytics(event.id);
             setRevenueAnalytics(revenueData);
+            seedRevenueSnapshot({
+                totalRevenue: revenueData?.total_revenue,
+                totalTickets: revenueData?.total_tickets_sold,
+            });
         } catch (err) {
-            console.error('Failed to load revenue analytics:', err);
+            console.error("Failed to load revenue analytics:", err);
             // Don't set main error state since this is supplementary data
         } finally {
             setIsRevenueLoading(false);
         }
-    }, [event?.id]);
+    }, [event?.id, seedRevenueSnapshot]);
 
     // Fetch analytics data (page-specific)
     const fetchAnalyticsData = useCallback(async () => {
@@ -121,16 +121,6 @@ export default function AnalyticsPage() {
     }, [event?.id]);
 
     // Function to refresh all analytics data
-    const refreshAllData = useCallback(async () => {
-        await Promise.all([
-            fetchAnalyticsData(),
-            fetchRevenueAnalytics(),
-            fetchGaData(),
-        ]);
-        acknowledgeRevenueUpdate();
-    }, [fetchAnalyticsData, fetchRevenueAnalytics, fetchGaData, acknowledgeRevenueUpdate]);
-    
-
     // Initial load of analytics data when event is loaded
     useEffect(() => {
         if (event?.id) {
@@ -174,33 +164,24 @@ export default function AnalyticsPage() {
         return <div className="p-8"><Skeleton className="h-[600px] w-full"/></div>;
     }
 
-    const heroIsLoading = isRevenueLoading && !revenueAnalytics;
-    const compositeRefreshing = isAnalyticsLoading || isRevenueLoading || isGaLoading;
-    const totalRevenueValue = revenueAnalytics?.total_revenue ?? analyticsData.totalRevenue;
-    const totalTicketsValue = revenueAnalytics?.total_tickets_sold ?? analyticsData.totalTicketsSold;
-
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-10">
-            <EventRevenueHero
-                eventTitle={analyticsData.eventTitle}
-                coverPhotoUrl={event?.coverPhotos?.[0]}
-                organizationName={event?.organizationName}
-                totalRevenue={totalRevenueValue}
-                totalTickets={totalTicketsValue}
-                isLoading={heroIsLoading}
-                isRefreshing={compositeRefreshing}
-                hasPendingUpdate={hasPendingRevenueUpdate}
-                pendingRevenueDelta={pendingRevenueDelta}
-                pendingTicketCount={pendingTicketCount}
-                lastUpdatedAt={lastRevenueUpdateAt}
-                onRefresh={() => { void refreshAllData(); }}
-            />
-
-            <div className="space-y-2">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Performance breakdown</h2>
-                <p className="text-sm text-muted-foreground">
-                    Dive deeper into sales velocity, audience behaviour, and session performance for this event.
-                </p>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">Analytics deep dive</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Refresh revenue totals as needed while the live hero keeps streaming new orders automatically.
+                    </p>
+                </div>
+                <Button
+                    onClick={() => { void fetchRevenueAnalytics(); }}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    disabled={isRevenueLoading}
+                >
+                    <RefreshCw className={`h-4 w-4 ${isRevenueLoading ? "animate-spin" : ""}`}/>
+                    Refresh revenue data
+                </Button>
             </div>
 
             <EventAnalyticsView
