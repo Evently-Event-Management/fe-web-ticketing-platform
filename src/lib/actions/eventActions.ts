@@ -22,7 +22,7 @@ export interface SubscriptionResponse {
  * Subscription status response interface
  */
 export interface SubscriptionStatusResponse {
-  subscribed: boolean;
+  isSubscribed: boolean;
 }
 
 // ================================================================================
@@ -239,9 +239,9 @@ export const unsubscribeFromEvent = (eventId: string): Promise<SubscriptionRespo
  * @param eventId The ID of the event to check subscription status for
  */
 export const checkEventSubscriptionStatus = (eventId: string): Promise<boolean> => {
-  return apiFetch<SubscriptionStatusResponse>(`/scheduler/subscription/v1/status?eventId=${eventId}`, {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/subscription/v1/is-subscribed/${eventId}`, {
     method: 'GET'
-  }).then(response => response.subscribed);
+  }).then(response => response.isSubscribed);
 };
 
 // ================================================================================
@@ -276,9 +276,9 @@ export const unsubscribeFromSession = (sessionId: string): Promise<SubscriptionR
  * @param sessionId The ID of the session to check subscription status for
  */
 export const checkSessionSubscriptionStatus = (sessionId: string): Promise<boolean> => {
-  return apiFetch<SubscriptionStatusResponse>(`/scheduler/session-subscription/v1/status?sessionId=${sessionId}`, {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/session-subscription/v1/is-subscribed/${sessionId}`, {
     method: 'GET'
-  }).then(response => response.subscribed);
+  }).then(response => response.isSubscribed);
 };
 
 // ================================================================================
@@ -313,7 +313,7 @@ export const unsubscribeFromOrganization = (organizationId: string): Promise<Sub
  * @param organizationId The ID of the organization to check subscription status for
  */
 export const checkOrganizationSubscriptionStatus = (organizationId: string): Promise<boolean> => {
-  return apiFetch<SubscriptionStatusResponse>(`/scheduler/organization-subscription/v1/status?organizationId=${organizationId}`, {
+  return apiFetch<SubscriptionStatusResponse>(`/scheduler/organization-subscription/v1/is-subscribed/${organizationId}`, {
     method: 'GET'
-  }).then(response => response.subscribed);
+  }).then(response => response.isSubscribed);
 };

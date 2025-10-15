@@ -202,7 +202,7 @@ export function EventCard({ event, className }: EventCardProps) {
                                             disabled={isLoading}
                                             className={cn(
                                                 "bg-background/80 text-foreground backdrop-blur-sm hover:bg-background/95 p-2 h-9 w-9 rounded-full",
-                                                isSubscribed && "bg-primary/20 text-primary hover:bg-primary/30"
+                                                isSubscribed && "text-primary"
                                             )}
                                             onClick={handleSubscribeClick}
                                         >

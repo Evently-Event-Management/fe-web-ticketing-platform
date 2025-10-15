@@ -251,7 +251,7 @@ export function DiscountCard({
                             <div className="text-right">
                                 <p className="text-xs text-muted-foreground font-medium">Total Discounted</p>
                                 <p className="text-2xl font-bold text-primary">
-                                    ${discount.discountedTotal.toFixed(2)}
+                                    LKR {discount.discountedTotal.toFixed(2)}
                                 </p>
                             </div>
                         )}

@@ -202,7 +202,7 @@ const SessionAnalyticsPreview: React.FC<SessionAnalyticsPreviewProps> = ({sessio
         if (typeof metrics.revenue !== "number") {
             return "—";
         }
-        return formatCurrency(metrics.revenue, "LKR", "en-LK");
+        return formatCurrency(metrics.revenue, "LKR", "en-LK", 0);
     }, [metrics.revenue]);
 
     const formattedSellOut = useMemo(() => {
