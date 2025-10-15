@@ -12,7 +12,7 @@ export default function Layout({
     return (
         <div className="relative flex min-h-screen flex-col">
             <Topbar/>
-            <div className="flex-1 mb-6">
+            <div className="flex-1">
                 {children}
                 <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
             </div>

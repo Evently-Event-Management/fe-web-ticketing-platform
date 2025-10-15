@@ -181,7 +181,7 @@ export const baseSessionSchema = z.object({
 // 2. A session that is "complete" for Step 3.
 export const sessionWithVenueSchema = baseSessionSchema
     .refine(data => data.sessionType !== null, {
-        message: "A session type (Physical or Online) must be selected.",
+        message: "A session Location must be set",
         path: ["sessionType"],
     })
     .refine(data => {

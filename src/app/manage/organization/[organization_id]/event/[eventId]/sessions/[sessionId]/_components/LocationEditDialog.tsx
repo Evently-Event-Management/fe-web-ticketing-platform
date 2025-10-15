@@ -1,9 +1,9 @@
 'use client'
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L, { LatLngLiteral } from 'leaflet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +41,27 @@ function LocationMarker({ setMarkerPosition }: { setMarkerPosition: (pos: LatLng
     return null;
 }
 
+function MapViewUpdater({ position }: { position: LatLngLiteral }) {
+    const map = useMap();
+
+    useEffect(() => {
+        map.flyTo(position, map.getZoom(), {
+            animate: true,
+            duration: 0.6,
+        });
+    }, [map, position]);
+
+    return null;
+}
+
+type LocationSearchResult = {
+    place_id: number;
+    display_name: string;
+    lat: string;
+    lon: string;
+    name?: string;
+};
+
 // --- The Standalone Dialog Component ---
 export function LocationEditDialog({
                                          open,
@@ -54,6 +75,19 @@ export function LocationEditDialog({
     const [localFormState, setLocalFormState] = useState<VenueDetails>({});
     const [localErrors, setLocalErrors] = useState<{ venueName?: string; onlineLink?: string }>({});
     const [markerPosition, setMarkerPosition] = useState<LatLngLiteral>(DEFAULT_MAP_CENTER);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null);
+
+    const updateMarkerPosition = (pos: LatLngLiteral) => {
+        setMarkerPosition(pos);
+        setLocalFormState(prev => ({
+            ...prev,
+            latitude: pos.lat,
+            longitude: pos.lng,
+        }));
+    };
 
     useEffect(() => {
         if (open) {
@@ -66,8 +100,70 @@ export function LocationEditDialog({
             };
             setMarkerPosition(position);
             setLocalErrors({});
+            setSearchQuery('');
+            setSearchResults([]);
+            setSearchError(null);
         }
     }, [open, initialData]);
+
+    const performSearch = async (query: string) => {
+        const trimmedQuery = query.trim();
+        if (trimmedQuery.length < 3) {
+            setSearchError('Please enter at least 3 characters to search.');
+            setSearchResults([]);
+            return;
+        }
+
+        try {
+            setIsSearching(true);
+            setSearchError(null);
+
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(trimmedQuery)}&email=${encodeURIComponent('support@ticketly.lk')}`, {
+                headers: {
+                    Accept: 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch location results.');
+            }
+
+            const data: LocationSearchResult[] = await response.json();
+            if (!data.length) {
+                setSearchError('No locations found. Try a different search term.');
+                setSearchResults([]);
+                return;
+            }
+
+            setSearchResults(data);
+        } catch (error) {
+            console.error('Location search failed', error);
+            setSearchError('Unable to search locations right now. Please try again.');
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        void performSearch(searchQuery);
+    };
+
+    const handleResultSelect = (result: LocationSearchResult) => {
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        const newPosition = { lat, lng };
+
+        updateMarkerPosition(newPosition);
+        setLocalFormState(prev => ({
+            ...prev,
+            address: result.display_name,
+            name: prev.name || result.name || result.display_name.split(',')[0]?.trim()
+        }));
+        setSearchResults([]);
+        setSearchQuery(result.display_name);
+    };
 
     const validateLocalState = (): boolean => {
         const errors: { venueName?: string; onlineLink?: string } = {};
@@ -116,7 +212,7 @@ export function LocationEditDialog({
     const handleMarkerDragEnd = (e: L.LeafletEvent) => {
         const marker = e.target as L.Marker;
         const pos = marker.getLatLng();
-        setMarkerPosition(pos);
+        updateMarkerPosition(pos);
     };
 
     return (
@@ -141,12 +237,54 @@ export function LocationEditDialog({
                                 </div>
                             </div>
                             <div className="flex flex-col h-full gap-4">
+                                <form onSubmit={handleSearchSubmit} className="space-y-2">
+                                    <Label htmlFor="venue-search">Search Location</Label>
+                                    <div className="flex flex-col sm:flex-row gap-2">
+                                        <Input
+                                            id="venue-search"
+                                            placeholder="Search for a venue or address"
+                                            value={searchQuery}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                if (searchError) {
+                                                    setSearchError(null);
+                                                }
+                                            }}
+                                        />
+                                        <Button type="submit" disabled={isSearching}>
+                                            {isSearching ? 'Searching...' : 'Search'}
+                                        </Button>
+                                    </div>
+                                    {searchError && (
+                                        <p className="text-sm text-destructive">{searchError}</p>
+                                    )}
+                                </form>
+                                {searchResults.length > 0 && (
+                                    <div className="space-y-2 rounded-md border border-border bg-background/80 p-3 max-h-48 overflow-y-auto">
+                                        {searchResults.map((result) => (
+                                            <button
+                                                key={result.place_id}
+                                                type="button"
+                                                className="w-full text-left text-sm rounded-md p-2 hover:bg-muted transition-colors"
+                                                onClick={() => handleResultSelect(result)}
+                                            >
+                                                <span className="font-medium text-foreground block">
+                                                    {result.name || result.display_name.split(',')[0]}
+                                                </span>
+                                                <span className="text-muted-foreground text-xs block">
+                                                    {result.display_name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                                 {open ? (
                                     <div className="relative z-[60]">
                                         <MapContainer center={markerPosition} zoom={15} style={{ width: '100%', height: '300px', borderRadius: 'var(--radius)' }}>
                                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                                             <Marker position={markerPosition} draggable={true} eventHandlers={{ dragend: handleMarkerDragEnd }} />
-                                            <LocationMarker setMarkerPosition={setMarkerPosition} />
+                                            <LocationMarker setMarkerPosition={updateMarkerPosition} />
+                                            <MapViewUpdater position={markerPosition} />
                                         </MapContainer>
                                     </div>
                                 ) : <Skeleton className="h-full w-full" />}

@@ -1,18 +1,18 @@
-'use client'
+"use client"
 
 import * as React from 'react';
-import {useState, useEffect} from 'react';
+import {FormEvent, useEffect, useState} from 'react';
 import {useFormContext} from 'react-hook-form';
 import {CreateEventFormData} from '@/lib/validators/event';
 import {toast} from 'sonner';
-import {MapContainer, TileLayer, Marker, useMapEvents} from 'react-leaflet';
+import {MapContainer, TileLayer, Marker, useMap, useMapEvents} from 'react-leaflet';
 import L, {LatLngLiteral} from 'leaflet';
 
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+// import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs'; // Temporarily disabled
 import {Checkbox} from '@/components/ui/checkbox';
 import {Skeleton} from '@/components/ui/skeleton';
 
@@ -48,6 +48,27 @@ function LocationMarker({setMarkerPosition}: { setMarkerPosition: (pos: LatLngLi
     return null;
 }
 
+function MapViewUpdater({position}: { position: LatLngLiteral }) {
+    const map = useMap();
+
+    useEffect(() => {
+        map.flyTo(position, map.getZoom(), {
+            animate: true,
+            duration: 0.6,
+        });
+    }, [map, position]);
+
+    return null;
+}
+
+type LocationSearchResult = {
+    place_id: number;
+    display_name: string;
+    lat: string;
+    lon: string;
+    name?: string;
+};
+
 export function LocationConfigDialog({index, open, setOpenAction}: {
     index: number;
     open: boolean;
@@ -57,7 +78,7 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
 
     // Local form state
     const [localFormState, setLocalFormState] = useState({
-        sessionType: SessionType.PHYSICAL,
+        sessionType: SessionType.PHYSICAL, // Force physical
         venueDetails: {
             name: '',
             address: '',
@@ -73,13 +94,29 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
     }>({});
 
     const [markerPosition, setMarkerPosition] = useState<LatLngLiteral>(DEFAULT_MAP_CENTER);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null);
+
+    const updateMarkerPosition = (pos: LatLngLiteral) => {
+        setMarkerPosition(pos);
+        setLocalFormState(prev => ({
+            ...prev,
+            venueDetails: {
+                ...prev.venueDetails,
+                latitude: pos.lat,
+                longitude: pos.lng,
+            }
+        }));
+    };
 
     // Snapshot form values when dialog opens
     useEffect(() => {
         if (open) {
             const sessionData = getValues(`sessions.${index}`);
             setLocalFormState({
-                sessionType: sessionData.sessionType || SessionType.PHYSICAL,
+                sessionType: SessionType.PHYSICAL, // Force physical
                 venueDetails: {
                     name: sessionData.venueDetails?.name || '',
                     address: sessionData.venueDetails?.address || '',
@@ -95,6 +132,9 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
             });
 
             setLocalErrors({});
+            setSearchQuery(sessionData.venueDetails?.address || sessionData.venueDetails?.name || '');
+            setSearchResults([]);
+            setSearchError(null);
         }
     }, [open, getValues, index]);
 
@@ -112,20 +152,73 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
         localFormState.sessionType
     ]);
 
+    const performSearch = async (query: string) => {
+        const trimmedQuery = query.trim();
+        if (trimmedQuery.length < 3) {
+            setSearchError('Please enter at least 3 characters to search.');
+            setSearchResults([]);
+            return;
+        }
+
+        try {
+            setIsSearching(true);
+            setSearchError(null);
+            setSearchResults([]);
+
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(trimmedQuery)}&email=${encodeURIComponent('support@ticketly.lk')}`, {
+                headers: {Accept: 'application/json'}
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch locations');
+            }
+
+            const data: LocationSearchResult[] = await response.json();
+            if (!data.length) {
+                setSearchError('No locations found. Try another search.');
+                setSearchResults([]);
+                return;
+            }
+
+            setSearchResults(data);
+        } catch (error) {
+            console.error('Location search failed', error);
+            setSearchError('Unable to search locations right now. Please try again.');
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        void performSearch(searchQuery);
+    };
+
+    const handleResultSelect = (result: LocationSearchResult) => {
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        const newPosition = {lat, lng};
+
+        updateMarkerPosition(newPosition);
+        setLocalFormState(prev => ({
+            ...prev,
+            venueDetails: {
+                ...prev.venueDetails,
+                address: result.display_name,
+                name: prev.venueDetails.name || result.name || result.display_name.split(',')[0]?.trim() || '',
+            }
+        }));
+        setSearchResults([]);
+        setSearchQuery(result.display_name);
+    };
+
     // Local validation
     const validateLocalState = () => {
         const errors: { venueName?: string; onlineLink?: string } = {};
 
-        if (localFormState.sessionType === SessionType.PHYSICAL && !localFormState.venueDetails.name) {
+        if (!localFormState.venueDetails.name) {
             errors.venueName = "Venue name is required";
-        }
-
-        if (localFormState.sessionType === SessionType.ONLINE) {
-            if (!localFormState.venueDetails.onlineLink) {
-                errors.onlineLink = "Online link is required";
-            } else if (!/^https?:\/\/.+/.test(localFormState.venueDetails.onlineLink)) {
-                errors.onlineLink = "Must be a valid URL";
-            }
         }
 
         setLocalErrors(errors);
@@ -136,21 +229,14 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
         const isValid = validateLocalState();
         if (!isValid) return;
 
-        setValue(`sessions.${index}.sessionType`, localFormState.sessionType, {shouldValidate: true});
-
-        if (localFormState.sessionType === SessionType.PHYSICAL) {
-            setValue(`sessions.${index}.venueDetails`, {
-                name: localFormState.venueDetails.name,
-                address: localFormState.venueDetails.address,
-                latitude: localFormState.venueDetails.latitude,
-                longitude: localFormState.venueDetails.longitude
-            }, {shouldValidate: true});
-        } else {
-            setValue(`sessions.${index}.venueDetails`, {
-                onlineLink: localFormState.venueDetails.onlineLink
-            }, {shouldValidate: true});
-        }
-
+        setValue(`sessions.${index}.sessionType`, SessionType.PHYSICAL, {shouldValidate: true});
+        setValue(`sessions.${index}.venueDetails`, {
+            name: localFormState.venueDetails.name,
+            address: localFormState.venueDetails.address,
+            latitude: localFormState.venueDetails.latitude,
+            longitude: localFormState.venueDetails.longitude
+        }, {shouldValidate: true});
+        
         setValue(`sessions.${index}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
 
         if (applyToAll) {
@@ -158,21 +244,14 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
             allSessions.forEach((_, i) => {
                 if (i === index) return;
 
-                setValue(`sessions.${i}.sessionType`, localFormState.sessionType, {shouldValidate: true});
-
-                if (localFormState.sessionType === SessionType.PHYSICAL) {
-                    setValue(`sessions.${i}.venueDetails`, {
-                        name: localFormState.venueDetails.name,
-                        address: localFormState.venueDetails.address,
-                        latitude: localFormState.venueDetails.latitude,
-                        longitude: localFormState.venueDetails.longitude
-                    }, {shouldValidate: true});
-                } else {
-                    setValue(`sessions.${i}.venueDetails`, {
-                        onlineLink: localFormState.venueDetails.onlineLink
-                    }, {shouldValidate: true});
-                }
-
+                setValue(`sessions.${i}.sessionType`, SessionType.PHYSICAL, {shouldValidate: true});
+                setValue(`sessions.${i}.venueDetails`, {
+                    name: localFormState.venueDetails.name,
+                    address: localFormState.venueDetails.address,
+                    latitude: localFormState.venueDetails.latitude,
+                    longitude: localFormState.venueDetails.longitude
+                }, {shouldValidate: true});
+                
                 setValue(`sessions.${i}.layoutData`, {name: null, layout: {blocks: []}}, {shouldValidate: true});
             });
             toast.success("Location details applied to all sessions.");
@@ -191,128 +270,118 @@ export function LocationConfigDialog({index, open, setOpenAction}: {
         }));
     };
 
-    const handleSessionTypeChange = (type: SessionType) => {
-        setLocalFormState(prev => ({
-            ...prev,
-            sessionType: type
-        }));
-    };
-
     return (
         <Dialog open={open} onOpenChange={setOpenAction}>
-            <DialogContent className="sm:max-w-6xl p-0 grid grid-rows-[auto_1fr_auto] max-h-[90vh]">
+            <DialogContent className="sm:max-w-6xl grid grid-rows-[auto_1fr_auto] max-h-[90vh]">
                 <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Configure Location for Session {index + 1}</DialogTitle>
                 </DialogHeader>
+                
                 <div className="overflow-y-auto">
-                    <Tabs
-                        defaultValue={localFormState.sessionType === SessionType.ONLINE ? "online" : "physical"}
-                        onValueChange={(value) => {
-                            handleSessionTypeChange(value === 'online' ? SessionType.ONLINE : SessionType.PHYSICAL);
-                        }}
-                        className="w-full"
-                    >
-                        <TabsList className="mx-6 mt-4">
-                            <TabsTrigger value="physical">Physical</TabsTrigger>
-                            <TabsTrigger value="online">Online</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="physical" className="px-4 py-0">
-                            <div className="grid grid-cols-1 md:grid-cols-2">
-                                {/* Left Side */}
-                                <div className="space-y-4 p-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="venue-name">Venue Name</Label>
-                                        <Input
-                                            id="venue-name"
-                                            placeholder="e.g., Grand Hall"
-                                            value={localFormState.venueDetails.name || ''}
-                                            onChange={(e) => handleInputChange('name', e.target.value)}
-                                        />
-                                        {localErrors.venueName && (
-                                            <p className="text-sm text-destructive">{localErrors.venueName}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="venue-address">Address</Label>
-                                        <Input
-                                            id="venue-address"
-                                            placeholder="Street, City"
-                                            value={localFormState.venueDetails.address || ''}
-                                            onChange={(e) => handleInputChange('address', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="text-sm text-muted-foreground pt-4">
-                                        <p>Use the map to locate the venue precisely. You can:</p>
-                                        <ul className="list-disc pl-5 mt-2 space-y-1">
-                                            <li>Click on the map to place a marker.</li>
-                                            <li>Drag the marker to fine-tune the location.</li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                {/* Right Side - Map */}
-                                <div className="flex flex-col md:h-full gap-4">
-                                    {open ? (
-                                        <MapContainer
-                                            center={markerPosition}
-                                            zoom={15}
-                                            style={{width: '100%', height: '400px', borderRadius: 'var(--radius)'}}
-                                        >
-                                            <TileLayer
-                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                            />
-                                            <Marker
-                                                position={markerPosition}
-                                                draggable={true}
-                                                eventHandlers={{
-                                                    dragend: (e) => {
-                                                        const marker = e.target as L.Marker;
-                                                        const pos = marker.getLatLng();
-                                                        setMarkerPosition(pos);
-                                                        setLocalFormState(prev => ({
-                                                            ...prev,
-                                                            venueDetails: {
-                                                                ...prev.venueDetails,
-                                                                latitude: pos.lat,
-                                                                longitude: pos.lng
-                                                            }
-                                                        }));
-                                                    }
-                                                }}
-                                            />
-                                            <LocationMarker setMarkerPosition={(pos) => {
-                                                setMarkerPosition(pos);
-                                                setLocalFormState(prev => ({
-                                                    ...prev,
-                                                    venueDetails: {
-                                                        ...prev.venueDetails,
-                                                        latitude: pos.lat,
-                                                        longitude: pos.lng
-                                                    }
-                                                }));
-                                            }}/>
-                                        </MapContainer>
-                                    ) : <Skeleton className="h-full w-full"/>}
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="online" className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2">
+                        {/* Left Side */}
+                        <div className="space-y-4 p-6">
                             <div className="space-y-2">
-                                <Label htmlFor="online-link">Online Link</Label>
+                                <Label htmlFor="venue-name">Venue Name</Label>
                                 <Input
-                                    id="online-link"
-                                    placeholder="https://zoom.us/..."
-                                    value={localFormState.venueDetails.onlineLink || ''}
-                                    onChange={(e) => handleInputChange('onlineLink', e.target.value)}
+                                    id="venue-name"
+                                    placeholder="e.g., Grand Hall"
+                                    value={localFormState.venueDetails.name || ''}
+                                    onChange={(e) => handleInputChange('name', e.target.value)}
                                 />
-                                {localErrors.onlineLink && (
-                                    <p className="text-sm text-destructive">{localErrors.onlineLink}</p>
+                                {localErrors.venueName && (
+                                    <p className="text-sm text-destructive">{localErrors.venueName}</p>
                                 )}
                             </div>
-                        </TabsContent>
-                    </Tabs>
+                            <div className="space-y-2">
+                                <Label htmlFor="venue-address">Address</Label>
+                                <Input
+                                    id="venue-address"
+                                    placeholder="Street, City"
+                                    value={localFormState.venueDetails.address || ''}
+                                    onChange={(e) => handleInputChange('address', e.target.value)}
+                                />
+                            </div>
+                            <div className="text-sm text-muted-foreground pt-4">
+                                <p>Use the map to locate the venue precisely. You can:</p>
+                                <ul className="list-disc pl-5 mt-2 space-y-1">
+                                    <li>Click on the map to place a marker.</li>
+                                    <li>Drag the marker to fine-tune the location.</li>
+                                    <li>Search for a location using the search box.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Right Side - Map */}
+                        <div className="flex flex-col md:h-full gap-4">
+                            <form onSubmit={handleSearchSubmit} className="space-y-2">
+                                <Label htmlFor={`venue-search-${index}`}>Search Location</Label>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <Input
+                                        id={`venue-search-${index}`}
+                                        placeholder="Search for a venue or address"
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            if (searchError) {
+                                                setSearchError(null);
+                                            }
+                                        }}
+                                    />
+                                    <Button type="submit" disabled={isSearching}>
+                                        {isSearching ? 'Searching...' : 'Search'}
+                                    </Button>
+                                </div>
+                                {searchError && (
+                                    <p className="text-sm text-destructive">{searchError}</p>
+                                )}
+                            </form>
+                            {searchResults.length > 0 && (
+                                <div className="space-y-2 rounded-md border border-border bg-background/80 p-3 max-h-48 overflow-y-auto">
+                                    {searchResults.map((result) => (
+                                        <button
+                                            key={result.place_id}
+                                            type="button"
+                                            className="w-full text-left text-sm rounded-md p-2 hover:bg-muted transition-colors"
+                                            onClick={() => handleResultSelect(result)}
+                                        >
+                                            <span className="font-medium text-foreground block">
+                                                {result.name || result.display_name.split(',')[0]}
+                                            </span>
+                                            <span className="text-muted-foreground text-xs block">
+                                                {result.display_name}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            {open ? (
+                                <MapContainer
+                                    center={markerPosition}
+                                    zoom={15}
+                                    style={{width: '100%', height: '350px', borderRadius: 'var(--radius)'}}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <Marker
+                                        position={markerPosition}
+                                        draggable={true}
+                                        eventHandlers={{
+                                            dragend: (e) => {
+                                                const marker = e.target as L.Marker;
+                                                const pos = marker.getLatLng();
+                                                updateMarkerPosition(pos);
+                                            }
+                                        }}
+                                    />
+                                    <LocationMarker setMarkerPosition={updateMarkerPosition}/>
+                                    <MapViewUpdater position={markerPosition}/>
+                                </MapContainer>
+                            ) : <Skeleton className="h-full w-full"/>}
+                        </div>
+                    </div>
                 </div>
 
                 <DialogFooter className="justify-between p-6 border-t">

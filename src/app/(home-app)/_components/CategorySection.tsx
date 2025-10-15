@@ -98,9 +98,9 @@ export default function CategorySection() {
     }
 
     return (
-        <section className="py-8">
+        <section className="py-6 sm:py-8">
             <div className="container">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6 md:gap-8">
                     {categories.map((category) => {
                         const config = CATEGORY_CONFIG[category.name] || {
                             icon: BookOpen, // A sensible default
@@ -122,9 +122,9 @@ export default function CategorySection() {
                                 className="group cursor-pointer"
                                 onClick={() => handleCategoryClick(category.id)}
                             >
-                                <div className="relative mb-4">
+                                <div className="relative mb-2 sm:mb-4">
                                     {/* Main card */}
-                                    <div className="aspect-square bg-background/80 backdrop-blur-sm rounded-2xl border border-border/40
+                                    <div className="aspect-square bg-background/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border/40
                                                    flex items-center justify-center transition-all duration-300 ease-in-out
                                                    group-hover:scale-[1.03] group-hover:shadow-lg group-hover:border-primary/30
                                                    relative z-10 overflow-hidden">
@@ -134,8 +134,8 @@ export default function CategorySection() {
                                         {/* Icon with glowing effect on hover */}
                                         <div className="relative">
                                             <div className={`absolute -inset-1 ${config.color}/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity`}></div>
-                                            <div className={`relative w-16 h-16 rounded-full ${config.color}/10 flex items-center justify-center`}>
-                                                <IconComponent className={`w-8 h-8 ${config.color} transition-transform group-hover:scale-110`} />
+                                            <div className={`relative w-10 h-10 sm:w-14 md:w-16 sm:h-14 md:h-16 rounded-full ${config.color}/10 flex items-center justify-center`}>
+                                                <IconComponent className={`w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 ${config.color} transition-transform group-hover:scale-110`} />
                                             </div>
                                         </div>
                                     </div>
@@ -146,7 +146,7 @@ export default function CategorySection() {
                                 
                                 {/* Category name with hover effect */}
                                 <div className="text-center">
-                                    <h3 className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary">
+                                    <h3 className="text-xs sm:text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary">
                                         {category.name}
                                     </h3>
                                 </div>
