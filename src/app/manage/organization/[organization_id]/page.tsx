@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useParams} from "next/navigation";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import {Button} from "@/components/ui/button";
@@ -131,6 +131,10 @@ const OrganizationDashboardPage = () => {
             .join(" • ");
     }, [sessionStatusTotals]);
 
+    const handleRefresh = useCallback(() => {
+        void refetch();
+    }, [refetch]);
+
     if (!organizationId) {
         return (
             <div className="p-6 md:p-8">
@@ -169,7 +173,7 @@ const OrganizationDashboardPage = () => {
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <StatsCard
                     title="Total revenue"
-                    value={formatCurrency(liveRevenue ?? 0, "LKR", "en-LK")}
+                    value={formatCurrency(data?.revenue.totalRevenue ?? 0, "LKR", "en-LK")}
                     subtitle={data?.revenue.totalBeforeDiscounts
                         ? `${formatCurrency(data.revenue.totalBeforeDiscounts, "LKR", "en-LK")} before discounts`
                         : undefined}
@@ -177,6 +181,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={summarizedDailyTickets.toLocaleString("en-LK")}
                     trendVariant="positive"
                     isLoading={loading.revenue}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.revenue}
                 />
                 <StatsCard
                     title="Discounts given"
@@ -186,6 +192,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={discountShare}
                     trendVariant="neutral"
                     isLoading={loading.revenue}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.revenue}
                 />
                 <StatsCard
                     title="Sessions tracked"
@@ -195,6 +203,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={sessionStatusSummary}
                     trendVariant="neutral"
                     isLoading={loading.sessionAnalytics}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.sessionAnalytics}
                 />
                 <StatsCard
                     title="Events live"
@@ -204,6 +214,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={pendingEventsCount.toLocaleString("en-LK")}
                     trendVariant="warning"
                     isLoading={loading.events}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.events}
                 />
                 <StatsCard
                     title="Audience reach"
@@ -213,6 +225,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={(data?.audience.uniqueUsers ?? 0).toLocaleString("en-LK")}
                     trendVariant="neutral"
                     isLoading={loading.audience}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.audience}
                 />
             </section>
 

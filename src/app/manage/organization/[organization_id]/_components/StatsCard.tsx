@@ -4,6 +4,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Skeleton} from "@/components/ui/skeleton";
 import {cn} from "@/lib/utils";
 import type {LucideIcon} from "lucide-react";
+import {RefreshCcw} from "lucide-react";
 import React from "react";
 
 interface StatsCardProps {
@@ -16,6 +17,9 @@ interface StatsCardProps {
     trendVariant?: "positive" | "negative" | "neutral" | "warning";
     isLoading?: boolean;
     className?: string;
+    onRefresh?: () => void;
+    isRefreshing?: boolean;
+    refreshLabel?: string;
 }
 
 const trendVariantClasses: Record<Exclude<StatsCardProps["trendVariant"], undefined>, string> = {
@@ -35,6 +39,9 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     trendVariant = "neutral",
     isLoading = false,
     className,
+    onRefresh,
+    isRefreshing = false,
+    refreshLabel,
 }) => {
     return (
         <Card className={cn("relative overflow-hidden", className)}>
@@ -84,6 +91,20 @@ export const StatsCard: React.FC<StatsCardProps> = ({
                     </div>
                 ) : null}
             </CardContent>
+            {onRefresh && (
+                <button
+                    type="button"
+                    onClick={onRefresh}
+                    aria-label={refreshLabel ?? `Refresh ${title}`}
+                    disabled={isRefreshing}
+                    className={cn(
+                        "absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/80 text-muted-foreground transition hover:scale-105 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+                        isRefreshing && "cursor-not-allowed opacity-70"
+                    )}
+                >
+                    <RefreshCcw className={cn("h-4 w-4", isRefreshing && "animate-spin")}/>
+                </button>
+            )}
         </Card>
     );
 };

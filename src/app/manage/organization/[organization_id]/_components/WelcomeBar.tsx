@@ -54,6 +54,8 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
         const difference = target - startValue;
 
         if (Math.abs(difference) < 0.01) {
+            setDisplayedRevenue(target);
+            latestValueRef.current = target;
             return;
         }
 
@@ -131,19 +133,29 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
                     </div>
                 </div>
 
-                <div className="relative isolate grid gap-4 rounded-2xl border border-primary/20 bg-background/90 p-6 shadow-lg backdrop-blur">
+                <div className="relative isolate grid gap-4 rounded-2xl border border-primary/20 bg-neutral-900/80 p-6 text-white shadow-lg backdrop-blur">
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>Total revenue generated</span>
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                            Live
+                        <span className="text-white/80">Total revenue generated</span>
+                        <Badge
+                            variant="secondary"
+                            className="border-white/40 bg-white/10 text-white/90 shadow-lg backdrop-blur-sm animate-pulse"
+                        >
+                            <span className="flex items-center gap-2">
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="absolute inset-0 rounded-full bg-emerald-400/80 blur-[1px]"/>
+                                    <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75"/>
+                                    <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(74,222,128,0.9)]"/>
+                                </span>
+                                Live
+                            </span>
                         </Badge>
                     </div>
-                    <p className="text-3xl font-semibold tracking-tight text-foreground">
+                    <p className="text-3xl font-semibold tracking-tight text-white">
                         {isLoading
                             ? "--"
                             : formatCurrency(displayedRevenue, "LKR", "en-LK")}
                     </p>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-white/70">
                         Combined revenue across all approved events in your organization.
                     </span>
                 </div>
