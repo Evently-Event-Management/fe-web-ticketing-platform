@@ -14,7 +14,7 @@ export type SeatingLayoutBlockLike = {
     seats?: Array<unknown> | null;
 };
 
-interface NormalizeOptions {
+export interface NormalizeOptions {
     padding?: number;
     seatSize?: number;
     seatGap?: number;
@@ -48,7 +48,7 @@ export type NormalizedSeatingBlock<T extends SeatingLayoutBlockLike> = T & {
     height: number;
 };
 
-const DEFAULTS = {
+export const DEFAULTS = {
     padding: 48,
     seatSize: 24,
     seatGap: 6,
@@ -88,10 +88,19 @@ const getMaxSeatsPerRow = (rows: SeatingLayoutBlockLike["rows"], columns?: numbe
     return 0;
 };
 
-const approximateBlockDimensions = <T extends SeatingLayoutBlockLike>(
+export const estimateBlockDimensions = <T extends SeatingLayoutBlockLike>(
     block: T,
-    options: Required<NormalizeOptions>
+    options?: NormalizeOptions
 ) => {
+    const merged = {
+        seatSize: options?.seatSize ?? DEFAULTS.seatSize,
+        seatGap: options?.seatGap ?? DEFAULTS.seatGap,
+        blockPadding: options?.blockPadding ?? DEFAULTS.blockPadding,
+        headerHeight: options?.headerHeight ?? DEFAULTS.headerHeight,
+        defaultStandingSize: options?.defaultStandingSize ?? DEFAULTS.defaultStandingSize,
+        defaultNonSellableSize: options?.defaultNonSellableSize ?? DEFAULTS.defaultNonSellableSize,
+    } satisfies Omit<Required<NormalizeOptions>, "padding">;
+
     const widthFromData = toNumberOr(block.width, NaN);
     const heightFromData = toNumberOr(block.height, NaN);
 
@@ -106,16 +115,16 @@ const approximateBlockDimensions = <T extends SeatingLayoutBlockLike>(
         const effectiveRows = rowCount > 0 ? rowCount : 1;
         const effectiveCols = seatsPerRow > 0 ? seatsPerRow : 1;
 
-        const seatWidth = effectiveCols * options.seatSize + (effectiveCols - 1) * options.seatGap;
-        const seatHeight = effectiveRows * options.seatSize + (effectiveRows - 1) * options.seatGap;
+        const seatWidth = effectiveCols * merged.seatSize + (effectiveCols - 1) * merged.seatGap;
+        const seatHeight = effectiveRows * merged.seatSize + (effectiveRows - 1) * merged.seatGap;
 
         const width = Number.isFinite(widthFromData)
             ? widthFromData
-            : seatWidth + options.blockPadding;
+            : seatWidth + merged.blockPadding;
 
         const height = Number.isFinite(heightFromData)
             ? heightFromData
-            : seatHeight + options.blockPadding + options.headerHeight;
+            : seatHeight + merged.blockPadding + merged.headerHeight;
 
         return {
             width: clampPositive(width),
@@ -125,14 +134,14 @@ const approximateBlockDimensions = <T extends SeatingLayoutBlockLike>(
 
     if (block.type === 'standing_capacity') {
         return {
-            width: Number.isFinite(widthFromData) ? widthFromData : options.defaultStandingSize.width,
-            height: Number.isFinite(heightFromData) ? heightFromData : options.defaultStandingSize.height,
+            width: Number.isFinite(widthFromData) ? widthFromData : merged.defaultStandingSize.width,
+            height: Number.isFinite(heightFromData) ? heightFromData : merged.defaultStandingSize.height,
         };
     }
 
     return {
-        width: Number.isFinite(widthFromData) ? widthFromData : options.defaultNonSellableSize.width,
-        height: Number.isFinite(heightFromData) ? heightFromData : options.defaultNonSellableSize.height,
+        width: Number.isFinite(widthFromData) ? widthFromData : merged.defaultNonSellableSize.width,
+        height: Number.isFinite(heightFromData) ? heightFromData : merged.defaultNonSellableSize.height,
     };
 };
 
@@ -170,7 +179,7 @@ export const normalizeSeatingLayout = <T extends SeatingLayoutBlockLike>(
     const blockMetrics = blocks.map((block) => {
         const positionX = toNumberOr(block.position?.x, 0);
         const positionY = toNumberOr(block.position?.y, 0);
-        const dimensions = approximateBlockDimensions(block, mergedOptions);
+        const dimensions = estimateBlockDimensions(block, mergedOptions);
 
         minX = Math.min(minX, positionX);
         minY = Math.min(minY, positionY);

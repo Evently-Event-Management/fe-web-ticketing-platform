@@ -14,6 +14,7 @@ import {BrushCleaning, Plus, Save, ZoomIn, ZoomOut} from 'lucide-react';
 import {DraggableBlock} from './DraggableBlock';
 import {ResizableDraggableBlock} from './ResizableDraggableBlock';
 import {SettingsPanel} from './SettingsPanel';
+import {estimateBlockDimensions} from '@/lib/seatingLayoutUtils';
 
 interface LayoutEditorProps {
     initialData?: LayoutData;
@@ -38,18 +39,37 @@ export function LayoutEditor({
     const [layoutName, setLayoutName] = useState('Untitled Layout');
     const {setNodeRef} = useDroppable({id: 'canvas'});
 
+    const ensureBlockDimensions = React.useCallback((incoming: LayoutBlock[]): LayoutBlock[] => {
+        let mutated = false;
+        const next = incoming.map(block => {
+            const hasWidth = typeof block.width === 'number' && Number.isFinite(block.width);
+            const hasHeight = typeof block.height === 'number' && Number.isFinite(block.height);
+            if (hasWidth && hasHeight) {
+                return block;
+            }
+            const {width, height} = estimateBlockDimensions(block);
+            mutated = true;
+            return {
+                ...block,
+                width: hasWidth ? block.width! : width,
+                height: hasHeight ? block.height! : height,
+            };
+        });
+        return mutated ? next : incoming;
+    }, []);
+
     useEffect(() => {
         if (initialData) {
             setLayoutName(initialData.name);
-            setBlocks(initialData.layout.blocks);
+            setBlocks(ensureBlockDimensions(initialData.layout.blocks));
         }
-    }, [initialData]);
+    }, [initialData, ensureBlockDimensions]);
 
     const minZoom = 0.5;
     const maxZoom = 2;
 
     const addNewBlock = (type: BlockType) => {
-        const newBlock: LayoutBlock = {
+        const baseBlock: LayoutBlock = {
             id: `temp_${Date.now()}`, // Temporary ID
             name: `New ${type.replace('_', ' ')}`,
             type,
@@ -62,6 +82,14 @@ export function LayoutEditor({
             width: type === 'standing_capacity' || type === 'non_sellable' ? 200 : undefined,
             height: type === 'standing_capacity' || type === 'non_sellable' ? 100 : undefined,
         };
+
+        const dimensions = estimateBlockDimensions(baseBlock);
+        const newBlock = {
+            ...baseBlock,
+            width: baseBlock.width ?? dimensions.width,
+            height: baseBlock.height ?? dimensions.height,
+        };
+
         setBlocks(prev => [...prev, newBlock]);
     };
 
@@ -119,6 +147,10 @@ export function LayoutEditor({
         };
         onSave(layoutData).then();
     };
+
+    useEffect(() => {
+        setBlocks(prev => ensureBlockDimensions(prev));
+    }, [ensureBlockDimensions]);
 
     return (
         <div className={`flex flex-col h-full ${className}`}>

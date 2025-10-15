@@ -4,6 +4,7 @@ import {Button} from "@/components/ui/button";
 import {CSS} from '@dnd-kit/utilities';
 import {LayoutBlock} from "@/types/seatingLayout";
 import {getRowIndex, getRowLabel} from "@/app/manage/organization/[organization_id]/seating/create/_lib/getRowLabel";
+import {estimateBlockDimensions} from "@/lib/seatingLayoutUtils";
 
 
 export function DraggableBlock({block, onSelect}: { block: LayoutBlock; onSelect: (block: LayoutBlock) => void; }) {
@@ -11,10 +12,14 @@ export function DraggableBlock({block, onSelect}: { block: LayoutBlock; onSelect
         id: block.id,
     });
 
+    const {width, height} = estimateBlockDimensions(block);
+
     const style = {
         transform: CSS.Translate.toString(transform),
         left: block.position.x,
         top: block.position.y,
+        width: block.width ?? width,
+        height: block.height ?? height,
     };
 
     const renderSeats = () => {

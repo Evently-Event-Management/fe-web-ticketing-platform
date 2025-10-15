@@ -5,6 +5,7 @@ import {useDraggable} from '@dnd-kit/core';
 import {Block, TierFormData} from '@/lib/validators/event';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
+import {estimateBlockDimensions} from '@/lib/seatingLayoutUtils';
 
 // --- Interactive Draggable Block for Seated Grids ---
 interface DraggableBlockProps {
@@ -20,10 +21,14 @@ export function InteractiveDraggableBlock({block, tiers, onSeatClick, onApplyToA
         disabled: true, // Dragging is disabled in assignment mode
     });
 
+    const {width, height} = estimateBlockDimensions(block);
+
     const style = {
         // No transform needed as blocks are static in this editor
         left: block.position.x,
         top: block.position.y,
+        width: block.width ?? width,
+        height: block.height ?? height,
     };
 
     const getTierColor = (tierId?: string) => {
@@ -100,11 +105,13 @@ export function InteractiveResizableBlock({block, tiers, onClick}: ResizableBloc
     });
 
     // Fix the TypeScript error by ensuring width and height are valid CSS values
+    const fallbackDimensions = estimateBlockDimensions(block);
+
     const style: React.CSSProperties = {
         left: block.position.x,
         top: block.position.y,
-        width: block.width ?? undefined,
-        height: block.height ?? undefined,
+        width: block.width ?? fallbackDimensions.width,
+        height: block.height ?? fallbackDimensions.height,
     };
 
     // Determine the background color based on the tier of the seats inside the block
