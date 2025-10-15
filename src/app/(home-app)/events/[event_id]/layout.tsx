@@ -11,11 +11,13 @@ import { OffersCarousel } from "./_components/OffersCarousel";
 export const dynamic = 'force-dynamic';
 
 
+type LayoutParams = { event_id: string };
+
 export default async function Layout({ params, children }: {
-    params: { event_id: string }
+    params: Promise<LayoutParams>;
     children: React.ReactNode;
 }) {
-    const { event_id } = params;
+    const { event_id } = await params;
     const eventSummery = await getEventSummery(event_id);
     const viewsData = await getEventTotalViews(event_id);
 
