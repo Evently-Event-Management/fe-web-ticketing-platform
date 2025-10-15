@@ -3,7 +3,7 @@
 import React, {useMemo} from "react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/chart";
-import {Bar, BarChart, CartesianGrid, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, CartesianGrid, LabelList, YAxis} from "recharts";
 import {TrafficSource} from "@/types/eventAnalytics";
 import {Skeleton} from "@/components/ui/skeleton";
 
@@ -59,17 +59,8 @@ export const TrafficSourcesChart: React.FC<TrafficSourcesChartProps> = ({data, t
                             <span className="font-semibold text-foreground">{totalViews.toLocaleString("en-LK")}</span>
                         </div>
                         <ChartContainer config={CHART_CONFIG} className="h-[220px] w-full">
-                            <BarChart data={chartData} margin={{left: 12, right: 12, top: 8, bottom: 4}}>
+                            <BarChart data={chartData} margin={{left: 12, right: 12, top: 36, bottom: 4}}>
                                 <CartesianGrid strokeDasharray="4 4" vertical={false} className="stroke-border/60"/>
-                                <XAxis
-                                    dataKey="label"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={12}
-                                    angle={-20}
-                                    textAnchor="end"
-                                    height={60}
-                                />
                                 <YAxis tickLine={false} axisLine={false} allowDecimals={false}/>
                                 <ChartTooltip
                                     content={<ChartTooltipContent
@@ -83,16 +74,28 @@ export const TrafficSourcesChart: React.FC<TrafficSourcesChartProps> = ({data, t
                                     dataKey="views"
                                     radius={[6, 6, 0, 0]}
                                     fill="var(--color-views)"
-                                />
+                                >
+                                    <LabelList
+                                        dataKey="label"
+                                        position="top"
+                                        className="fill-muted-foreground text-[11px] font-medium"
+                                        formatter={(label: unknown) => {
+                                            if (typeof label !== "string") {
+                                                return label;
+                                            }
+                                            return label.length > 30 ? `${label.slice(0, 27)}…` : label;
+                                        }}
+                                    />
+                                </Bar>
                             </BarChart>
                         </ChartContainer>
-                        <div className="space-y-2 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             {chartData.map(entry => {
                                 const percent = total === 0 ? 0 : Math.round((entry.views / total) * 100);
                                 return (
-                                    <div key={entry.label} className="flex items-center justify-between">
-                                        <span className="truncate pr-2" title={entry.label}>{entry.label}</span>
-                                        <span className="font-medium text-foreground">{percent}%</span>
+                                    <div key={entry.label} className="flex items-center gap-1" title={entry.label}>
+                                        <span className="font-medium text-foreground">{entry.label}</span>
+                                        <span className="text-muted-foreground">{percent}%</span>
                                     </div>
                                 );
                             })}

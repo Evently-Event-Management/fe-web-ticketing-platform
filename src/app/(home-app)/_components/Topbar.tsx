@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import {useAuth} from '@/providers/AuthProvider'
-import {ShieldCheck, Receipt} from 'lucide-react'
+import {ShieldCheck} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -98,7 +98,6 @@ export default function Topbar() {
                                     <DropdownMenuSeparator/>
                                     <DropdownMenuItem asChild>
                                         <Link href="/orders" className="flex items-center gap-2">
-                                            <Receipt className="size-4"/>
                                             My Orders
                                         </Link>
                                     </DropdownMenuItem>
