@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import {Sparkles, ArrowRight, CalendarRange, Users, RockingChair} from "lucide-react";
+import {Sparkles, ArrowRight, RockingChair} from "lucide-react";
 import {cn, formatCurrency} from "@/lib/utils";
 
 interface WelcomeBarProps {
