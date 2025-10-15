@@ -155,6 +155,7 @@ const OrganizationDashboardPage = () => {
                 totalRevenue={liveRevenue}
                 organizationId={organizationId}
                 isLoading={loading.revenue || loading.events}
+                organizationLogoUrl={organization?.logoUrl ?? undefined}
             />
 
             {error && (

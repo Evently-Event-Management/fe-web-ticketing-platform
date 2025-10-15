@@ -1,17 +1,19 @@
 "use client";
 
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Sparkles, ArrowRight, RockingChair} from "lucide-react";
 import {cn, formatCurrency} from "@/lib/utils";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 interface WelcomeBarProps {
     organizationName?: string;
     totalRevenue?: number;
     organizationId: string;
     isLoading?: boolean;
+    organizationLogoUrl?: string;
 }
 
 export const WelcomeBar: React.FC<WelcomeBarProps> = ({
@@ -19,10 +21,22 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
     totalRevenue,
     organizationId,
     isLoading = false,
+    organizationLogoUrl,
 }) => {
     const [displayedRevenue, setDisplayedRevenue] = useState(totalRevenue ?? 0);
     const animationFrameRef = useRef<number | null>(null);
     const latestValueRef = useRef(displayedRevenue);
+
+    const logoFallback = useMemo(() => {
+        if (!organizationName) {
+            return "ORG";
+        }
+        const words = organizationName.trim().split(/\s+/);
+        if (words.length === 1) {
+            return words[0].slice(0, 2).toUpperCase();
+        }
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }, [organizationName]);
 
     useEffect(() => {
         latestValueRef.current = displayedRevenue;
@@ -98,10 +112,18 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
 
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div className="space-y-4">
-                    <Badge variant="outline" className="bg-background/80 backdrop-blur text-primary border-primary/30">
-                        <Sparkles className="mr-1.5 h-3.5 w-3.5"/>
-                        Welcome back
-                    </Badge>
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-14 w-14 border border-primary/30 shadow-sm">
+                            <AvatarImage src={organizationLogoUrl ?? undefined} alt={organizationName ?? "Organization logo"}/>
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                {logoFallback}
+                            </AvatarFallback>
+                        </Avatar>
+                        <Badge variant="outline" className="bg-background/80 backdrop-blur text-primary border-primary/30">
+                            <Sparkles className="mr-1.5 h-3.5 w-3.5"/>
+                            Welcome back
+                        </Badge>
+                    </div>
                     <div className="space-y-2">
                         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                             {isLoading
