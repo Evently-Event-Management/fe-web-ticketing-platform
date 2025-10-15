@@ -10,7 +10,7 @@ import {StatsCard} from "./_components/StatsCard";
 import {RevenueChart} from "./_components/RevenueChart";
 import {SessionStatusChart} from "./_components/SessionStatusChart";
 import {AudienceViewsChart} from "./_components/AudienceViewsChart";
-import {TrafficSourcesChart} from "./_components/TrafficSourcesChart";
+import {DeviceBreakdownChart} from "./_components/DeviceBreakdownChart";
 import {EventsTable} from "./_components/EventsTable";
 import {SessionsTable} from "./_components/SessionsTable";
 import {useOrganization} from "@/providers/OrganizationProvider";
@@ -185,8 +185,8 @@ const OrganizationDashboardPage = () => {
                     />
                 </div>
                 <div className="xl:col-span-4">
-                    <TrafficSourcesChart
-                        data={data?.audience.trafficSources ?? []}
+                    <DeviceBreakdownChart
+                        data={data?.audience.deviceBreakdown ?? []}
                         totalViews={data?.audience.totalViews ?? 0}
                         isLoading={loading.audience}
                     />

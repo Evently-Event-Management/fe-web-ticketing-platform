@@ -5,10 +5,10 @@ import {useState, useEffect, useMemo, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import {useDebounce} from 'use-debounce';
 import {ColumnDef} from '@tanstack/react-table';
-import {MoreHorizontal, Eye} from 'lucide-react';
+import {MoreHorizontal, Eye, Check, XCircle} from 'lucide-react';
 import {format, parseISO} from 'date-fns';
 
-import {getAllEvents_Admin} from '@/lib/actions/eventActions';
+import {approveEvent_Admin, getAllEvents_Admin, rejectEvent_Admin} from '@/lib/actions/eventActions';
 import {EventStatus, EventSummaryDTO} from '@/lib/validators/event';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -17,6 +17,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -39,6 +40,15 @@ import {
     PaginationPrevious
 } from '@/components/ui/pagination';
 import {toast} from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
+import {Textarea} from "@/components/ui/textarea";
 
 // --- Helper to get status badge color ---
 const getStatusVariant = (status: EventStatus): "default" | "secondary" | "destructive" | "success" | "warning" => {
@@ -67,6 +77,11 @@ export default function AdminEventsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<EventStatus | 'ALL'>('ALL');
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500); // Debounce search input
+    const [actioningEventId, setActioningEventId] = useState<string | null>(null);
+    const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [rejectTarget, setRejectTarget] = useState<EventSummaryDTO | null>(null);
+    const [rejectValidationError, setRejectValidationError] = useState<string | null>(null);
 
     const fetchEvents = useCallback(() => {
         setIsLoading(true);
@@ -89,6 +104,63 @@ export default function AdminEventsPage() {
     useEffect(() => {
         fetchEvents();
     }, [page, debouncedSearchTerm, statusFilter, fetchEvents]);
+
+    const handleApprove = useCallback(async (event: EventSummaryDTO) => {
+        const toastId = toast.loading("Approving event...");
+        setActioningEventId(event.id);
+        try {
+            await approveEvent_Admin(event.id);
+            toast.success("Event approved", {id: toastId});
+            fetchEvents();
+        } catch (err) {
+            console.error("Failed to approve event", err);
+            toast.error("Failed to approve event", {id: toastId});
+        } finally {
+            setActioningEventId(null);
+        }
+    }, [fetchEvents]);
+
+    const handleRejectDialogChange = useCallback((open: boolean) => {
+        setRejectDialogOpen(open);
+        if (!open) {
+            setRejectTarget(null);
+            setRejectReason('');
+            setRejectValidationError(null);
+        }
+    }, []);
+
+    const openRejectDialog = useCallback((event: EventSummaryDTO) => {
+        setRejectTarget(event);
+        setRejectReason('');
+        setRejectValidationError(null);
+        setRejectDialogOpen(true);
+    }, []);
+
+    const handleReject = useCallback(async () => {
+        if (!rejectTarget) {
+            return;
+        }
+
+        const reason = rejectReason.trim();
+        if (reason.length < 5) {
+            setRejectValidationError("Please provide a brief reason (at least 5 characters).");
+            return;
+        }
+
+        const toastId = toast.loading("Rejecting event...");
+        setActioningEventId(rejectTarget.id);
+        try {
+            await rejectEvent_Admin(rejectTarget.id, reason);
+            toast.success("Event rejected", {id: toastId});
+            handleRejectDialogChange(false);
+            fetchEvents();
+        } catch (err) {
+            console.error("Failed to reject event", err);
+            toast.error("Failed to reject event", {id: toastId});
+        } finally {
+            setActioningEventId(null);
+        }
+    }, [fetchEvents, handleRejectDialogChange, rejectReason, rejectTarget]);
 
 
     const columns = useMemo<ColumnDef<EventSummaryDTO>[]>(() => [
@@ -155,6 +227,8 @@ export default function AdminEventsPage() {
             id: 'actions',
             cell: ({row}) => {
                 const event = row.original;
+                const isPending = event.status === EventStatus.PENDING;
+                const isBusy = actioningEventId === event.id;
                 return (
                     <div className="text-right">
                         <DropdownMenu>
@@ -170,13 +244,35 @@ export default function AdminEventsPage() {
                                     onClick={() => router.push(`/manage/admin/events/${event.id}`)}>
                                     <Eye className="mr-2 h-4 w-4"/> View Details
                                 </DropdownMenuItem>
+                                {isPending && (
+                                    <>
+                                        <DropdownMenuSeparator/>
+                                        <DropdownMenuItem
+                                            disabled={isBusy}
+                                            onClick={() => handleApprove(event)}
+                                        >
+                                            <Check className="mr-2 h-4 w-4"/>
+                                            Approve
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            disabled={isBusy}
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                openRejectDialog(event);
+                                            }}
+                                        >
+                                            <XCircle className="mr-2 h-4 w-4"/>
+                                            Reject
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 );
             }
         }
-    ], [router]);
+    ], [actioningEventId, handleApprove, openRejectDialog, router]);
 
     return (
         <div className="p-4 md:p-8 space-y-6">
@@ -265,6 +361,51 @@ export default function AdminEventsPage() {
                     </PaginationContent>
                 </Pagination>
             )}
+
+            <Dialog open={rejectDialogOpen} onOpenChange={handleRejectDialogChange}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reject event</DialogTitle>
+                        <DialogDescription>
+                            {rejectTarget ? `Provide a short note for rejecting "${rejectTarget.title}". This helps organizers understand what to fix.` : "Provide a reason for rejecting this event."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                        <Textarea
+                            value={rejectReason}
+                            onChange={(event) => {
+                                setRejectReason(event.target.value);
+                                if (rejectValidationError) {
+                                    setRejectValidationError(null);
+                                }
+                            }}
+                            placeholder="Enter rejection reason"
+                            rows={4}
+                        />
+                        {rejectValidationError && (
+                            <p className="text-sm text-destructive">{rejectValidationError}</p>
+                        )}
+                    </div>
+                    <DialogFooter className="flex items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleRejectDialogChange(false)}
+                            disabled={actioningEventId === rejectTarget?.id}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => void handleReject()}
+                            disabled={actioningEventId === rejectTarget?.id}
+                        >
+                            Reject event
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

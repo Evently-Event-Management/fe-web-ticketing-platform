@@ -257,20 +257,16 @@ export const useOrganizationDashboardData = (
 
         tasks.push((async () => {
             try {
-                const response = await fetch(`/api/analytics/organization-reach?organizationId=${organizationId}`, {
-                    method: "GET",
-                    cache: "no-store",
-                });
-                if (!response.ok) {
-                    throw new Error("Failed to fetch organization reach");
+                // Direct server action call instead of API route
+                const result = await import("@/lib/actions/public/server/eventActions").then(mod => 
+                    mod.getOrganizationAudienceInsights(organizationId)
+                );
+                
+                if (!result.success || !result.data) {
+                    throw new Error(result.error || "Failed to fetch organization reach");
                 }
-                const payload: {
-                    totalViews?: number;
-                    uniqueUsers?: number;
-                    viewsTimeSeries?: TimeSeriesData[];
-                    deviceBreakdown?: DeviceBreakdown[];
-                    trafficSources?: TrafficSource[];
-                } = await response.json();
+                
+                const payload = result.data;
                 setData(prev => ({
                     ...prev,
                     audience: {

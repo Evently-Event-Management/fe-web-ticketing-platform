@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Tag } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EventBasicInfoDTO } from "@/types/event";
-import { cn } from '@/lib/utils';
+import {motion, AnimatePresence} from 'framer-motion';
+import {Bell, Eye, Tag, Loader2} from 'lucide-react';
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Badge} from '@/components/ui/badge';
+import {Button} from '@/components/ui/button';
+import {EventBasicInfoDTO} from "@/types/event";
+import {cn} from '@/lib/utils';
+import {subscribeToEntity, unsubscribeFromEntity, checkSubscriptionStatus} from '@/lib/subscriptionUtils';
+import {toast} from 'sonner';
 
 interface NetflixHeroProps {
   event: EventBasicInfoDTO;
@@ -17,6 +19,8 @@ interface NetflixHeroProps {
 
 export function NetflixHero({ event, viewCount }: NetflixHeroProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [followPending, setFollowPending] = useState(false);
   const { title, coverPhotos, organization, category } = event;
   
   // Default to at least one image
@@ -32,6 +36,66 @@ export function NetflixHero({ event, viewCount }: NetflixHeroProps) {
     }, 7000);
     return () => clearInterval(interval);
   }, [images.length]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadSubscriptionStatus = async () => {
+      try {
+        const status = await checkSubscriptionStatus(event.id, 'event');
+        if (active) {
+          setIsSubscribed(status);
+        }
+      } catch (error) {
+        console.error('Failed to fetch subscription status for hero:', error);
+      }
+    };
+
+    void loadSubscriptionStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [event.id]);
+
+  const toggleFollow = async () => {
+    if (followPending) return;
+    setFollowPending(true);
+
+    try {
+      if (isSubscribed) {
+        const success = await unsubscribeFromEntity({id: event.id, type: 'event', name: event.title});
+        if (success) {
+          setIsSubscribed(false);
+          toast.success(`Unfollowed ${event.title}`);
+        }
+      } else {
+        const success = await subscribeToEntity({id: event.id, type: 'event', name: event.title});
+        if (success) {
+          setIsSubscribed(true);
+          toast.success(`Following ${event.title}`);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle event follow state:', error);
+      toast.error('Unable to update reminders right now. Please try again.');
+    } finally {
+      setFollowPending(false);
+    }
+  };
+
+  const handleBuyTickets = () => {
+        toast.info("Please select a session below to continue", {
+            description: "Choose an available session for this event",
+            duration: 3000,
+        });
+
+        // Scroll to sessions section
+        const sessionsSection = document.getElementById('sessions-section');
+        if (sessionsSection) {
+            sessionsSection.scrollIntoView({behavior: 'smooth'});
+        }
+    };
 
   return (
     <section className="relative w-full h-[65vh] md:h-[75vh] lg:h-[85vh] overflow-hidden netflix-vignette">
@@ -126,12 +190,35 @@ export function NetflixHero({ event, viewCount }: NetflixHeroProps) {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Button 
-                size="lg" 
-                className="gap-2 bg-white/15 backdrop-blur-lg border border-white/25 text-white shadow-lg hover:bg-white/25 transition-all duration-200 rounded-2xl"
-              >
-                Get Tickets
-              </Button>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button 
+                  size="lg" 
+                  onClick={handleBuyTickets}
+                  className="gap-2 bg-white/15 backdrop-blur-lg border border-white/25 text-white shadow-lg hover:bg-white/25 transition-all duration-200 rounded-2xl"
+                >
+                  Get Tickets
+                </Button>
+
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  onClick={toggleFollow}
+                  disabled={followPending}
+                  aria-pressed={isSubscribed}
+                  className={cn(
+                    "gap-2 rounded-2xl border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-lg transition-all duration-200",
+                    isSubscribed && "bg-white/20 text-white"
+                  )}
+                >
+                  {followPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Bell className={cn("h-4 w-4", isSubscribed && "text-yellow-300")}/>
+                  )}
+                  <span>{isSubscribed ? 'Following' : 'Remind me'}</span>
+                </Button>
+              </div>
             </motion.div>
           </div>
         </div>

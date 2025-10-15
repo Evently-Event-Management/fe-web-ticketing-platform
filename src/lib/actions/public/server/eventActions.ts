@@ -2,7 +2,7 @@
 
 import {EventBasicInfoDTO, SessionInfoBasicDTO} from "@/types/event";
 import {BetaAnalyticsDataClient} from '@google-analytics/data';
-import {AudienceGeo, DeviceBreakdown, GaInsights, TimeSeriesData, TrafficSource} from "@/types/eventAnalytics";
+import {AudienceGeo, DeviceBreakdown, GaInsights, TimeSeriesData, TopEventViews, TrafficSource} from "@/types/eventAnalytics";
 import {google} from "@google-analytics/data/build/protos/protos";
 import RunReportRequest = google.analytics.data.v1beta.RunReportRequest;
 
@@ -229,6 +229,113 @@ export async function getEventDeviceBreakdown(eventId: string): Promise<{
     } catch (error) {
         console.error("Error fetching GA device data:", error);
         return {success: false, error: "Failed to fetch device data."};
+    }
+}
+
+export async function getPlatformAudienceInsights(): Promise<{
+    success: boolean;
+    data?: {
+        totalViews: number;
+        uniqueUsers: number;
+        viewsTimeSeries: TimeSeriesData[];
+        deviceBreakdown: DeviceBreakdown[];
+        trafficSources: TrafficSource[];
+        topEvents: TopEventViews[];
+    };
+    error?: string;
+}> {
+    try {
+        const analyticsClient = initializeAnalyticsClient();
+
+        const dateRange = {startDate: '30daysAgo', endDate: 'today'};
+
+        const requests: GaRunReportRequest[] = [
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [],
+                metrics: [{name: 'eventCount'}, {name: 'totalUsers'}],
+            },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'date'}],
+                metrics: [{name: 'eventCount'}],
+                orderBys: [{dimension: {orderType: 'ALPHANUMERIC', dimensionName: 'date'}}],
+            },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'deviceCategory'}],
+                metrics: [{name: 'eventCount'}],
+            },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'sessionSource'}, {name: 'sessionMedium'}],
+                metrics: [{name: 'eventCount'}],
+                orderBys: [{metric: {metricName: 'eventCount'}, desc: true}],
+                limit: 5,
+            },
+            {
+                property: propertyId,
+                dateRanges: [dateRange],
+                dimensions: [{name: 'customEvent:event_id'}],
+                metrics: [{name: 'eventCount'}],
+                orderBys: [{metric: {metricName: 'eventCount'}, desc: true}],
+                limit: 5,
+            }
+        ];
+
+        const [batchResponse] = await analyticsClient.batchRunReports({
+            property: propertyId,
+            requests,
+        });
+
+        const totalsReport = batchResponse.reports?.[0];
+        const timeSeriesReport = batchResponse.reports?.[1];
+        const deviceReport = batchResponse.reports?.[2];
+        const trafficSourcesReport = batchResponse.reports?.[3];
+        const topEventsReport = batchResponse.reports?.[4];
+
+        const totalViews = parseInt(totalsReport?.rows?.[0]?.metricValues?.[0]?.value || '0', 10);
+        const uniqueUsers = parseInt(totalsReport?.rows?.[0]?.metricValues?.[1]?.value || '0', 10);
+
+        const viewsTimeSeries: TimeSeriesData[] = timeSeriesReport?.rows?.map(row => ({
+            date: row.dimensionValues?.[0].value || 'Unknown Date',
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        const deviceBreakdown: DeviceBreakdown[] = deviceReport?.rows?.map(row => ({
+            device: normalizeDeviceCategory(row.dimensionValues?.[0].value),
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        const trafficSources: TrafficSource[] = trafficSourcesReport?.rows?.map(row => ({
+            source: row.dimensionValues?.[0].value || 'Unknown',
+            medium: row.dimensionValues?.[1].value || 'Unknown',
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        const topEvents: TopEventViews[] = topEventsReport?.rows?.map(row => ({
+            eventId: row.dimensionValues?.[0].value || 'unknown',
+            views: parseInt(row.metricValues?.[0].value || '0', 10),
+        })) || [];
+
+        return {
+            success: true,
+            data: {
+                totalViews,
+                uniqueUsers,
+                viewsTimeSeries,
+                deviceBreakdown,
+                trafficSources,
+                topEvents,
+            }
+        };
+    } catch (error) {
+        console.error("Error fetching GA platform insights:", error);
+        return {success: false, error: "Failed to fetch platform audience insights."};
     }
 }
 

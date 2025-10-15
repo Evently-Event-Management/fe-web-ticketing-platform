@@ -5,6 +5,7 @@ import {
     OrganizationRequest,
     OrganizationResponse
 } from '@/types/oraganizations';
+import {PaginatedResponse} from '@/types/paginatedResponse';
 
 const API_BASE_PATH = '/event-seating/v1/organizations';
 
@@ -122,6 +123,26 @@ export const getAnyOrganizationById_Admin = (orgId: string): Promise<Organizatio
  */
 export const getOrganizationsForUser_Admin = (userId: string): Promise<OrganizationResponse[]> => {
     return apiFetch<OrganizationResponse[]>(`${API_BASE_PATH}/admin/user/${userId}`);
+};
+
+/**
+ * [ADMIN] Fetches a paginated list of all organizations in the system.
+ */
+export const getAllOrganizations_Admin = (
+    search?: string,
+    page: number = 0,
+    size: number = 10
+): Promise<PaginatedResponse<OrganizationResponse>> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    });
+
+    if (search && search.trim().length > 0) {
+        params.append('search', search.trim());
+    }
+
+    return apiFetch<PaginatedResponse<OrganizationResponse>>(`${API_BASE_PATH}/admin/all?${params.toString()}`);
 };
 
 // You might also want an admin action to get ALL organizations in the system (paginated)

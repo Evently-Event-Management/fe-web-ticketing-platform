@@ -34,7 +34,8 @@ export const getTierName = (tierId: string, session: SessionDTO, tiers: TierForm
 export const formatCurrency = (
     amount: number,
     currency: string = 'USD',
-    locale: string = 'en-US'
+    locale: string = 'en-US',
+    toFixed: number = 2
 ): string => {
     try {
         return new Intl.NumberFormat(locale, {
@@ -45,8 +46,7 @@ export const formatCurrency = (
         }).format(amount);
     } catch (error) {
         console.error("Failed to format currency:", error);
-        // Fallback to a simple format if Intl fails for any reason
-        return `${currency} ${amount.toFixed(2)}`;
+        return `${currency} ${amount.toFixed(toFixed)}`; // Fallback formatting
     }
 };
 

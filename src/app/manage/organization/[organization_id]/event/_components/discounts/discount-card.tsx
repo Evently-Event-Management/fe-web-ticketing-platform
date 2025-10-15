@@ -87,6 +87,7 @@ export function DiscountCard({
     const usagePercentage = discount.maxUsage && discount.maxUsage > 0
         ? ((discount.currentUsage || 0) / discount.maxUsage) * 100
         : 0;
+    const usageBadgeTextColor = usagePercentage >= 55 ? "text-primary-foreground" : "text-primary";
 
     return (
         <>
@@ -206,7 +207,7 @@ export function DiscountCard({
                                             style={{width: `${usagePercentage}%`}}
                                         />
                                         <span
-                                            className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white">
+                                            className={`absolute inset-0 flex items-center justify-center text-[11px] font-medium ${usageBadgeTextColor}`}>
                                                 {discount.currentUsage || 0}/{discount.maxUsage}
                                             </span>
                                     </div>
@@ -251,7 +252,7 @@ export function DiscountCard({
                             <div className="text-right">
                                 <p className="text-xs text-muted-foreground font-medium">Total Discounted</p>
                                 <p className="text-2xl font-bold text-primary">
-                                    ${discount.discountedTotal.toFixed(2)}
+                                    LKR {discount.discountedTotal.toFixed(2)}
                                 </p>
                             </div>
                         )}

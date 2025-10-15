@@ -8,12 +8,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import TiersSection from "./_components/TiersSection";
 import { OffersCarousel } from "./_components/OffersCarousel";
 
+export const dynamic = 'force-dynamic';
+
 
 export default async function Layout({ params, children }: {
-    params: Promise<{ event_id: string }>
+    params: { event_id: string }
     children: React.ReactNode;
 }) {
-    const { event_id } = await params;
+    const { event_id } = params;
     const eventSummery = await getEventSummery(event_id);
     const viewsData = await getEventTotalViews(event_id);
 

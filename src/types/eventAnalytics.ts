@@ -89,6 +89,11 @@ export interface DeviceBreakdown {
     views: number;
 }
 
+export interface TopEventViews {
+    eventId: string;
+    views: number;
+}
+
 
 /**
  * DTO representing overall analytics for an event across all sessions,

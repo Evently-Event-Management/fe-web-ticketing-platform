@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,7 @@ interface ShareComponentProps {
   text?: string;
   className?: string;
   onCopy?: () => void;
+  campaign?: string;
 }
 
 export function ShareComponent({
@@ -25,29 +26,62 @@ export function ShareComponent({
   title = "Check this out",
   text = "I thought you might be interested in this",
   className = "",
-  onCopy
+  onCopy,
+  campaign,
 }: ShareComponentProps) {
   const [copied, setCopied] = useState(false);
 
+  const resolvedCampaign = (campaign ?? "share_component").trim() || "share_component";
+
+  const createTrackedUrl = useCallback((source: string, medium: string, content?: string) => {
+    try {
+      const absoluteUrl = /^https?:\/\//i.test(url)
+        ? url
+        : (typeof window !== "undefined" ? new URL(url, window.location.origin).toString() : url);
+
+      const urlObj = new URL(absoluteUrl);
+      const params = urlObj.searchParams;
+      params.set("utm_source", source);
+      params.set("utm_medium", medium);
+      params.set("utm_campaign", resolvedCampaign);
+      if (content) {
+        params.set("utm_content", content);
+      }
+      return urlObj.toString();
+    } catch (error) {
+      console.warn("Failed to build tracked share URL, falling back to original", error);
+      return url;
+    }
+  }, [resolvedCampaign, url]);
+
+  const trackedTargets = useMemo(() => ({
+    facebook: createTrackedUrl("facebook", "social", "share-facebook"),
+    twitter: createTrackedUrl("x", "social", "share-x"),
+    instagram: createTrackedUrl("instagram", "social", "share-instagram"),
+    whatsapp: createTrackedUrl("whatsapp", "social", "share-whatsapp"),
+    email: createTrackedUrl("email", "email", "share-email"),
+    copy: createTrackedUrl("copy_link", "share", "copy-link"),
+    native: createTrackedUrl("native_share", "share", "native-share"),
+  }), [createTrackedUrl]);
+
+  const shareTitle = encodeURIComponent(title);
+  const shareText = encodeURIComponent(text);
+
+  // Social media share links with tracked URLs
+  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(trackedTargets.facebook)}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(trackedTargets.twitter)}&text=${shareText}`;
+  const instagramUrl = `https://www.instagram.com/?url=${encodeURIComponent(trackedTargets.instagram)}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${text} ${trackedTargets.whatsapp}`)}`;
+  const mailtoUrl = `mailto:?subject=${shareTitle}&body=${encodeURIComponent(`${text} ${trackedTargets.email}`)}`;
+
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(url).then(() => {
+    navigator.clipboard.writeText(trackedTargets.copy).then(() => {
       setCopied(true);
       toast.success("Link copied to clipboard!");
       if (onCopy) onCopy();
       setTimeout(() => setCopied(false), 2000);
     });
   };
-
-  const shareUrl = encodeURIComponent(url);
-  const shareTitle = encodeURIComponent(title);
-  const shareText = encodeURIComponent(text);
-
-  // Social media share links
-  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
-  const twitterUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
-  const instagramUrl = `https://www.instagram.com/?url=${shareUrl}`;
-  const whatsappUrl = `https://wa.me/?text=${shareText}%20${shareUrl}`;
-  const mailtoUrl = `mailto:?subject=${shareTitle}&body=${shareText}%20${shareUrl}`;
 
   const openShareWindow = (url: string) => {
     window.open(url, '_blank', 'width=600,height=400');
@@ -60,7 +94,7 @@ export function ShareComponent({
         await navigator.share({
           title,
           text,
-          url
+          url: trackedTargets.native
         });
         toast.success("Shared successfully!");
       } catch (err) {
@@ -133,7 +167,7 @@ export function ShareComponent({
       </div>
       <div className="flex gap-2 mt-2 items-center">
         <Input 
-          value={url} 
+          value={trackedTargets.copy} 
           readOnly 
           className="text-xs"
         />
