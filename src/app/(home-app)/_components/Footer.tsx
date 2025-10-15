@@ -1,5 +1,6 @@
-import { Facebook, Instagram, Linkedin, Ticket, Twitter } from "lucide-react";
+import {Linkedin, Ticket } from "lucide-react";
 import Link from "next/link";
+import {SiFacebook, SiInstagram, SiX} from "@icons-pack/react-simple-icons";
 
 export function Footer() {
     return (
@@ -45,7 +46,9 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    href="#"
+                                    href="https://api.dpiyumal.me/api/event-seating/swagger-ui/index.html"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                                 >
                                     API
@@ -59,7 +62,7 @@ export function Footer() {
                         <ul className="space-y-2">
                             <li>
                                 <Link
-                                    href="#"
+                                    href="/about"
                                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                                 >
                                     About Us
@@ -126,19 +129,19 @@ export function Footer() {
                                 href="#"
                                 className="text-muted-foreground hover:text-primary transition-colors"
                             >
-                                <Facebook className="h-5 w-5" />
+                                <SiFacebook className="h-5 w-5" />
                             </Link>
                             <Link
                                 href="#"
                                 className="text-muted-foreground hover:text-primary transition-colors"
                             >
-                                <Twitter className="h-5 w-5" />
+                                <SiX className="h-5 w-5" />
                             </Link>
                             <Link
                                 href="#"
                                 className="text-muted-foreground hover:text-primary transition-colors"
                             >
-                                <Instagram className="h-5 w-5" />
+                                <SiInstagram className="h-5 w-5" />
                             </Link>
                             <Link
                                 href="#"

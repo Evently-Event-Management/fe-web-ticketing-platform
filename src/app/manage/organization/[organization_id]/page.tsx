@@ -20,6 +20,9 @@ import {EventSummaryDTO} from "@/lib/validators/event";
 import {subscribeToSse} from "@/lib/api";
 import {OrderCheckoutSseEvent} from "@/types/order";
 import {parseOrderCheckoutEvent} from "@/lib/orderSseUtils";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {DeviceBreakdownChart} from "./_components/DeviceBreakdownChart";
+import {TrafficSourcesChart} from "./_components/TrafficSourcesChart";
 
 const OrganizationDashboardPage = () => {
     const params = useParams();
@@ -49,7 +52,7 @@ const OrganizationDashboardPage = () => {
             return;
         }
 
-        const unsubscribe = subscribeToSse<OrderCheckoutSseEvent>(
+        return subscribeToSse<OrderCheckoutSseEvent>(
             `/order/sse/checkouts/organization/${organizationId}`,
             {
                 onMessage: ({event: eventName, data}) => {
@@ -84,8 +87,6 @@ const OrganizationDashboardPage = () => {
                 },
             },
         );
-
-        return unsubscribe;
     }, [organizationId]);
 
     const summarizedDailyTickets = useMemo(() => {
