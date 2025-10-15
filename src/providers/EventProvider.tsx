@@ -1,6 +1,6 @@
 "use client";
 
-import React, {createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef} from "react";
+import React, {createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState} from "react";
 import {getMyEventById} from "@/lib/actions/eventActions";
 import {EventDetailDTO, SessionDetailDTO} from "@/lib/validators/event";
 import {OrganizationResponse} from "@/types/oraganizations";
@@ -11,6 +11,7 @@ import {getSession, getSessionsByEventId} from "@/lib/actions/sessionActions";
 import {subscribeToSse} from "@/lib/api";
 import {OrderCheckoutSseEvent} from "@/types/order";
 import {parseOrderCheckoutEvent} from "@/lib/orderSseUtils";
+import {getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
 
 interface EventContextProps {
     event: EventDetailDTO | null;
@@ -57,6 +58,13 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
     const [lastRevenueUpdateAt, setLastRevenueUpdateAt] = useState<Date | null>(null);
     const {organizations, organization: currentOrganization, switchOrganization} = useOrganization();
     const processedOrderIdsRef = useRef<Set<string>>(new Set());
+
+    const seedRevenueSnapshot = useCallback((payload: {totalRevenue?: number | null; totalTickets?: number | null}) => {
+        const {totalRevenue, totalTickets} = payload;
+        setLiveRevenueTotal(typeof totalRevenue === "number" && Number.isFinite(totalRevenue) ? Math.max(totalRevenue, 0) : 0);
+        setLiveTicketsSold(typeof totalTickets === "number" && Number.isFinite(totalTickets) ? Math.max(totalTickets, 0) : 0);
+        setLastRevenueUpdateAt(new Date());
+    }, []);
 
     const fetchEventData = useCallback(async () => {
         if (!eventId) {
@@ -105,7 +113,37 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
             return;
         }
 
-        const unsubscribe = subscribeToSse<OrderCheckoutSseEvent>(
+        let cancelled = false;
+
+        const preloadRevenueSnapshot = async () => {
+            try {
+                const analytics = await getEventRevenueAnalytics(eventId);
+                if (cancelled || !analytics) {
+                    return;
+                }
+
+                seedRevenueSnapshot({
+                    totalRevenue: analytics.total_revenue,
+                    totalTickets: analytics.total_tickets_sold,
+                });
+            } catch (err) {
+                console.error("Failed to preload revenue analytics", err);
+            }
+        };
+
+        preloadRevenueSnapshot();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [eventId, seedRevenueSnapshot]);
+
+    useEffect(() => {
+        if (!eventId) {
+            return;
+        }
+
+        return subscribeToSse<OrderCheckoutSseEvent>(
             `/order/sse/checkouts/event/${eventId}`,
             {
                 onMessage: ({event: eventName, data}) => {
@@ -158,17 +196,7 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
                 },
             },
         );
-
-        return unsubscribe;
     }, [eventId]);
-
-    const seedRevenueSnapshot = useCallback((payload: {totalRevenue?: number | null; totalTickets?: number | null}) => {
-        const {totalRevenue, totalTickets} = payload;
-        setLiveRevenueTotal(typeof totalRevenue === "number" && Number.isFinite(totalRevenue) ? Math.max(totalRevenue, 0) : 0);
-        setLiveTicketsSold(typeof totalTickets === "number" && Number.isFinite(totalTickets) ? Math.max(totalTickets, 0) : 0);
-        setLastRevenueUpdateAt(new Date());
-    }, []);
-
 
     const fetchDiscounts = useCallback(async () => {
         if (!event?.id) return;

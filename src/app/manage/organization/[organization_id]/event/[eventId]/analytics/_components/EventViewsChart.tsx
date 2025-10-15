@@ -26,9 +26,9 @@ export const EventViewsChart: React.FC<{ data: TimeSeriesData[] }> = ({ data }) 
                 <CardTitle>Page Views Trend</CardTitle>
                 <CardDescription>Daily event page views (last 30 days)</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-6">
                 <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                    <LineChart accessibilityLayer data={data} margin={{ left: 0, right: 12 }}>
+                    <LineChart accessibilityLayer data={data} margin={{ left: 0, right: 12, top: 20, bottom: 8 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="date"
@@ -37,14 +37,20 @@ export const EventViewsChart: React.FC<{ data: TimeSeriesData[] }> = ({ data }) 
                             tickMargin={8}
                             tickFormatter={formatAxisDate}
                         />
-                        <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis 
+                            tickLine={false} 
+                            axisLine={false} 
+                            tickMargin={8}
+                            domain={['auto', 'auto']} 
+                        />
                         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                         <Line
                             dataKey="views"
-                            type="natural"
+                            type="monotone"
                             stroke="var(--color-chart-1)"
                             strokeWidth={2}
                             dot={false}
+                            activeDot={{ r: 4 }}
                         />
                     </LineChart>
                 </ChartContainer>

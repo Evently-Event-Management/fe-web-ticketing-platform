@@ -1,12 +1,42 @@
 "use client";
 
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {cn, formatCurrency} from "@/lib/utils";
 import {Share2} from "lucide-react";
 import {useEventContext} from "@/providers/EventProvider";
 import {toast} from "sonner";
+import {animate} from "framer-motion";
+
+const useAnimatedNumber = (value: number | null, duration = 0.6) => {
+    const [displayValue, setDisplayValue] = useState(() => value ?? 0);
+    const previousValueRef = useRef<number>(value ?? 0);
+
+    useEffect(() => {
+        if (value === null || value === undefined) {
+            setDisplayValue(0);
+            previousValueRef.current = 0;
+            return;
+        }
+
+        const controls = animate(previousValueRef.current, value, {
+            duration,
+            ease: "easeOut",
+            onUpdate: latest => setDisplayValue(latest),
+        });
+
+        return () => {
+            controls.stop();
+        };
+    }, [value, duration]);
+
+    useEffect(() => {
+        previousValueRef.current = displayValue;
+    }, [displayValue]);
+
+    return displayValue;
+};
 
 const formatTimestamp = (timestamp?: Date | null) => {
     if (!timestamp) {
@@ -38,6 +68,8 @@ export const EventRevenueHero: React.FC = () => {
 
     const resolvedRevenue = typeof liveRevenueTotal === "number" ? liveRevenueTotal : null;
     const resolvedTickets = typeof liveTicketsSold === "number" ? liveTicketsSold : null;
+    const animatedRevenue = useAnimatedNumber(resolvedRevenue);
+    const animatedTickets = useAnimatedNumber(resolvedTickets);
 
     const shareUrl = useMemo(() => {
         if (!event?.id) {
@@ -143,7 +175,7 @@ export const EventRevenueHero: React.FC = () => {
                         <p className="mt-3 text-3xl font-semibold tracking-tight">
                             {resolvedRevenue === null
                                 ? "--"
-                                : formatCurrency(resolvedRevenue, "LKR", "en-LK")}
+                                : formatCurrency(animatedRevenue, "LKR", "en-LK")}
                         </p>
                         <span className="mt-2 block text-xs text-white/70">
                             Total gross revenue confirmed across all sessions.
@@ -155,7 +187,7 @@ export const EventRevenueHero: React.FC = () => {
                         <p className="mt-3 text-3xl font-semibold tracking-tight">
                             {resolvedTickets === null
                                 ? "--"
-                                : resolvedTickets.toLocaleString("en-LK")}
+                                : Math.round(animatedTickets).toLocaleString("en-LK")}
                         </p>
                         <span className="mt-2 block text-xs text-white/70">
                             Confirmed tickets issued for this event.
