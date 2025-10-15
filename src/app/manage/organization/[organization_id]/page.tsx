@@ -10,7 +10,6 @@ import {StatsCard} from "./_components/StatsCard";
 import {RevenueChart} from "./_components/RevenueChart";
 import {SessionStatusChart} from "./_components/SessionStatusChart";
 import {AudienceViewsChart} from "./_components/AudienceViewsChart";
-import {DeviceBreakdownChart} from "./_components/DeviceBreakdownChart";
 import {EventsTable} from "./_components/EventsTable";
 import {SessionsTable} from "./_components/SessionsTable";
 import {useOrganization} from "@/providers/OrganizationProvider";
@@ -18,6 +17,9 @@ import {useOrganizationDashboardData} from "./_hooks/useOrganizationDashboardDat
 import {formatCurrency} from "@/lib/utils";
 import {DailySalesMetrics} from "@/lib/actions/analyticsActions";
 import {EventSummaryDTO} from "@/lib/validators/event";
+import {DeviceBreakdownChart} from "./_components/DeviceBreakdownChart";
+import {TrafficSourcesChart} from "./_components/TrafficSourcesChart";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 const OrganizationDashboardPage = () => {
     const params = useParams();
@@ -185,11 +187,26 @@ const OrganizationDashboardPage = () => {
                     />
                 </div>
                 <div className="xl:col-span-4">
-                    <DeviceBreakdownChart
-                        data={data?.audience.deviceBreakdown ?? []}
-                        totalViews={data?.audience.totalViews ?? 0}
-                        isLoading={loading.audience}
-                    />
+                    <Tabs defaultValue="devices" className="h-full">
+                        <TabsList className="ml-auto">
+                            <TabsTrigger value="devices">Device mix</TabsTrigger>
+                            <TabsTrigger value="traffic">Traffic sources</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="devices" className="h-full">
+                            <DeviceBreakdownChart
+                                data={data?.audience.deviceBreakdown ?? []}
+                                totalViews={data?.audience.totalViews ?? 0}
+                                isLoading={loading.audience}
+                            />
+                        </TabsContent>
+                        <TabsContent value="traffic" className="h-full">
+                            <TrafficSourcesChart
+                                data={data?.audience.trafficSources ?? []}
+                                totalViews={data?.audience.totalViews ?? 0}
+                                isLoading={loading.audience}
+                            />
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </section>
 

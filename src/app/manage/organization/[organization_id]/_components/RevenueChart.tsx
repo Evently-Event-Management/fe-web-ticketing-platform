@@ -73,7 +73,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
     return (
         <Card className="h-full">
             <CardHeader className="flex flex-col items-stretch gap-0 border-b p-0 sm:flex-row">
-                <div className="flex flex-1 flex-col gap-1 px-6 py-4">
+                <div className="flex flex-1 flex-col gap-1 px-6">
                     <CardTitle>Sales velocity</CardTitle>
                     <CardDescription>Track daily revenue and ticket momentum</CardDescription>
                 </div>
@@ -96,9 +96,9 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
                     ))}
                 </div>
             </CardHeader>
-            <CardContent className="flex h-[360px] flex-col justify-center px-2 pb-6 pt-4 sm:px-6">
+            <CardContent className="flex h-[360px] flex-col justify-center px-2 sm:px-6">
                 {isLoading ? (
-                    <Skeleton className="h-[260px] w-full"/>
+                    <Skeleton className="h-[240px] w-full"/>
                 ) : chartData.length === 0 ? (
                     <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         No sales data available yet.

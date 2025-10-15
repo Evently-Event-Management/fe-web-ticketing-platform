@@ -55,7 +55,7 @@ export const AudienceViewsChart: React.FC<AudienceViewsChartProps> = ({data, tot
                             <span className="font-semibold text-foreground">{totalViews.toLocaleString("en-LK")}</span>
                         </div>
                         <ChartContainer config={CHART_CONFIG} className="h-full w-full">
-                            <LineChart data={chartData} margin={{left: 12, right: 12, top: 4, bottom: 0}}>
+                            <LineChart data={chartData} margin={{left: 0, right: 12, top: 4, bottom: 12}}>
                                 <CartesianGrid vertical={false} strokeDasharray="4 4" className="stroke-border/60"/>
                                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8}/>
                                 <YAxis tickLine={false} axisLine={false} allowDecimals={false}/>
