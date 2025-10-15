@@ -1,5 +1,3 @@
-'use client'
-
 import {EventCard} from "@/app/(home-app)/_components/EventCard";
 import CategorySection from "@/app/(home-app)/_components/CategorySection";
 import {EventThumbnailDTO} from "@/types/event";
@@ -7,73 +5,66 @@ import {sriLankaLocations} from "@/app/(home-app)/_utils/locations";
 import {LocationCard} from "@/app/(home-app)/_components/LocationCard";
 import {ArrowRight, Calendar, MapPin, Ticket} from "lucide-react";
 import Link from 'next/link';
-import Image from 'next/image';
-import {useAuth} from '@/providers/AuthProvider';
-import { useEffect, useState } from 'react';
 import {getTrendingEvents, getTotalSessionsCount, getTotalTicketsSold} from '@/lib/actions/public/eventActions';
-import { Skeleton } from '@/components/ui/skeleton';
 import CounterAnimation from "@/components/ui/counter-animation";
+import type {Metadata} from "next";
+import {CallToActionContent} from "@/app/(home-app)/_components/CallToActionContent";
+import {RefreshButton} from "@/app/(home-app)/_components/RefreshButton";
 
-export default function HomePage() {
-    const {isAuthenticated, keycloak} = useAuth();
-    const [trendingEvents, setTrendingEvents] = useState<EventThumbnailDTO[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [totalSessionsCount, setTotalSessionsCount] = useState<number>(0);
-    const [totalTicketsSold, setTotalTicketsSold] = useState<number>(0);
-    const [loadingSessionsCount, setLoadingSessionsCount] = useState<boolean>(true);
-    const [loadingTicketsCount, setLoadingTicketsCount] = useState<boolean>(true);
+export const metadata: Metadata = {
+    title: 'Ticketly | Discover Amazing Events',
+    description: 'Find and book extraordinary experiences happening across Sri Lanka with Ticketly.'
+};
 
-    useEffect(() => {
-        const fetchTrendingEvents = async () => {
-            try {
-                setLoading(true);
-                const events = await getTrendingEvents(3);
-                setTrendingEvents(events);
-                setError(null);
-            } catch (err) {
-                console.error("Failed to fetch trending events:", err);
-                setError("Failed to load trending events. Please try again later.");
-            } finally {
-                setLoading(false);
-            }
-        };
+export const dynamic = 'force-dynamic';
 
-        const fetchTotalSessionsCount = async () => {
-            try {
-                setLoadingSessionsCount(true);
-                const count = await getTotalSessionsCount();
-                setTotalSessionsCount(count);
-            } catch (err) {
-                console.error("Failed to fetch total sessions count:", err);
-                setTotalSessionsCount(0);
-            } finally {
-                setLoadingSessionsCount(false);
-            }
-        };
+async function getHomePageData(): Promise<{
+    trendingEvents: EventThumbnailDTO[];
+    trendingError: string | null;
+    totalSessionsCount: number | null;
+    totalTicketsSold: number | null;
+}> {
+    const [trendingEventsResult, totalSessionsCountResult, totalTicketsSoldResult] = await Promise.allSettled([
+        getTrendingEvents(3),
+        getTotalSessionsCount(),
+        getTotalTicketsSold()
+    ]);
 
-        const fetchTotalTicketsSold = async () => {
-            try {
-                setLoadingTicketsCount(true);
-                const count = await getTotalTicketsSold();
-                setTotalTicketsSold(count);
-            } catch (err) {
-                console.error("Failed to fetch total tickets sold:", err);
-                setTotalTicketsSold(0);
-            } finally {
-                setLoadingTicketsCount(false);
-            }
-        };
+    const trendingEvents = trendingEventsResult.status === 'fulfilled' ? trendingEventsResult.value : [];
+    const trendingError = trendingEventsResult.status === 'rejected'
+        ? 'Failed to load trending events. Please try again later.'
+        : null;
 
-        fetchTrendingEvents();
-        fetchTotalSessionsCount();
-        fetchTotalTicketsSold();
-    }, []);
+    if (trendingEventsResult.status === 'rejected') {
+        console.error('Failed to fetch trending events:', trendingEventsResult.reason);
+    }
+    if (totalSessionsCountResult.status === 'rejected') {
+        console.error('Failed to fetch total sessions count:', totalSessionsCountResult.reason);
+    }
+    if (totalTicketsSoldResult.status === 'rejected') {
+        console.error('Failed to fetch total tickets sold:', totalTicketsSoldResult.reason);
+    }
+
+    return {
+        trendingEvents,
+        trendingError,
+        totalSessionsCount: totalSessionsCountResult.status === 'fulfilled' ? totalSessionsCountResult.value : null,
+        totalTicketsSold: totalTicketsSoldResult.status === 'fulfilled' ? totalTicketsSoldResult.value : null
+    };
+}
+
+export default async function HomePage() {
+    const {
+        trendingEvents,
+        trendingError,
+        totalSessionsCount,
+        totalTicketsSold
+    } = await getHomePageData();
 
     return (
         <main className="min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="relative overflow-hidden py-24 md:py-36 lg:py-48">
+            <section className="relative overflow-hidden py-12 md:py-18 lg:py-24">
                 {/* Abstract background shapes */}
                 <div className="absolute inset-0 overflow-hidden">
                     <div className="absolute -top-48 -right-48 w-96 h-96 rounded-full bg-primary/20 blur-3xl"></div>
@@ -106,15 +97,15 @@ export default function HomePage() {
                                         <Calendar className="w-7 h-7 text-primary"/>
                                     </div>
                                     <div className="text-3xl font-bold text-foreground">
-                                        {loadingSessionsCount ? (
-                                            <Skeleton className="h-10 w-20 mx-auto"/>
-                                        ) : (
+                                        {totalSessionsCount !== null ? (
                                             <CounterAnimation
-                                                value={totalSessionsCount || 0}
+                                                value={totalSessionsCount}
                                                 duration={2000}
                                                 suffix="+"
                                                 startOnView={false}
                                             />
+                                        ) : (
+                                            <span className="text-lg text-muted-foreground">--</span>
                                         )}
                                     </div>
                                     <div className="text-sm font-medium text-muted-foreground">Events</div>
@@ -139,15 +130,15 @@ export default function HomePage() {
                                         <Ticket className="w-7 h-7 text-chart-3"/>
                                     </div>
                                     <div className="text-3xl font-bold text-foreground">
-                                        {loadingTicketsCount ? (
-                                            <Skeleton className="h-10 w-20 mx-auto"/>
-                                        ) : (
+                                        {totalTicketsSold !== null ? (
                                             <CounterAnimation
-                                                value={totalTicketsSold || 0}
+                                                value={totalTicketsSold}
                                                 duration={2000}
                                                 suffix="+"
                                                 startOnView={false}
                                             />
+                                        ) : (
+                                            <span className="text-lg text-muted-foreground">--</span>
                                         )}
                                     </div>
                                     <div className="text-sm font-medium text-muted-foreground">Tickets Sold</div>
@@ -231,69 +222,26 @@ export default function HomePage() {
                         </Link>
                     </div>
                     
-                    {error && (
+                    {trendingError && (
                         <div className="relative overflow-hidden">
                             <div className="absolute inset-0 bg-destructive/5 backdrop-blur-sm rounded-xl"></div>
                             <div className="text-center p-8 bg-background/70 backdrop-blur-sm rounded-xl border border-destructive/20 max-w-3xl mx-auto mb-8 relative z-10">
                                 <p className="text-destructive font-medium mb-2">Oops! Something went wrong</p>
-                                <p className="text-muted-foreground mb-6">{error}</p>
-                                <button 
-                                    onClick={() => {
-                                        setLoading(true);
-                                        setError(null);
-                                        getTrendingEvents(3)
-                                            .then(events => {
-                                                setTrendingEvents(events);
-                                                setLoading(false);
-                                            })
-                                            .catch(err => {
-                                                console.error(err);
-                                                setError("Failed to load trending events. Please try again later.");
-                                                setLoading(false);
-                                            });
-                                    }}
-                                    className="px-6 py-3 bg-muted text-foreground rounded-full hover:bg-muted/80 transition-all shadow-sm hover:shadow"
-                                >
+                                <p className="text-muted-foreground mb-6">{trendingError}</p>
+                                <RefreshButton pendingText="Refreshing...">
                                     Try Again
-                                </button>
+                                </RefreshButton>
                             </div>
                         </div>
                     )}
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                        {loading ? (
-                            // Enhanced skeleton loading UI with animation
-                            Array(3).fill(0).map((_, index) => (
-                                <div key={`skeleton-${index}`} className="bg-background/40 backdrop-blur-sm border border-border/30 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col animate-pulse">
-                                    <div className="relative">
-                                        <Skeleton className="h-56 w-full" />
-                                        <div className="absolute top-4 right-4">
-                                            <Skeleton className="h-8 w-16 rounded-full" />
-                                        </div>
-                                    </div>
-                                    <div className="p-6 space-y-4">
-                                        <Skeleton className="h-7 w-3/4" />
-                                        <div className="flex items-center space-x-2">
-                                            <Skeleton className="h-4 w-4 rounded-full" />
-                                            <Skeleton className="h-4 w-1/3" />
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <Skeleton className="h-4 w-4 rounded-full" />
-                                            <Skeleton className="h-4 w-2/5" />
-                                        </div>
-                                        <div className="flex justify-between items-center pt-4">
-                                            <Skeleton className="h-5 w-1/4" />
-                                            <Skeleton className="h-10 w-24 rounded-full" />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : trendingEvents.length > 0 ? (
+                        {trendingEvents.length > 0 ? (
                             // Display actual events
                             trendingEvents.map((event: EventThumbnailDTO) => (
                                 <EventCard key={event.id} event={event} />
                             ))
-                        ) : (
+                        ) : !trendingError ? (
                             // No events found
                             <div className="col-span-3 text-center bg-background/60 backdrop-blur-sm rounded-xl border border-border/20 p-12 shadow-sm">
                                 <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
@@ -302,7 +250,7 @@ export default function HomePage() {
                                 <h3 className="text-xl font-medium mb-2">No Events Found</h3>
                                 <p className="text-muted-foreground text-lg">We couldn&#39;t find any trending events at the moment. Check back later!</p>
                             </div>
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Mobile View All Link */}
@@ -390,55 +338,7 @@ export default function HomePage() {
                 
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto">
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20 shadow-2xl">
-                            <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-8">
-                                <div className="md:flex-1">
-                                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                                        Ready to discover your next adventure?
-                                    </h2>
-                                    <p className="text-xl text-white/80 mb-8">
-                                        {isAuthenticated
-                                            ? "Create amazing events and reach thousands of attendees with our powerful platform."
-                                            : "Join thousands of people who trust us to find their perfect events and experiences."
-                                        }
-                                    </p>
-                                    
-                                    {isAuthenticated ? (
-                                        <Link href="/manage/organization">
-                                            <button className="group relative inline-flex items-center px-8 py-4 bg-white text-primary rounded-full hover:bg-white/90 transition-all duration-300 shadow-lg shadow-black/10 text-lg font-medium">
-                                                Create Events
-                                                <ArrowRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
-                                            </button>
-                                        </Link>
-                                    ) : (
-                                        <button
-                                            onClick={() => keycloak?.register()}
-                                            className="group relative inline-flex items-center px-8 py-4 bg-white text-primary rounded-full hover:bg-white/90 transition-all duration-300 shadow-lg shadow-black/10 text-lg font-medium">
-                                            Get Started
-                                            <ArrowRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
-                                        </button>
-                                    )}
-                                </div>
-                                
-                                <div className="hidden md:block relative">
-                                    <div className="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-full"></div>
-                                    <div className="relative h-48 w-48 flex items-center justify-center">
-                                        <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-pulse"></div>
-                                        <div className="h-32 w-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                            <div className="relative h-40 w-40">
-                                                <Image 
-                                                    src="/images/logo-high.png"
-                                                    alt="Ticketly Logo"
-                                                    fill
-                                                    className="object-contain"
-                                                    priority
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <CallToActionContent />
                     </div>
                 </div>
             </section>
