@@ -127,23 +127,23 @@ export function EventCard({ event, className }: EventCardProps) {
                         </div>
                     </AspectRatio>
                 </CardHeader>
-                <CardContent className="flex flex-col flex-grow space-y-4">
-                    <div className="space-y-1.5 flex-grow">
-                        <p className="text-sm text-muted-foreground font-medium">{event.organizationName}</p>
-                        <h3 className="font-bold text-xl leading-tight text-balance group-hover:text-primary transition-colors">
+                <CardContent className="flex flex-col flex-grow space-y-3 sm:space-y-4 px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="space-y-1 sm:space-y-1.5 flex-grow">
+                        <p className="text-xs sm:text-sm text-muted-foreground font-medium">{event.organizationName}</p>
+                        <h3 className="font-bold text-lg sm:text-xl leading-tight text-balance group-hover:text-primary transition-colors">
                             {event.title}
                         </h3>
                     </div>
 
-                    <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <CalendarDays className="w-4 h-4 flex-shrink-0" />
+                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
+                            <CalendarDays className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                             <span className="font-medium text-foreground truncate">
                                 {formatDate(event.earliestSession.startTime)} at {formatTime(event.earliestSession.startTime)}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
+                            <MapPin className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                             <span className="truncate">
                                 {event.earliestSession.venueName}, {event.earliestSession.city}
                             </span>
@@ -153,7 +153,7 @@ export function EventCard({ event, className }: EventCardProps) {
                     <div className="flex items-end justify-between pt-2 border-t mt-auto">
                         <div>
                             <p className="text-xs text-muted-foreground">Starts from</p>
-                            <p className="text-2xl font-extrabold text-foreground leading-none">
+                            <p className="text-xl sm:text-2xl font-extrabold text-foreground leading-none">
                                 {formatCurrency(event.startingPrice || 0, "LKR", "en-LK")}
                             </p>
                         </div>
@@ -162,22 +162,22 @@ export function EventCard({ event, className }: EventCardProps) {
                             <TooltipProvider delayDuration={200}>
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold cursor-help dark:bg-emerald-600 dark:hover:bg-emerald-700">
-                                            <Tag className="w-3 h-3 mr-1.5" />
+                                        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-bold cursor-help dark:bg-emerald-600 dark:hover:bg-emerald-700">
+                                            <Tag className="w-2.5 sm:w-3 h-2.5 sm:h-3 mr-1 sm:mr-1.5" />
                                             {renderDiscountBadgeText(bestDiscount)}
                                         </Badge>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <div className="space-y-2 p-1 text-sm">
+                                        <div className="space-y-2 p-1 text-xs sm:text-sm">
                                             {bestDiscount.expiresAt && (
                                                 <div className="flex items-center gap-2">
-                                                    <Clock className="w-4 h-4" />
+                                                    <Clock className="w-3 sm:w-4 h-3 sm:h-4" />
                                                     <span>{getTimeRemaining(bestDiscount.expiresAt)}</span>
                                                 </div>
                                             )}
                                             {bestDiscount.maxUsage && (
                                                 <div className="flex items-center gap-2">
-                                                    <Users className="w-4 h-4" />
+                                                    <Users className="w-3 sm:w-4 h-3 sm:h-4" />
                                                     <span>
                                                         {bestDiscount.maxUsage - (bestDiscount.currentUsage || 0)} left
                                                     </span>

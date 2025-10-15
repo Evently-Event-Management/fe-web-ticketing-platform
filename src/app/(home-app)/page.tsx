@@ -64,7 +64,7 @@ export default async function HomePage() {
     return (
         <main className="min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="relative overflow-hidden py-12 md:py-18 lg:py-24">
+            <section className="relative overflow-hidden py-12">
                 {/* Abstract background shapes */}
                 <div className="absolute inset-0 overflow-hidden">
                     <div className="absolute -top-48 -right-48 w-96 h-96 rounded-full bg-primary/20 blur-3xl"></div>
@@ -80,23 +80,23 @@ export default async function HomePage() {
                             <span className="text-sm font-medium">The premier ticketing platform</span>
                         </div>
                         
-                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary via-chart-2 to-chart-3 text-transparent bg-clip-text animate-gradient p-4">
+                        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary via-chart-2 to-chart-3 text-transparent bg-clip-text animate-gradient p-2 sm:p-4">
                             Discover <span className="font-extrabold">Amazing</span> Events
                         </h1>
                         
-                        <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-light max-w-2xl mx-auto">
+                        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 font-light max-w-2xl mx-auto">
                             Find and book extraordinary experiences happening around you
                         </p>
 
                         {/* Stats */}
-                        <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mb-16">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto mb-10 sm:mb-16">
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                                <div className="relative bg-background/80 backdrop-blur-sm rounded-xl p-6 transition-all duration-300 border border-border/50 group-hover:translate-y-[-3px] group-hover:shadow-xl">
-                                    <div className="flex items-center justify-center w-14 h-14 bg-primary/10 rounded-full mx-auto mb-4">
-                                        <Calendar className="w-7 h-7 text-primary"/>
+                                <div className="relative bg-background/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 transition-all duration-300 border border-border/50 group-hover:translate-y-[-3px] group-hover:shadow-xl">
+                                    <div className="flex items-center justify-center w-12 sm:w-14 h-12 sm:h-14 bg-primary/10 rounded-full mx-auto mb-2 sm:mb-4">
+                                        <Calendar className="w-6 sm:w-7 h-6 sm:h-7 text-primary"/>
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl sm:text-3xl font-bold text-foreground">
                                         {totalSessionsCount !== null ? (
                                             <CounterAnimation
                                                 value={totalSessionsCount}
@@ -108,28 +108,28 @@ export default async function HomePage() {
                                             <span className="text-lg text-muted-foreground">--</span>
                                         )}
                                     </div>
-                                    <div className="text-sm font-medium text-muted-foreground">Events</div>
+                                    <div className="text-xs sm:text-sm font-medium text-muted-foreground">Events</div>
                                 </div>
                             </div>
                             
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-gradient-to-r from-chart-2/20 to-chart-2/5 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                                <div className="relative bg-background/80 backdrop-blur-sm rounded-xl p-6 transition-all duration-300 border border-border/50 group-hover:translate-y-[-3px] group-hover:shadow-xl">
-                                    <div className="flex items-center justify-center w-14 h-14 bg-chart-2/10 rounded-full mx-auto mb-4">
-                                        <MapPin className="w-7 h-7 text-chart-2"/>
+                                <div className="relative bg-background/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 transition-all duration-300 border border-border/50 group-hover:translate-y-[-3px] group-hover:shadow-xl">
+                                    <div className="flex items-center justify-center w-12 sm:w-14 h-12 sm:h-14 bg-chart-2/10 rounded-full mx-auto mb-2 sm:mb-4">
+                                        <MapPin className="w-6 sm:w-7 h-6 sm:h-7 text-chart-2"/>
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">25+</div>
-                                    <div className="text-sm font-medium text-muted-foreground">Cities</div>
+                                    <div className="text-2xl sm:text-3xl font-bold text-foreground">25+</div>
+                                    <div className="text-xs sm:text-sm font-medium text-muted-foreground">Cities</div>
                                 </div>
                             </div>
                             
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-gradient-to-r from-chart-3/20 to-chart-3/5 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                                <div className="relative bg-background/80 backdrop-blur-sm rounded-xl p-6 transition-all duration-300 border border-border/50 group-hover:translate-y-[-3px] group-hover:shadow-xl">
-                                    <div className="flex items-center justify-center w-14 h-14 bg-chart-3/10 rounded-full mx-auto mb-4">
-                                        <Ticket className="w-7 h-7 text-chart-3"/>
+                                <div className="relative bg-background/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 transition-all duration-300 border border-border/50 group-hover:translate-y-[-3px] group-hover:shadow-xl">
+                                    <div className="flex items-center justify-center w-12 sm:w-14 h-12 sm:h-14 bg-chart-3/10 rounded-full mx-auto mb-2 sm:mb-4">
+                                        <Ticket className="w-6 sm:w-7 h-6 sm:h-7 text-chart-3"/>
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl sm:text-3xl font-bold text-foreground">
                                         {totalTicketsSold !== null ? (
                                             <CounterAnimation
                                                 value={totalTicketsSold}
@@ -141,20 +141,20 @@ export default async function HomePage() {
                                             <span className="text-lg text-muted-foreground">--</span>
                                         )}
                                     </div>
-                                    <div className="text-sm font-medium text-muted-foreground">Tickets Sold</div>
+                                    <div className="text-xs sm:text-sm font-medium text-muted-foreground">Tickets Sold</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link href="/events">
-                                <button className="inline-flex items-center px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all duration-300 text-lg shadow-lg hover:shadow-primary/25 hover:shadow-xl">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                            <Link href="/events" className="w-full sm:w-auto">
+                                <button className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all duration-300 text-base sm:text-lg shadow-lg hover:shadow-primary/25 hover:shadow-xl">
                                     Explore Events
-                                    <ArrowRight className="ml-2 w-5 h-5"/>
+                                    <ArrowRight className="ml-2 w-4 sm:w-5 h-4 sm:h-5"/>
                                 </button>
                             </Link>
-                            <Link href="/manage/organization">
-                                <button className="inline-flex items-center px-8 py-4 bg-background border border-border text-foreground rounded-full hover:bg-muted transition-all duration-300 text-lg">
+                            <Link href="/manage/organization" className="w-full sm:w-auto">
+                                <button className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-background border border-border text-foreground rounded-full hover:bg-muted transition-all duration-300 text-base sm:text-lg">
                                     Create Event
                                 </button>
                             </Link>
@@ -164,21 +164,21 @@ export default async function HomePage() {
             </section>
 
             {/* Categories Section */}
-            <section className="py-24 relative overflow-hidden">
+            <section className="py-12 sm:py-16 md:py-24 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background"></div>
-                <div className="absolute right-0 top-1/4 w-64 h-64 rounded-full bg-primary/10 blur-3xl opacity-70"></div>
-                <div className="absolute left-0 bottom-1/4 w-80 h-80 rounded-full bg-chart-1/10 blur-3xl opacity-70"></div>
+                <div className="absolute right-0 top-1/4 w-48 sm:w-64 h-48 sm:h-64 rounded-full bg-primary/10 blur-3xl opacity-70"></div>
+                <div className="absolute left-0 bottom-1/4 w-60 sm:w-80 h-60 sm:h-80 rounded-full bg-chart-1/10 blur-3xl opacity-70"></div>
                 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
-                        <div className="text-left md:max-w-lg">
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+                    <div className="flex flex-col items-center md:items-start justify-between gap-6 mb-8 sm:mb-12 md:mb-16 text-center md:text-left">
+                        <div className="md:max-w-lg">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-2 sm:mb-4">
                                 CATEGORIES
                             </div>
-                            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-3 sm:mb-4">
                                 <span className="text-primary">Browse</span> by Category
                             </h2>
-                            <p className="text-lg text-muted-foreground">
+                            <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto md:mx-0">
                                 Discover events tailored to your interests across various categories. From music concerts to workshops, find events that match your passion.
                             </p>
                         </div>
@@ -191,25 +191,25 @@ export default async function HomePage() {
             </section>
 
             {/* Trending Events Section */}
-            <section className="py-24 relative overflow-hidden">
+            <section className="py-12 sm:py-16 md:py-24 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-chart-2/5 to-chart-3/5"></div>
                 
                 {/* Decorative elements */}
-                <div className="absolute -left-20 top-20 w-40 h-40 border border-primary/20 rounded-full"></div>
-                <div className="absolute right-40 bottom-40 w-60 h-60 border-2 border-chart-2/20 rounded-full opacity-60"></div>
-                <div className="absolute right-60 top-20 w-20 h-20 bg-chart-3/10 rounded-full blur-xl"></div>
+                <div className="absolute -left-20 top-20 w-40 h-40 border border-primary/20 rounded-full hidden sm:block"></div>
+                <div className="absolute right-40 bottom-40 w-60 h-60 border-2 border-chart-2/20 rounded-full opacity-60 hidden md:block"></div>
+                <div className="absolute right-60 top-20 w-20 h-20 bg-chart-3/10 rounded-full blur-xl hidden sm:block"></div>
                 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
-                        <div className="text-left md:max-w-lg">
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+                    <div className="flex flex-col items-center md:items-start md:flex-row justify-between gap-6 mb-8 sm:mb-12 md:mb-16 text-center md:text-left">
+                        <div className="md:max-w-lg">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-2 sm:mb-4">
                                 HOT & HAPPENING
                             </div>
-                            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4 flex flex-col md:flex-row md:items-center gap-2">
+                            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-3 sm:mb-4 flex flex-col md:flex-row md:items-center gap-2">
                                 <span className="text-primary">Trending</span> Events
                                 <span className="hidden md:inline-block w-3 h-3 rounded-full bg-chart-3 animate-pulse"></span>
                             </h2>
-                            <p className="text-lg text-muted-foreground">
+                            <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto md:mx-0">
                                 Don&#39;t miss out on the most popular events happening right now. These are the events everyone is talking about.
                             </p>
                         </div>
@@ -225,9 +225,9 @@ export default async function HomePage() {
                     {trendingError && (
                         <div className="relative overflow-hidden">
                             <div className="absolute inset-0 bg-destructive/5 backdrop-blur-sm rounded-xl"></div>
-                            <div className="text-center p-8 bg-background/70 backdrop-blur-sm rounded-xl border border-destructive/20 max-w-3xl mx-auto mb-8 relative z-10">
+                            <div className="text-center p-4 sm:p-8 bg-background/70 backdrop-blur-sm rounded-xl border border-destructive/20 max-w-3xl mx-auto mb-8 relative z-10">
                                 <p className="text-destructive font-medium mb-2">Oops! Something went wrong</p>
-                                <p className="text-muted-foreground mb-6">{trendingError}</p>
+                                <p className="text-muted-foreground mb-4 sm:mb-6">{trendingError}</p>
                                 <RefreshButton pendingText="Refreshing...">
                                     Try Again
                                 </RefreshButton>
@@ -235,7 +235,7 @@ export default async function HomePage() {
                         </div>
                     )}
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-7xl mx-auto">
                         {trendingEvents.length > 0 ? (
                             // Display actual events
                             trendingEvents.map((event: EventThumbnailDTO) => (
@@ -243,22 +243,22 @@ export default async function HomePage() {
                             ))
                         ) : !trendingError ? (
                             // No events found
-                            <div className="col-span-3 text-center bg-background/60 backdrop-blur-sm rounded-xl border border-border/20 p-12 shadow-sm">
-                                <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
-                                    <Calendar className="w-8 h-8 text-muted-foreground" />
+                            <div className="col-span-1 sm:col-span-3 text-center bg-background/60 backdrop-blur-sm rounded-xl border border-border/20 p-6 sm:p-12 shadow-sm">
+                                <div className="inline-flex items-center justify-center w-12 sm:w-16 h-12 sm:h-16 bg-muted rounded-full mb-3 sm:mb-4">
+                                    <Calendar className="w-6 sm:w-8 h-6 sm:h-8 text-muted-foreground" />
                                 </div>
-                                <h3 className="text-xl font-medium mb-2">No Events Found</h3>
-                                <p className="text-muted-foreground text-lg">We couldn&#39;t find any trending events at the moment. Check back later!</p>
+                                <h3 className="text-lg sm:text-xl font-medium mb-2">No Events Found</h3>
+                                <p className="text-muted-foreground text-base sm:text-lg">We couldn&#39;t find any trending events at the moment. Check back later!</p>
                             </div>
                         ) : null}
                     </div>
 
                     {/* Mobile View All Link */}
-                    <div className="text-center mt-12 md:hidden">
-                        <Link href="/events">
-                            <button className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all duration-300 text-lg shadow-lg">
+                    <div className="text-center mt-8 sm:mt-12 md:hidden">
+                        <Link href="/events" className="w-full sm:w-auto inline-block">
+                            <button className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all duration-300 text-base sm:text-lg shadow-lg">
                                 View All Events
-                                <ArrowRight className="ml-2 w-5 h-5"/>
+                                <ArrowRight className="ml-2 w-4 sm:w-5 h-4 sm:h-5"/>
                             </button>
                         </Link>
                     </div>
@@ -266,7 +266,7 @@ export default async function HomePage() {
             </section>
 
             {/* Locations Section */}
-            <section className="py-24 relative overflow-hidden">
+            <section className="py-12 sm:py-16 md:py-24 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-background via-chart-1/10 to-background"></div>
                 
                 {/* Map-like decorative elements */}
@@ -281,15 +281,15 @@ export default async function HomePage() {
                 </div>
                 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
-                        <div className="text-left md:max-w-lg">
-                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-chart-1/10 text-chart-1 text-xs font-medium mb-4">
+                    <div className="flex flex-col items-center md:items-start md:flex-row justify-between gap-6 mb-8 sm:mb-12 md:mb-16 text-center md:text-left">
+                        <div className="md:max-w-lg">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-chart-1/10 text-chart-1 text-xs font-medium mb-2 sm:mb-4">
                                 DESTINATIONS
                             </div>
-                            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-3 sm:mb-4">
                                 <span className="text-chart-1">Explore</span> by Location
                             </h2>
-                            <p className="text-lg text-muted-foreground">
+                            <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto md:mx-0">
                                 Find exciting events happening in cities across Sri Lanka. Discover local culture, music, and entertainment wherever you go.
                             </p>
                         </div>
@@ -304,7 +304,7 @@ export default async function HomePage() {
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
                         {sriLankaLocations
                             .filter(location => !!location.imageUrl)
                             .map((location) => (
@@ -312,9 +312,9 @@ export default async function HomePage() {
                             ))}
                     </div>
                     
-                    <div className="flex justify-center mt-12">
-                        <div className="inline-flex items-center px-4 py-2 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 mr-2 text-chart-1" />
+                    <div className="flex justify-center mt-8 sm:mt-12">
+                        <div className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 text-xs sm:text-sm text-muted-foreground">
+                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-chart-1" />
                             <span>More locations coming soon</span>
                         </div>
                     </div>
@@ -322,7 +322,7 @@ export default async function HomePage() {
             </section>
 
             {/* CTA Section */}
-            <section className="relative py-32 overflow-hidden">
+            <section className="relative py-16 sm:py-24 md:py-32 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/90">
                     {/* Abstract shapes */}
                     <div className="absolute inset-0">
