@@ -41,7 +41,7 @@ export const AudienceViewsChart: React.FC<AudienceViewsChartProps> = ({data, tot
                 <CardTitle>Audience views</CardTitle>
                 <CardDescription>Event impressions over the last 30 days</CardDescription>
             </CardHeader>
-            <CardContent className="flex h-[320px] flex-col justify-center gap-4">
+            <CardContent className="flex h-[320px] flex-col justify-center gap-4 pb-2">
                 {isLoading ? (
                     <Skeleton className="h-[260px] w-full"/>
                 ) : chartData.length === 0 ? (
@@ -55,10 +55,15 @@ export const AudienceViewsChart: React.FC<AudienceViewsChartProps> = ({data, tot
                             <span className="font-semibold text-foreground">{totalViews.toLocaleString("en-LK")}</span>
                         </div>
                         <ChartContainer config={CHART_CONFIG} className="h-full w-full">
-                            <LineChart data={chartData} margin={{left: 0, right: 12, top: 4, bottom: 12}}>
+                            <LineChart data={chartData} margin={{left: 0, right: 12, top: 20, bottom: 12}}>
                                 <CartesianGrid vertical={false} strokeDasharray="4 4" className="stroke-border/60"/>
                                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8}/>
-                                <YAxis tickLine={false} axisLine={false} allowDecimals={false}/>
+                                <YAxis 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    allowDecimals={false}
+                                    domain={['auto', 'auto']}  
+                                />
                                 <ChartTooltip
                                     content={<ChartTooltipContent
                                         nameKey="views"
