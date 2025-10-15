@@ -4,6 +4,7 @@ import * as React from 'react';
 import {useState} from 'react';
 import {Block, TierFormData} from '@/lib/validators/event';
 import {SessionSeatingMapRequest, Row, Seat} from '@/lib/validators/event';
+import {normalizeSeatingLayout} from '@/lib/seatingLayoutUtils';
 
 import {TierPalette} from './TierPalette';
 import {InteractiveDraggableBlock, InteractiveResizableBlock} from './InteractiveBlocks';
@@ -17,6 +18,10 @@ interface TierAssignmentEditorProps {
 
 export function TierAssignmentEditor({layoutData, tiers, onChange}: TierAssignmentEditorProps) {
     const [selectedTierId, setSelectedTierId] = useState<string | null>(tiers[0]?.id || null);
+    const normalizedLayout = React.useMemo(
+        () => normalizeSeatingLayout(layoutData.layout.blocks ?? []),
+        [layoutData.layout.blocks]
+    );
 
     const handleSeatClick = (blockId: string, rowId: string, seatId: string) => {
         // Deep copy to avoid state mutation issues
@@ -98,33 +103,49 @@ export function TierAssignmentEditor({layoutData, tiers, onChange}: TierAssignme
     return (
         <div className="flex h-[70vh] border rounded-lg">
             <main className="flex-1 relative bg-muted/20 overflow-auto">
-                <div className="relative w-full h-full p-4">
-                    {layoutData.layout.blocks.map(block => {
+                <div
+                    className="relative mx-auto p-4 rounded-lg"
+                    style={{
+                        width: `${normalizedLayout.canvasWidth}px`,
+                        height: `${Math.max(normalizedLayout.canvasHeight, 360)}px`,
+                        minWidth: '100%',
+                        backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--muted)) 1px, transparent 0)',
+                        backgroundSize: '20px 20px'
+                    }}
+                >
+                    {normalizedLayout.blocks.map(block => {
                         if (block.type === 'seated_grid') {
-                            return <InteractiveDraggableBlock
-                                key={block.id}
-                                block={block}
-                                tiers={tiers}
-                                onSeatClick={handleSeatClick}
-                                onApplyToAllSeats={handleApplyToAllSeats}
-                            />;
+                            return (
+                                <InteractiveDraggableBlock
+                                    key={block.id}
+                                    block={block as Block}
+                                    tiers={tiers}
+                                    onSeatClick={handleSeatClick}
+                                    onApplyToAllSeats={handleApplyToAllSeats}
+                                />
+                            );
                         }
                         if (block.type === 'standing_capacity') {
-                            return <InteractiveResizableBlock
-                                key={block.id}
-                                block={block}
-                                tiers={tiers}
-                                onClick={handleBlockClick}
-                            />;
+                            return (
+                                <InteractiveResizableBlock
+                                    key={block.id}
+                                    block={block as Block}
+                                    tiers={tiers}
+                                    onClick={handleBlockClick}
+                                />
+                            );
                         }
                         return (
-                            <div key={block.id} style={{
-                                left: block.position.x,
-                                top: block.position.y,
-                                width: block.width ? block.width : undefined,
-                                height: block.height ? block.height : undefined
-                            }}
-                                 className="absolute p-2 bg-muted border rounded-lg flex items-center justify-center">
+                            <div
+                                key={block.id}
+                                style={{
+                                    left: block.position.x,
+                                    top: block.position.y,
+                                    width: block.width,
+                                    height: block.height
+                                }}
+                                className="absolute p-2 bg-muted border rounded-lg flex items-center justify-center"
+                            >
                                 <p className="text-sm text-muted-foreground">{block.name}</p>
                             </div>
                         );
