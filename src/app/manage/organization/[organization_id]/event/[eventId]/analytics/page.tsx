@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState, useCallback, useRef} from "react";
+import {useEffect, useState, useCallback} from "react";
 import {EventAnalytics, SessionSummary} from "@/types/eventAnalytics";
 import {getBatchedGaInsights} from "@/lib/actions/public/server/eventActions";
 import {EventAnalyticsView} from "./_components/EventAnalyticsView";
@@ -9,14 +9,18 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {getAllSessionsAnalytics, getEventAnalytics, getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
 import { AlertTriangle } from "lucide-react";
 import { useEventContext } from "@/providers/EventProvider";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
-import {subscribeToSse} from "@/lib/api";
-import {OrderCheckoutSseEvent, StreamingTicket} from "@/types/order";
-import {parseOrderCheckoutEvent} from "@/lib/orderSseUtils";
+import {EventRevenueHero} from "./_components/EventRevenueHero";
 
 export default function AnalyticsPage() {
-    const { event, isLoading: isEventLoading } = useEventContext();
+    const {
+        event,
+        isLoading: isEventLoading,
+        hasPendingRevenueUpdate,
+        pendingRevenueDelta,
+        pendingTicketCount,
+        acknowledgeRevenueUpdate,
+        lastRevenueUpdateAt,
+    } = useEventContext();
     const [analyticsData, setAnalyticsData] = useState<EventAnalytics | null>(null);
     const [revenueAnalytics, setRevenueAnalytics] = useState<{
         total_revenue: number;
@@ -36,7 +40,6 @@ export default function AnalyticsPage() {
     const [isRevenueLoading, setIsRevenueLoading] = useState(true);
     const [isGaLoading, setIsGaLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const processedOrderIdsRef = useRef<Set<string>>(new Set());
 
     // Fetch revenue analytics data (new)
     const fetchRevenueAnalytics = useCallback(async () => {
@@ -118,164 +121,15 @@ export default function AnalyticsPage() {
     }, [event?.id]);
 
     // Function to refresh all analytics data
-    const refreshAllData = useCallback(() => {
-        fetchAnalyticsData();
-        fetchRevenueAnalytics();
-        fetchGaData();
-    }, [fetchAnalyticsData, fetchRevenueAnalytics, fetchGaData]);
-
-    useEffect(() => {
-        processedOrderIdsRef.current.clear();
-    }, [event?.id]);
-
-    useEffect(() => {
-        if (!event?.id) {
-            return;
-        }
-
-        const toNumber = (value: number | string | null | undefined): number => {
-            if (typeof value === "number") {
-                return value;
-            }
-            if (typeof value === "string") {
-                const parsed = Number(value);
-                return Number.isFinite(parsed) ? parsed : 0;
-            }
-            return 0;
-        };
-
-        const unsubscribe = subscribeToSse<OrderCheckoutSseEvent>(
-            `/order/sse/checkouts/event/${event.id}`,
-            {
-                onMessage: ({event: eventName, data}) => {
-                    if (eventName && eventName.toUpperCase() === "CONNECTED") {
-                        return;
-                    }
-
-                    if (eventName && eventName.toUpperCase() !== "CHECKOUT") {
-                        return;
-                    }
-
-                    if (!data) {
-                        return;
-                    }
-
-                    const parsed = parseOrderCheckoutEvent(data);
-
-                    if (!parsed.orderId) {
-                        return;
-                    }
-
-                    if (processedOrderIdsRef.current.has(parsed.orderId)) {
-                        return;
-                    }
-
-                    processedOrderIdsRef.current.add(parsed.orderId);
-
-                    const revenueIncrease = parsed.revenue;
-
-                    const tickets = Array.isArray(data.tickets)
-                        ? data.tickets
-                        : Array.isArray(data.Tickets)
-                            ? data.Tickets as StreamingTicket[]
-                            : [];
-
-                    const ticketCount = parsed.ticketCount || tickets.length;
-
-                    if (revenueIncrease <= 0 && ticketCount === 0) {
-                        return;
-                    }
-
-                    setAnalyticsData(prev => {
-                        if (!prev) {
-                            return prev;
-                        }
-
-                        const updatedRevenue = revenueIncrease > 0 ? prev.totalRevenue + revenueIncrease : prev.totalRevenue;
-                        const updatedTickets = ticketCount > 0 ? prev.totalTicketsSold + ticketCount : prev.totalTicketsSold;
-                        const averageRevenue = updatedTickets > 0 ? updatedRevenue / updatedTickets : prev.averageRevenuePerTicket;
-
-                        const updatedTierSales = Array.isArray(prev.salesByTier) && prev.salesByTier.length > 0 && ticketCount > 0
-                            ? prev.salesByTier.map(tier => {
-                                const tierTicketsForTier = tickets
-                                    ?.filter(ticket => ticket.tier_id === tier.tierId);
-
-                                const tierIncrement = tierTicketsForTier
-                                    ?.reduce((acc, ticket) => acc + toNumber(ticket.price_at_purchase), 0) ?? 0;
-                                const tierTicketsCount = tierTicketsForTier?.length ?? 0;
-
-                                if (tierIncrement === 0 && tierTicketsCount === 0) {
-                                    return tier;
-                                }
-
-                                return {
-                                    ...tier,
-                                    totalRevenue: tier.totalRevenue + tierIncrement,
-                                    ticketsSold: tier.ticketsSold + tierTicketsCount,
-                                };
-                            })
-                            : prev.salesByTier;
-
-                        return {
-                            ...prev,
-                            totalRevenue: updatedRevenue,
-                            totalTicketsSold: updatedTickets,
-                            averageRevenuePerTicket: averageRevenue,
-                            salesByTier: updatedTierSales,
-                        };
-                    });
-
-                    setRevenueAnalytics(prev => {
-                        if (!prev) {
-                            return prev;
-                        }
-
-                        const updatedRevenue = revenueIncrease > 0 ? prev.total_revenue + revenueIncrease : prev.total_revenue;
-                        const updatedTickets = ticketCount > 0 ? prev.total_tickets_sold + ticketCount : prev.total_tickets_sold;
-
-                        const tierAdjustments = tickets.reduce<Record<string, {count: number; revenue: number}>>((acc, ticket) => {
-                            const key = ticket.tier_id;
-                            if (!key) {
-                                return acc;
-                            }
-                            if (!acc[key]) {
-                                acc[key] = {count: 0, revenue: 0};
-                            }
-                            acc[key].count += 1;
-                            acc[key].revenue += toNumber(ticket.price_at_purchase);
-                            return acc;
-                        }, {});
-
-                        const updatedSalesByTier = Array.isArray(prev.sales_by_tier) && prev.sales_by_tier.length > 0
-                            ? prev.sales_by_tier.map(tier => {
-                                const adjustment = tierAdjustments[tier.tier_id];
-                                if (!adjustment) {
-                                    return tier;
-                                }
-                                return {
-                                    ...tier,
-                                    tickets_sold: tier.tickets_sold + adjustment.count,
-                                    revenue: tier.revenue + adjustment.revenue,
-                                };
-                            })
-                            : prev.sales_by_tier;
-
-                        return {
-                            ...prev,
-                            total_revenue: updatedRevenue,
-                            total_tickets_sold: updatedTickets,
-                            sales_by_tier: updatedSalesByTier,
-                        };
-                    });
-                },
-                onError: (streamError) => {
-                    console.error("Event analytics SSE error", streamError);
-                },
-            },
-        );
-
-        return unsubscribe;
-    }, [event?.id]);
+    const refreshAllData = useCallback(async () => {
+        await Promise.all([
+            fetchAnalyticsData(),
+            fetchRevenueAnalytics(),
+            fetchGaData(),
+        ]);
+        acknowledgeRevenueUpdate();
+    }, [fetchAnalyticsData, fetchRevenueAnalytics, fetchGaData, acknowledgeRevenueUpdate]);
+    
 
     // Initial load of analytics data when event is loaded
     useEffect(() => {
@@ -320,23 +174,35 @@ export default function AnalyticsPage() {
         return <div className="p-8"><Skeleton className="h-[600px] w-full"/></div>;
     }
 
+    const heroIsLoading = isRevenueLoading && !revenueAnalytics;
+    const compositeRefreshing = isAnalyticsLoading || isRevenueLoading || isGaLoading;
+    const totalRevenueValue = revenueAnalytics?.total_revenue ?? analyticsData.totalRevenue;
+    const totalTicketsValue = revenueAnalytics?.total_tickets_sold ?? analyticsData.totalTicketsSold;
+
     return (
-        <div className="container mx-auto p-4 md:p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{analyticsData.eventTitle}</h1>
-                    <p className="text-muted-foreground">Overall Event Analytics Dashboard</p>
-                </div>
-                <Button
-                    onClick={refreshAllData}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    disabled={isAnalyticsLoading || isGaLoading}
-                >
-                    <RefreshCw className={`h-4 w-4 ${(isAnalyticsLoading || isGaLoading) ? 'animate-spin' : ''}`} />
-                    Refresh Data
-                </Button>
+        <div className="container mx-auto p-4 md:p-8 space-y-10">
+            <EventRevenueHero
+                eventTitle={analyticsData.eventTitle}
+                coverPhotoUrl={event?.coverPhotos?.[0]}
+                organizationName={event?.organizationName}
+                totalRevenue={totalRevenueValue}
+                totalTickets={totalTicketsValue}
+                isLoading={heroIsLoading}
+                isRefreshing={compositeRefreshing}
+                hasPendingUpdate={hasPendingRevenueUpdate}
+                pendingRevenueDelta={pendingRevenueDelta}
+                pendingTicketCount={pendingTicketCount}
+                lastUpdatedAt={lastRevenueUpdateAt}
+                onRefresh={() => { void refreshAllData(); }}
+            />
+
+            <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">Performance breakdown</h2>
+                <p className="text-sm text-muted-foreground">
+                    Dive deeper into sales velocity, audience behaviour, and session performance for this event.
+                </p>
             </div>
+
             <EventAnalyticsView
                 analytics={analyticsData}
                 revenueAnalytics={revenueAnalytics || undefined}
