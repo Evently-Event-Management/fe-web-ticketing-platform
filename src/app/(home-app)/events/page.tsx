@@ -5,6 +5,14 @@ import {Suspense} from 'react';
 import {Skeleton} from '@/components/ui/skeleton';
 import Image from 'next/image';
 import {CategoryFilterBar} from './_components/CategoryFilterBar';
+import type {Metadata} from 'next';
+
+export const metadata: Metadata = {
+    title: 'Browse Events | Ticketly',
+    description: 'Explore upcoming concerts, workshops, and festivals happening across Sri Lanka.'
+};
+
+export const revalidate = 300;
 
 // A simpler skeleton for the new filter bar
 const FilterSkeleton = () => (

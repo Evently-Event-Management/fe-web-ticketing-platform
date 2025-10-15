@@ -1,18 +1,15 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { CalendarDays, MapPin, Tag, Share2, Clock, Users, Bell, Loader2 } from "lucide-react"
-import { cn, formatCurrency } from "@/lib/utils"
-import { DiscountType } from "@/types/enums/discountType";
-import { DiscountThumbnailDTO, EventThumbnailDTO } from "@/types/event";
+import {Card, CardContent, CardHeader} from "@/components/ui/card";
+import {Badge} from "@/components/ui/badge";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {CalendarDays, MapPin, Tag, Clock, Users} from "lucide-react";
+import {cn, formatCurrency} from "@/lib/utils";
+import {DiscountType} from "@/types/enums/discountType";
+import {DiscountThumbnailDTO, EventThumbnailDTO} from "@/types/event";
 import Image from "next/image";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import {AspectRatio} from "@/components/ui/aspect-ratio";
 import Link from "next/link";
-import { MouseEvent, useState, useEffect } from "react";
-import { toast } from "sonner";
-import { subscribeToEntity, unsubscribeFromEntity, checkSubscriptionStatus } from "@/lib/subscriptionUtils";
-import { EventShareDialog } from "./EventShareDialog";
+import {Suspense} from "react";
+import {EventCardClientControls} from "./EventCardClientControls";
 
 interface EventCardProps {
     event: EventThumbnailDTO
@@ -98,68 +95,6 @@ export function EventCard({ event, className }: EventCardProps) {
 
     const bestDiscount = getBestDiscount();
 
-    // State for subscription status and share dialog
-    const [isSubscribed, setIsSubscribed] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-
-    // Check subscription status on mount
-    useEffect(() => {
-        const checkStatus = async () => {
-            setIsLoading(true);
-            try {
-                const status = await checkSubscriptionStatus(event.id, 'event');
-                setIsSubscribed(status);
-            } catch (error) {
-                console.error("Error checking subscription status:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        checkStatus();
-    }, [event.id]);
-
-    // Handler for subscribe/unsubscribe action
-    const handleSubscribeClick = async (e: MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        if (isLoading) return;
-        
-        setIsLoading(true);
-        
-        try {
-            if (isSubscribed) {
-                // Unsubscribe
-                const success = await unsubscribeFromEntity({
-                    id: event.id,
-                    type: 'event',
-                    name: event.title
-                });
-                
-                if (success) {
-                    setIsSubscribed(false);
-                    toast.success(`Unsubscribed from ${event.title}`);
-                }
-            } else {
-                // Subscribe
-                const success = await subscribeToEntity({
-                    id: event.id,
-                    type: 'event',
-                    name: event.title
-                });
-                
-                if (success) {
-                    setIsSubscribed(true);
-                    toast.success(`Subscribed to ${event.title}`);
-                }
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     return (
         <>
         <Link href={`/events/${event.id}`} className="block">
@@ -176,53 +111,15 @@ export function EventCard({ event, className }: EventCardProps) {
                             src={event.coverPhotoUrl || "/placeholder.svg"}
                             alt={event.title}
                             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/6366f1/ffffff?text=Event+Image';
-                            }}
                         />
-                        <div className="absolute top-3 right-3 flex gap-2">
-                            <Button
-                                size="icon"
-                                variant="secondary"
-                                className="bg-background/80 text-foreground backdrop-blur-sm hover:bg-background/95 p-2 h-9 w-9 rounded-full"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    setIsShareDialogOpen(true);
-                                }}
-                            >
-                                <Share2 className="w-4 h-4" />
-                            </Button>
-                            <TooltipProvider delayDuration={200}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="icon"
-                                            variant="secondary"
-                                            disabled={isLoading}
-                                            className={cn(
-                                                "bg-background/80 text-foreground backdrop-blur-sm hover:bg-background/95 p-2 h-9 w-9 rounded-full",
-                                                isSubscribed && "text-primary"
-                                            )}
-                                            onClick={handleSubscribeClick}
-                                        >
-                                            {isLoading ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <Bell className="w-4 h-4" />
-                                            )}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        {isLoading 
-                                            ? "Processing..." 
-                                            : isSubscribed 
-                                                ? "Unsubscribe from event updates" 
-                                                : "Subscribe to event updates"}
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
+                        <Suspense fallback={(
+                            <div className="absolute top-3 right-3 flex gap-2">
+                                <div className="h-9 w-9 rounded-full bg-background/60 backdrop-blur-sm border border-border/30"/>
+                                <div className="h-9 w-9 rounded-full bg-background/60 backdrop-blur-sm border border-border/30"/>
+                            </div>
+                        )}>
+                            <EventCardClientControls event={event} />
+                        </Suspense>
                         <div className="absolute top-3 left-3">
                             <Badge variant="secondary" className="bg-background/80 text-foreground backdrop-blur-sm">
                                 {event.categoryName}
@@ -295,13 +192,6 @@ export function EventCard({ event, className }: EventCardProps) {
                 </CardContent>
             </Card>
         </Link>
-        
-        {/* Share Dialog */}
-        <EventShareDialog
-            open={isShareDialogOpen}
-            onOpenChange={setIsShareDialogOpen}
-            event={event}
-        />
         </>
     )
 }
