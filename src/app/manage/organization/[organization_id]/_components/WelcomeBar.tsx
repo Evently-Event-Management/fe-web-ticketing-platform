@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, {useEffect, useRef, useState} from "react";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
@@ -20,6 +20,72 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
     organizationId,
     isLoading = false,
 }) => {
+    const [displayedRevenue, setDisplayedRevenue] = useState(totalRevenue ?? 0);
+    const animationFrameRef = useRef<number | null>(null);
+    const latestValueRef = useRef(displayedRevenue);
+
+    useEffect(() => {
+        latestValueRef.current = displayedRevenue;
+    }, [displayedRevenue]);
+
+    useEffect(() => {
+        return () => {
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const target = totalRevenue ?? 0;
+
+        if (animationFrameRef.current !== null) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+
+        if (isLoading) {
+            setDisplayedRevenue(target);
+            return;
+        }
+
+        const startValue = latestValueRef.current;
+        const difference = target - startValue;
+
+        if (Math.abs(difference) < 0.01) {
+            return;
+        }
+
+        const duration = 800;
+        const startTime = performance.now();
+
+        const animate = (time: number) => {
+            const elapsed = time - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const nextValue = startValue + difference * easedProgress;
+            setDisplayedRevenue(nextValue);
+
+            if (progress < 1) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+                setDisplayedRevenue(target);
+                latestValueRef.current = target;
+                animationFrameRef.current = null;
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [totalRevenue, isLoading]);
+
     return (
         <section className={cn(
             "relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/10 via-background to-background",
@@ -75,7 +141,7 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
                     <p className="text-3xl font-semibold tracking-tight text-foreground">
                         {isLoading
                             ? "--"
-                            : formatCurrency(totalRevenue ?? 0, "LKR", "en-LK")}
+                            : formatCurrency(displayedRevenue, "LKR", "en-LK")}
                     </p>
                     <span className="text-xs text-muted-foreground">
                         Combined revenue across all approved events in your organization.

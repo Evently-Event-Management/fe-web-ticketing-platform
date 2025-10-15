@@ -121,3 +121,44 @@ export interface Ticket {
     TicketType?: string;
     Price: number;
 }
+
+export interface StreamingTicket {
+    ticket_id: string;
+    order_id: string;
+    seat_id: string;
+    seat_label: string;
+    colour: string;
+    tier_id: string;
+    tier_name: string;
+    price_at_purchase: number | string;
+    issued_at: string;
+    checked_in: boolean;
+    checked_in_time?: string;
+}
+
+export interface StreamingOrder {
+    order_id: string;
+    user_id: string;
+    event_id: string;
+    organization_id: string;
+    session_id: string;
+    status: string;
+    subtotal: number | string;
+    discount_id?: string | null;
+    discount_code?: string | null;
+    discount_amount: number | string;
+    price: number | string;
+    created_at: string;
+    payment_intent_id?: string | null;
+    tickets: StreamingTicket[];
+}
+
+export type TicketForStreaming = StreamingTicket;
+
+export interface OrderCheckoutSseEvent extends Partial<StreamingOrder> {
+    order?: StreamingOrder;
+    Order?: StreamingOrder;
+    tickets?: StreamingTicket[];
+    Tickets?: StreamingTicket[];
+    [key: string]: unknown;
+}
