@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useParams} from "next/navigation";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import {Button} from "@/components/ui/button";
@@ -17,9 +17,12 @@ import {useOrganizationDashboardData} from "./_hooks/useOrganizationDashboardDat
 import {formatCurrency} from "@/lib/utils";
 import {DailySalesMetrics} from "@/lib/actions/analyticsActions";
 import {EventSummaryDTO} from "@/lib/validators/event";
+import {subscribeToSse} from "@/lib/api";
+import {OrderCheckoutSseEvent} from "@/types/order";
+import {parseOrderCheckoutEvent} from "@/lib/orderSseUtils";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {DeviceBreakdownChart} from "./_components/DeviceBreakdownChart";
 import {TrafficSourcesChart} from "./_components/TrafficSourcesChart";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 const OrganizationDashboardPage = () => {
     const params = useParams();
@@ -34,6 +37,57 @@ const OrganizationDashboardPage = () => {
         error,
         refetch,
     } = useOrganizationDashboardData(organizationId);
+
+    const [liveRevenue, setLiveRevenue] = useState<number>(0);
+    const processedOrderIdsRef = useRef<Set<string>>(new Set());
+
+    useEffect(() => {
+        const initialRevenue = data?.revenue.totalRevenue ?? 0;
+        setLiveRevenue(initialRevenue);
+        processedOrderIdsRef.current.clear();
+    }, [data?.revenue.totalRevenue, organizationId]);
+
+    useEffect(() => {
+        if (!organizationId) {
+            return;
+        }
+
+        return subscribeToSse<OrderCheckoutSseEvent>(
+            `/order/sse/checkouts/organization/${organizationId}`,
+            {
+                onMessage: ({event: eventName, data}) => {
+                    if (eventName && eventName.toUpperCase() === "CONNECTED") {
+                        return;
+                    }
+
+                    if (eventName && eventName.toUpperCase() !== "CHECKOUT") {
+                        return;
+                    }
+
+                    if (!data) {
+                        return;
+                    }
+
+                    const parsed = parseOrderCheckoutEvent(data);
+
+                    if (!parsed.orderId || parsed.revenue <= 0) {
+                        return;
+                    }
+
+                    if (processedOrderIdsRef.current.has(parsed.orderId)) {
+                        return;
+                    }
+
+                    processedOrderIdsRef.current.add(parsed.orderId);
+
+                    setLiveRevenue(prev => prev + parsed.revenue);
+                },
+                onError: (streamError) => {
+                    console.error("Organization revenue SSE error", streamError);
+                },
+            },
+        );
+    }, [organizationId]);
 
     const summarizedDailyTickets = useMemo(() => {
         return data.revenue.dailySales.reduce<number>((acc, item: DailySalesMetrics) => acc + item.tickets_sold, 0);
@@ -77,6 +131,10 @@ const OrganizationDashboardPage = () => {
             .join(" • ");
     }, [sessionStatusTotals]);
 
+    const handleRefresh = useCallback(() => {
+        void refetch();
+    }, [refetch]);
+
     if (!organizationId) {
         return (
             <div className="p-6 md:p-8">
@@ -94,9 +152,10 @@ const OrganizationDashboardPage = () => {
         <div className="space-y-8 p-6 md:p-8">
             <WelcomeBar
                 organizationName={organization?.name}
-                totalRevenue={data?.revenue.totalRevenue}
+                totalRevenue={liveRevenue}
                 organizationId={organizationId}
                 isLoading={loading.revenue || loading.events}
+                organizationLogoUrl={organization?.logoUrl ?? undefined}
             />
 
             {error && (
@@ -123,6 +182,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={summarizedDailyTickets.toLocaleString("en-LK")}
                     trendVariant="positive"
                     isLoading={loading.revenue}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.revenue}
                 />
                 <StatsCard
                     title="Discounts given"
@@ -132,6 +193,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={discountShare}
                     trendVariant="neutral"
                     isLoading={loading.revenue}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.revenue}
                 />
                 <StatsCard
                     title="Sessions tracked"
@@ -141,6 +204,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={sessionStatusSummary}
                     trendVariant="neutral"
                     isLoading={loading.sessionAnalytics}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.sessionAnalytics}
                 />
                 <StatsCard
                     title="Events live"
@@ -150,6 +215,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={pendingEventsCount.toLocaleString("en-LK")}
                     trendVariant="warning"
                     isLoading={loading.events}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.events}
                 />
                 <StatsCard
                     title="Audience reach"
@@ -159,6 +226,8 @@ const OrganizationDashboardPage = () => {
                     trendValue={(data?.audience.uniqueUsers ?? 0).toLocaleString("en-LK")}
                     trendVariant="neutral"
                     isLoading={loading.audience}
+                    onRefresh={handleRefresh}
+                    isRefreshing={loading.audience}
                 />
             </section>
 

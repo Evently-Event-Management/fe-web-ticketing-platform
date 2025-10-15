@@ -1,17 +1,19 @@
 "use client";
 
-import React from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Sparkles, ArrowRight, RockingChair} from "lucide-react";
 import {cn, formatCurrency} from "@/lib/utils";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 interface WelcomeBarProps {
     organizationName?: string;
     totalRevenue?: number;
     organizationId: string;
     isLoading?: boolean;
+    organizationLogoUrl?: string;
 }
 
 export const WelcomeBar: React.FC<WelcomeBarProps> = ({
@@ -19,7 +21,87 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
     totalRevenue,
     organizationId,
     isLoading = false,
+    organizationLogoUrl,
 }) => {
+    const [displayedRevenue, setDisplayedRevenue] = useState(totalRevenue ?? 0);
+    const animationFrameRef = useRef<number | null>(null);
+    const latestValueRef = useRef(displayedRevenue);
+
+    const logoFallback = useMemo(() => {
+        if (!organizationName) {
+            return "ORG";
+        }
+        const words = organizationName.trim().split(/\s+/);
+        if (words.length === 1) {
+            return words[0].slice(0, 2).toUpperCase();
+        }
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }, [organizationName]);
+
+    useEffect(() => {
+        latestValueRef.current = displayedRevenue;
+    }, [displayedRevenue]);
+
+    useEffect(() => {
+        return () => {
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const target = totalRevenue ?? 0;
+
+        if (animationFrameRef.current !== null) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+
+        if (isLoading) {
+            setDisplayedRevenue(target);
+            return;
+        }
+
+        const startValue = latestValueRef.current;
+        const difference = target - startValue;
+
+        if (Math.abs(difference) < 0.01) {
+            setDisplayedRevenue(target);
+            latestValueRef.current = target;
+            return;
+        }
+
+        const duration = 800;
+        const startTime = performance.now();
+
+        const animate = (time: number) => {
+            const elapsed = time - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const nextValue = startValue + difference * easedProgress;
+            setDisplayedRevenue(nextValue);
+
+            if (progress < 1) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+                setDisplayedRevenue(target);
+                latestValueRef.current = target;
+                animationFrameRef.current = null;
+            }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [totalRevenue, isLoading]);
+
     return (
         <section className={cn(
             "relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/10 via-background to-background",
@@ -30,10 +112,18 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
 
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div className="space-y-4">
-                    <Badge variant="outline" className="bg-background/80 backdrop-blur text-primary border-primary/30">
-                        <Sparkles className="mr-1.5 h-3.5 w-3.5"/>
-                        Welcome back
-                    </Badge>
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-14 w-14 border border-primary/30 shadow-sm">
+                            <AvatarImage src={organizationLogoUrl ?? undefined} alt={organizationName ?? "Organization logo"}/>
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                {logoFallback}
+                            </AvatarFallback>
+                        </Avatar>
+                        <Badge variant="outline" className="bg-background/80 backdrop-blur text-primary border-primary/30">
+                            <Sparkles className="mr-1.5 h-3.5 w-3.5"/>
+                            Welcome back
+                        </Badge>
+                    </div>
                     <div className="space-y-2">
                         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                             {isLoading
@@ -65,19 +155,29 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
                     </div>
                 </div>
 
-                <div className="relative isolate grid gap-4 rounded-2xl border border-primary/20 bg-background/90 p-6 shadow-lg backdrop-blur">
+                <div className="relative isolate grid gap-4 rounded-2xl border border-primary/20 bg-neutral-900/80 p-6 text-white shadow-lg backdrop-blur">
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>Total revenue generated</span>
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                            Live
+                        <span className="text-white/80">Total revenue generated</span>
+                        <Badge
+                            variant="secondary"
+                            className="border-white/40 bg-white/10 text-white/90 shadow-lg backdrop-blur-sm animate-pulse"
+                        >
+                            <span className="flex items-center gap-2">
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="absolute inset-0 rounded-full bg-emerald-400/80 blur-[1px]"/>
+                                    <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75"/>
+                                    <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(74,222,128,0.9)]"/>
+                                </span>
+                                Live
+                            </span>
                         </Badge>
                     </div>
-                    <p className="text-3xl font-semibold tracking-tight text-foreground">
+                    <p className="text-3xl font-semibold tracking-tight text-white">
                         {isLoading
                             ? "--"
-                            : formatCurrency(totalRevenue ?? 0, "LKR", "en-LK")}
+                            : formatCurrency(displayedRevenue, "LKR", "en-LK")}
                     </p>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-white/70">
                         Combined revenue across all approved events in your organization.
                     </span>
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, {createContext, useContext, useState, useCallback, ReactNode, useEffect} from "react";
+import React, {createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef} from "react";
 import {getMyEventById} from "@/lib/actions/eventActions";
 import {EventDetailDTO, SessionDetailDTO} from "@/lib/validators/event";
 import {OrganizationResponse} from "@/types/oraganizations";
@@ -8,6 +8,9 @@ import {toast} from "sonner";
 import {useOrganization} from "@/providers/OrganizationProvider";
 import {DiscountResponse, getDiscounts} from "@/lib/actions/discountActions";
 import {getSession, getSessionsByEventId} from "@/lib/actions/sessionActions";
+import {subscribeToSse} from "@/lib/api";
+import {OrderCheckoutSseEvent} from "@/types/order";
+import {parseOrderCheckoutEvent} from "@/lib/orderSseUtils";
 
 interface EventContextProps {
     event: EventDetailDTO | null;
@@ -21,6 +24,10 @@ interface EventContextProps {
     refetchSessions: () => Promise<void>;
     refetchSession: (sessionId: string) => Promise<void>;
     setSessions: (sessions: SessionDetailDTO[]) => void;
+    liveRevenueTotal: number | null;
+    liveTicketsSold: number | null;
+    lastRevenueUpdateAt: Date | null;
+    seedRevenueSnapshot: (payload: {totalRevenue?: number | null; totalTickets?: number | null}) => void;
 }
 
 const EventContext = createContext<EventContextProps | undefined>(undefined);
@@ -45,7 +52,11 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
+    const [liveRevenueTotal, setLiveRevenueTotal] = useState<number | null>(null);
+    const [liveTicketsSold, setLiveTicketsSold] = useState<number | null>(null);
+    const [lastRevenueUpdateAt, setLastRevenueUpdateAt] = useState<Date | null>(null);
     const {organizations, organization: currentOrganization, switchOrganization} = useOrganization();
+    const processedOrderIdsRef = useRef<Set<string>>(new Set());
 
     const fetchEventData = useCallback(async () => {
         if (!eventId) {
@@ -81,6 +92,82 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
     useEffect(() => {
         fetchEventData();
     }, [fetchEventData]);
+
+    useEffect(() => {
+        processedOrderIdsRef.current.clear();
+        setLiveRevenueTotal(null);
+        setLiveTicketsSold(null);
+        setLastRevenueUpdateAt(null);
+    }, [eventId]);
+
+    useEffect(() => {
+        if (!eventId) {
+            return;
+        }
+
+        const unsubscribe = subscribeToSse<OrderCheckoutSseEvent>(
+            `/order/sse/checkouts/event/${eventId}`,
+            {
+                onMessage: ({event: eventName, data}) => {
+                    if (eventName && eventName.toUpperCase() === "CONNECTED") {
+                        return;
+                    }
+
+                    if (eventName && eventName.toUpperCase() !== "CHECKOUT") {
+                        return;
+                    }
+
+                    if (!data) {
+                        return;
+                    }
+
+                    const parsed = parseOrderCheckoutEvent(data);
+
+                    if (!parsed.orderId) {
+                        return;
+                    }
+
+                    if (processedOrderIdsRef.current.has(parsed.orderId)) {
+                        return;
+                    }
+
+                    if (parsed.revenue <= 0 && parsed.ticketCount <= 0) {
+                        processedOrderIdsRef.current.add(parsed.orderId);
+                        return;
+                    }
+
+                    processedOrderIdsRef.current.add(parsed.orderId);
+
+                    if (processedOrderIdsRef.current.size > 500) {
+                        const trimmed = Array.from(processedOrderIdsRef.current).slice(-200);
+                        processedOrderIdsRef.current = new Set(trimmed);
+                    }
+
+                    setLiveRevenueTotal(prev => {
+                        const nextBase = typeof prev === "number" && Number.isFinite(prev) ? prev : 0;
+                        return nextBase + Math.max(parsed.revenue, 0);
+                    });
+                    setLiveTicketsSold(prev => {
+                        const nextBase = typeof prev === "number" && Number.isFinite(prev) ? prev : 0;
+                        return nextBase + Math.max(parsed.ticketCount, 0);
+                    });
+                    setLastRevenueUpdateAt(new Date());
+                },
+                onError: (streamError) => {
+                    console.error("Event revenue SSE error", streamError);
+                },
+            },
+        );
+
+        return unsubscribe;
+    }, [eventId]);
+
+    const seedRevenueSnapshot = useCallback((payload: {totalRevenue?: number | null; totalTickets?: number | null}) => {
+        const {totalRevenue, totalTickets} = payload;
+        setLiveRevenueTotal(typeof totalRevenue === "number" && Number.isFinite(totalRevenue) ? Math.max(totalRevenue, 0) : 0);
+        setLiveTicketsSold(typeof totalTickets === "number" && Number.isFinite(totalTickets) ? Math.max(totalTickets, 0) : 0);
+        setLastRevenueUpdateAt(new Date());
+    }, []);
 
 
     const fetchDiscounts = useCallback(async () => {
@@ -179,7 +266,11 @@ export const EventProvider = ({children, eventId}: EventProviderProps) => {
         setDiscounts,
         refetchSessions: fetchSessions,
         refetchSession: fetchSession,
-        setSessions
+        setSessions,
+        liveRevenueTotal,
+        liveTicketsSold,
+        lastRevenueUpdateAt,
+        seedRevenueSnapshot,
     };
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

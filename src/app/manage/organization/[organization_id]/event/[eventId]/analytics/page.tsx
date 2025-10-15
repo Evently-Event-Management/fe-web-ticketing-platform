@@ -7,13 +7,16 @@ import {EventAnalyticsView} from "./_components/EventAnalyticsView";
 import {SessionPerformanceGrid} from "./_components/SessionPerformanceGrid";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getAllSessionsAnalytics, getEventAnalytics, getEventRevenueAnalytics} from "@/lib/actions/analyticsActions";
-import { AlertTriangle } from "lucide-react";
-import { useEventContext } from "@/providers/EventProvider";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import {AlertTriangle, RefreshCw} from "lucide-react";
+import {useEventContext} from "@/providers/EventProvider";
+import {Button} from "@/components/ui/button";
 
 export default function AnalyticsPage() {
-    const { event, isLoading: isEventLoading } = useEventContext();
+    const {
+        event,
+        isLoading: isEventLoading,
+        seedRevenueSnapshot,
+    } = useEventContext();
     const [analyticsData, setAnalyticsData] = useState<EventAnalytics | null>(null);
     const [revenueAnalytics, setRevenueAnalytics] = useState<{
         total_revenue: number;
@@ -37,19 +40,23 @@ export default function AnalyticsPage() {
     // Fetch revenue analytics data (new)
     const fetchRevenueAnalytics = useCallback(async () => {
         if (!event?.id) return;
-        
+
         try {
             setIsRevenueLoading(true);
-            
+
             const revenueData = await getEventRevenueAnalytics(event.id);
             setRevenueAnalytics(revenueData);
+            seedRevenueSnapshot({
+                totalRevenue: revenueData?.total_revenue,
+                totalTickets: revenueData?.total_tickets_sold,
+            });
         } catch (err) {
-            console.error('Failed to load revenue analytics:', err);
+            console.error("Failed to load revenue analytics:", err);
             // Don't set main error state since this is supplementary data
         } finally {
             setIsRevenueLoading(false);
         }
-    }, [event?.id]);
+    }, [event?.id, seedRevenueSnapshot]);
 
     // Fetch analytics data (page-specific)
     const fetchAnalyticsData = useCallback(async () => {
@@ -114,12 +121,6 @@ export default function AnalyticsPage() {
     }, [event?.id]);
 
     // Function to refresh all analytics data
-    const refreshAllData = useCallback(() => {
-        fetchAnalyticsData();
-        fetchRevenueAnalytics();
-        fetchGaData();
-    }, [fetchAnalyticsData, fetchRevenueAnalytics, fetchGaData]);
-
     // Initial load of analytics data when event is loaded
     useEffect(() => {
         if (event?.id) {
@@ -164,22 +165,25 @@ export default function AnalyticsPage() {
     }
 
     return (
-        <div className="container mx-auto p-4 md:p-8 space-y-8">
-            <div className="flex justify-between items-center">
+        <div className="container mx-auto p-4 md:p-8 space-y-10">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{analyticsData.eventTitle}</h1>
-                    <p className="text-muted-foreground">Overall Event Analytics Dashboard</p>
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">Analytics deep dive</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Refresh revenue totals as needed while the live hero keeps streaming new orders automatically.
+                    </p>
                 </div>
                 <Button
-                    onClick={refreshAllData}
+                    onClick={() => { void fetchRevenueAnalytics(); }}
                     variant="outline"
                     className="flex items-center gap-2"
-                    disabled={isAnalyticsLoading || isGaLoading}
+                    disabled={isRevenueLoading}
                 >
-                    <RefreshCw className={`h-4 w-4 ${(isAnalyticsLoading || isGaLoading) ? 'animate-spin' : ''}`} />
-                    Refresh Data
+                    <RefreshCw className={`h-4 w-4 ${isRevenueLoading ? "animate-spin" : ""}`}/>
+                    Refresh revenue data
                 </Button>
             </div>
+
             <EventAnalyticsView
                 analytics={analyticsData}
                 revenueAnalytics={revenueAnalytics || undefined}
