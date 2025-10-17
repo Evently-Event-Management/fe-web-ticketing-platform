@@ -155,12 +155,12 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
                     </div>
                 </div>
 
-                <div className="relative isolate grid gap-4 rounded-2xl border border-primary/20 bg-neutral-900/80 p-6 text-white shadow-lg backdrop-blur">
+                <div className="relative isolate grid gap-4 rounded-2xl border border-primary/20 bg-card-900/80 p-6 shadow-lg backdrop-blur">
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span className="text-white/80">Total revenue generated</span>
+                        <span>Total revenue generated</span>
                         <Badge
                             variant="secondary"
-                            className="border-white/40 bg-white/10 text-white/90 shadow-lg backdrop-blur-sm animate-pulse"
+                            className="border-card/40 bg-card-900/10 text-foreground/90 shadow-lg backdrop-blur-sm animate-pulse"
                         >
                             <span className="flex items-center gap-2">
                                 <span className="relative flex h-2.5 w-2.5">
@@ -172,12 +172,12 @@ export const WelcomeBar: React.FC<WelcomeBarProps> = ({
                             </span>
                         </Badge>
                     </div>
-                    <p className="text-3xl font-semibold tracking-tight text-white">
+                    <p className="text-3xl font-semibold tracking-tight">
                         {isLoading
                             ? "--"
                             : formatCurrency(displayedRevenue, "LKR", "en-LK")}
                     </p>
-                    <span className="text-xs text-white/70">
+                    <span className="text-xs">
                         Combined revenue across all approved events in your organization.
                     </span>
                 </div>
