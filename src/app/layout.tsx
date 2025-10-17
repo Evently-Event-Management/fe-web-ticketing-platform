@@ -1,11 +1,11 @@
-import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from '@/providers/AuthProvider'
-import {ThemeProvider} from "next-themes";
-import {Toaster} from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 import React from "react";
-import {TooltipProvider} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 
 const geistSans = Geist({
@@ -21,32 +21,41 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: "Ticketly",
     description: "Ticketing made easy",
+    icons: {
+        icon: [
+            { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+            { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+            { url: '/favicon.ico', type: 'image/x-icon' },
+        ],
+        apple: '/apple-touch-icon.png',
+    },
+    manifest: '/site.webmanifest'
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en">
-        <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-        <AuthProvider>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-                <TooltipProvider delayDuration={500}>
-                    {children}
-                </TooltipProvider>
-                <Toaster position={'top-right'}/>
-            </ThemeProvider>
-        </AuthProvider>
-        </body>
+                <AuthProvider>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        <TooltipProvider delayDuration={500}>
+                            {children}
+                        </TooltipProvider>
+                        <Toaster position={'top-right'} />
+                    </ThemeProvider>
+                </AuthProvider>
+            </body>
         </html>
     );
 }
