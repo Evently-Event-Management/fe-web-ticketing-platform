@@ -35,11 +35,16 @@ export function TiersStep() {
 
     console.log('TiersStep render, current tiers:', fields);
 
+    const newId = () =>
+        (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
     // Add default "General Admission" tier only on initial render
     useEffect(() => {
         if (initialRenderRef.current && fields.length === 0) {
             append({
-                id: crypto.randomUUID(),
+                id: newId(),
                 name: 'General Admission',
                 price: 0,
                 color: '#3B82F6' // Blue color
@@ -49,12 +54,20 @@ export function TiersStep() {
     }, [append, fields.length]);
 
     const handleCreateTier = (tier: TierFormData) => {
-        append(tier);
+        // Force a fresh unique ID on create regardless of dialog payload
+        append({
+            ...tier,
+            id: newId(),
+        });
     };
 
     const handleEditTier = (tier: TierFormData) => {
         if (editingIndex !== null) {
-            update(editingIndex, tier);
+            // Preserve existing ID on edit to avoid duplicates
+            update(editingIndex, {
+                ...tier,
+                id: fields[editingIndex].id,
+            });
             setEditingIndex(null);
         }
     };

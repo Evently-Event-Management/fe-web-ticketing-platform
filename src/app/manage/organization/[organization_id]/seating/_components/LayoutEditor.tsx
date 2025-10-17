@@ -14,7 +14,7 @@ import {BrushCleaning, Plus, Save, ZoomIn, ZoomOut} from 'lucide-react';
 import {DraggableBlock} from './DraggableBlock';
 import {ResizableDraggableBlock} from './ResizableDraggableBlock';
 import {SettingsPanel} from './SettingsPanel';
-import {estimateBlockDimensions} from '@/lib/seatingLayoutUtils';
+import {estimateBlockDimensions, DEFAULTS} from '@/lib/seatingLayoutUtils';
 
 interface LayoutEditorProps {
     initialData?: LayoutData;
@@ -41,20 +41,48 @@ export function LayoutEditor({
 
     const ensureBlockDimensions = React.useCallback((incoming: LayoutBlock[]): LayoutBlock[] => {
         let mutated = false;
+
+        const computeSeatedMin = (b: LayoutBlock) => {
+            const rows = typeof b.rows === 'number' ? b.rows : 0;
+            const cols = typeof b.columns === 'number' ? b.columns : 0;
+            const seatWidth = cols > 0 ? cols * DEFAULTS.seatSize + Math.max(0, cols - 1) * DEFAULTS.seatGap : 0;
+            const seatHeight = rows > 0 ? rows * DEFAULTS.seatSize + Math.max(0, rows - 1) * DEFAULTS.seatGap : 0;
+            const minWidth = seatWidth + DEFAULTS.blockPadding;
+            const minHeight = seatHeight + DEFAULTS.blockPadding + DEFAULTS.headerHeight;
+            return {minWidth, minHeight};
+        };
+
         const next = incoming.map(block => {
+            let updated: LayoutBlock = block;
+
             const hasWidth = typeof block.width === 'number' && Number.isFinite(block.width);
             const hasHeight = typeof block.height === 'number' && Number.isFinite(block.height);
-            if (hasWidth && hasHeight) {
-                return block;
+
+            // Always ensure a base size exists first
+            if (!hasWidth || !hasHeight) {
+                const {width, height} = estimateBlockDimensions(block);
+                updated = {
+                    ...updated,
+                    width: hasWidth ? updated.width! : width,
+                    height: hasHeight ? updated.height! : height,
+                };
+                mutated = true;
             }
-            const {width, height} = estimateBlockDimensions(block);
-            mutated = true;
-            return {
-                ...block,
-                width: hasWidth ? block.width! : width,
-                height: hasHeight ? block.height! : height,
-            };
+
+            // For seated grids, enforce a minimum size based on current rows/columns so seats never overflow
+            if (updated.type === 'seated_grid') {
+                const {minWidth, minHeight} = computeSeatedMin(updated);
+                const nextWidth = Math.max(updated.width ?? 0, minWidth);
+                const nextHeight = Math.max(updated.height ?? 0, minHeight);
+                if (nextWidth !== updated.width || nextHeight !== updated.height) {
+                    updated = {...updated, width: nextWidth, height: nextHeight};
+                    mutated = true;
+                }
+            }
+
+            return updated;
         });
+
         return mutated ? next : incoming;
     }, []);
 
@@ -123,7 +151,21 @@ export function LayoutEditor({
     };
 
     const handleUpdateBlock = (updatedBlock: LayoutBlock) => {
-        setBlocks(prev => prev.map(b => b.id === updatedBlock.id ? updatedBlock : b));
+        // Auto-grow seated grids when rows/columns increase so the seat grid always fits inside
+        let adjusted = updatedBlock;
+        if (updatedBlock.type === 'seated_grid') {
+            const rows = typeof updatedBlock.rows === 'number' ? updatedBlock.rows : 0;
+            const cols = typeof updatedBlock.columns === 'number' ? updatedBlock.columns : 0;
+            const seatWidth = cols > 0 ? cols * DEFAULTS.seatSize + Math.max(0, cols - 1) * DEFAULTS.seatGap : 0;
+            const seatHeight = rows > 0 ? rows * DEFAULTS.seatSize + Math.max(0, rows - 1) * DEFAULTS.seatGap : 0;
+            const minWidth = seatWidth + DEFAULTS.blockPadding;
+            const minHeight = seatHeight + DEFAULTS.blockPadding + DEFAULTS.headerHeight;
+            const width = Math.max(updatedBlock.width ?? 0, minWidth);
+            const height = Math.max(updatedBlock.height ?? 0, minHeight);
+            adjusted = {...updatedBlock, width, height};
+        }
+
+        setBlocks(prev => prev.map(b => b.id === adjusted.id ? adjusted : b));
     };
 
     const handleDeleteBlock = (blockId: string) => {
