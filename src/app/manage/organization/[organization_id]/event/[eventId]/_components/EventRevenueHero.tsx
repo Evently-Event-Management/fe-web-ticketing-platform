@@ -1,12 +1,14 @@
 "use client";
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import Link from "next/link";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
+import {ShareComponent} from "@/components/ui/share/share-component";
 import {cn, formatCurrency} from "@/lib/utils";
-import {Share2} from "lucide-react";
+import {Eye, Share2} from "lucide-react";
 import {useEventContext} from "@/providers/EventProvider";
-import {toast} from "sonner";
 import {animate} from "framer-motion";
 
 const useAnimatedNumber = (value: number | null, duration = 0.6) => {
@@ -81,37 +83,6 @@ export const EventRevenueHero: React.FC = () => {
         return `/events/${event.id}`;
     }, [event?.id]);
 
-    const handleShare = useCallback(async () => {
-        if (!shareUrl) {
-            return;
-        }
-
-        const title = eventTitle;
-        const text = `Have a look at ${eventTitle}`;
-
-        if (typeof navigator !== "undefined" && navigator.share) {
-            try {
-                await navigator.share({title, text, url: shareUrl});
-                toast.success("Shared successfully");
-                return;
-            } catch (error) {
-                console.warn("Share dismissed", error);
-            }
-        }
-
-        if (typeof navigator !== "undefined" && navigator.clipboard) {
-            try {
-                await navigator.clipboard.writeText(shareUrl);
-                toast.success("Link copied to clipboard");
-                return;
-            } catch (error) {
-                console.error("Failed to copy link", error);
-            }
-        }
-
-        toast.error("Sharing isn't supported in this browser");
-    }, [eventTitle, shareUrl]);
-
     const lastUpdateTime = formatTimestamp(lastRevenueUpdateAt);
 
     return (
@@ -157,16 +128,64 @@ export const EventRevenueHero: React.FC = () => {
                         )}
                     </div>
 
-                    <Button
-                        variant="secondary"
-                        size="lg"
-                        onClick={handleShare}
-                        className="inline-flex items-center gap-2 border border-white/30 bg-white/15 text-white transition hover:bg-white/25"
-                        disabled={!shareUrl}
-                    >
-                        <Share2 className="h-4 w-4"/>
-                        Share event page
-                    </Button>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant="secondary"
+                                    size="lg"
+                                    className="inline-flex items-center gap-2 border border-white/30 bg-white/15 text-white transition hover:bg-white/25"
+                                    disabled={!shareUrl}
+                                >
+                                    <Share2 className="h-4 w-4"/>
+                                    Share event page
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-xl">
+                                <DialogHeader>
+                                    <DialogTitle>Share {eventTitle}</DialogTitle>
+                                    <DialogDescription>
+                                        Reach your audience with platform-ready links and tracked social share buttons.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                {shareUrl ? (
+                                    <ShareComponent
+                                        url={shareUrl}
+                                        title={eventTitle}
+                                        text={`Have a look at ${eventTitle} hosted by ${organizationName}.`}
+                                        campaign={`event_${event?.id ?? "share"}`}
+                                    />
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        Event link is unavailable right now.
+                                    </p>
+                                )}
+                            </DialogContent>
+                        </Dialog>
+                        {event?.id ? (
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="lg"
+                                className="inline-flex items-center gap-2 border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+                            >
+                                <Link href={`/events/${event.id}`}>
+                                    <Eye className="h-4 w-4"/>
+                                    View event page
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="inline-flex items-center gap-2 border border-white/30 bg-white/10 text-white"
+                                disabled
+                            >
+                                <Eye className="h-4 w-4"/>
+                                View event page
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
