@@ -139,7 +139,7 @@ const OrdersTable = ({
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatCurrency(order.total_price)}</TableCell>
+                    <TableCell>{formatCurrency(order.total_price, "LKR", 'en-LK')}</TableCell>
                     <TableCell>{order.total_tickets}</TableCell>
                     <TableCell className="text-right">
                       <Button
