@@ -2,8 +2,9 @@ import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata : Metadata= {
   title: "Under Maintenance | Ticketly",
   description: "Our system is currently undergoing maintenance. We'll be back soon!",
 };
@@ -20,7 +21,7 @@ export default function MaintenancePage() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-muted-foreground">
-            We're currently performing scheduled maintenance on our system to improve your experience.
+            We&#39;re currently performing scheduled maintenance on our system to improve your experience.
           </p>
           <p className="text-muted-foreground">
             We apologize for any inconvenience this may cause and appreciate your patience.
