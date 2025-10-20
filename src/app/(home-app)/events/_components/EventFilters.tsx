@@ -118,7 +118,8 @@ export function EventFilters() {
         }
 
         params.delete('page'); // Reset pagination on new search
-        router.push(`${pathname}?${params.toString()}`);
+        const query = params.toString();
+        router.push(query ? `${pathname}?${query}` : pathname, {scroll: false});
     };
 
     return (

@@ -126,7 +126,7 @@ export function EventAdvancedFilters() {
         updater(params);
         params.delete('page');
         const query = params.toString();
-        router.push(query ? `${pathname}?${query}` : pathname);
+        router.push(query ? `${pathname}?${query}` : pathname, {scroll: false});
     }, [pathname, router, searchParams]);
 
     const handlePeriodSelect = useCallback((option: PeriodOption) => {
