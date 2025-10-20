@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/pagination";
 import {Skeleton} from '@/components/ui/skeleton';
 import {Frown} from 'lucide-react';
+import { size } from 'zod';
 
 const EventSkeleton = () => (
     <div className="space-y-2">
@@ -56,6 +57,7 @@ export function EventResults() {
                         return Number.isFinite(parsed) ? parsed : undefined;
                     })(),
                     page: searchParams.has('page') ? Number(searchParams.get('page')) : 0,
+                    size: searchParams.has('size') ? Number(searchParams.get('size')) : 12,
                 };
                 const result = await searchEvents(params);
                 setData(result);
