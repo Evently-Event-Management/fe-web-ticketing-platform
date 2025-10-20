@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ModeToggle } from '@/components/ModeToggle'
 import * as React from 'react'
 import { TopbarEventSearch } from './TopbarEventSearch'
+import { MobileSearch } from './MobileSearch'
 
 export default function Topbar() {
     const { isAuthenticated, keycloak, isAdmin } = useAuth()
@@ -25,8 +26,8 @@ export default function Topbar() {
     return (
         <header
             className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2">
-            <div className="flex h-12 w-full items-center gap-3">
-                <div className="flex items-center mr-4">
+            <div className="flex h-12 w-full items-center justify-between gap-3">
+                <div className="flex flex-1 items-center gap-2 min-w-0">
                     <Link className="flex items-center space-x-2" href="/">
                         <div className="flex items-center gap-2 p-3">
                             <div className="relative h-16 w-16">
@@ -41,11 +42,15 @@ export default function Topbar() {
                             <span className="text-2xl font-bold text-primary">Ticketly</span>
                         </div>
                     </Link>
-                </div>
-                <div className="flex flex-1 items-center justify-end gap-2">
-                    <div className="hidden md:block flex-1 max-w-md">
-                        <TopbarEventSearch />
+                    <div className="md:hidden">
+                        <MobileSearch />
                     </div>
+                    <div className="hidden md:flex flex-1 max-w-md">
+                        <TopbarEventSearch className="max-w-full" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <ModeToggle />
                     {isAuthenticated ? (
                         <>
                             <Link href={`/orders`} className="hidden lg:inline-flex">
@@ -125,18 +130,16 @@ export default function Topbar() {
                         </>
                     ) : (
                         <>
-                            {/* FIX: Use optional chaining on keycloak methods */}
-                            <Button variant="outline" className="hidden lg:inline-flex"
+                            <Button variant="outline"
                                 onClick={() => keycloak?.login()}>
                                 Login
                             </Button>
-                            <Button onClick={() => keycloak?.register()}>
+                            <Button className="hidden md:inline-flex" onClick={() => keycloak?.register()}>
                                 Sign Up
                             </Button>
                         </>
                     )}
                 </div>
-                <ModeToggle />
             </div>
         </header>
     )

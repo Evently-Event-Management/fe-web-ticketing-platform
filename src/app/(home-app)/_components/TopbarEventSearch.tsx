@@ -8,11 +8,18 @@ import {Loader2, Search, X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {TopbarEventCard} from './TopbarEventCard';
 import Link from 'next/link';
+import {cn} from '@/lib/utils';
+
+interface TopbarEventSearchProps {
+    className?: string;
+    autoFocus?: boolean;
+    onClose?: () => void;
+}
 
 const DEBOUNCE_MS = 1000;
 const RESULT_LIMIT = 6;
 
-export function TopbarEventSearch() {
+export function TopbarEventSearch({className, autoFocus = false, onClose}: TopbarEventSearchProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<EventThumbnailDTO[]>([]);
@@ -93,7 +100,7 @@ export function TopbarEventSearch() {
     ), [resetSearch]);
 
     return (
-        <div ref={containerRef} className="relative w-full max-w-md">
+        <div ref={containerRef} className={cn('relative w-full max-w-md', className)}>
             <div className="flex items-center rounded-full border bg-background px-3 py-2 text-sm shadow-sm focus-within:ring-2 focus-within:ring-primary/40">
                 <Search className="mr-2 h-4 w-4 text-muted-foreground"/>
                 <Input
@@ -105,7 +112,8 @@ export function TopbarEventSearch() {
                         }
                     }}
                     placeholder="Search events..."
-                    className="h-auto border-0 p-0 focus-visible:ring-0 !bg-transparent flex-grow"
+                    className="h-auto border-0 p-0 focus-visible:ring-0 !bg-transparent flex-grow !shadow-none"
+                    autoFocus={autoFocus}
                 />
                 {query ? clearButton : null}
             </div>
@@ -120,6 +128,7 @@ export function TopbarEventSearch() {
                             onClick={() => {
                                 setQuery('');
                                 resetSearch();
+                                onClose?.();
                             }}
                         >
                             All events &gt;
@@ -147,6 +156,7 @@ export function TopbarEventSearch() {
                                     setQuery('');
                                     setIsPanelOpen(false);
                                     resetSearch();
+                                    onClose?.();
                                 }}
                             />
                         ))}
