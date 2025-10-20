@@ -5,6 +5,7 @@ import {Suspense} from 'react';
 import {Skeleton} from '@/components/ui/skeleton';
 import Image from 'next/image';
 import {CategoryFilterBar} from './_components/CategoryFilterBar';
+import {EventAdvancedFilters} from './_components/EventAdvancedFilters';
 import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
@@ -73,10 +74,15 @@ export default async function EventsPage() {
             </section>
 
             {/* RESULTS SECTION (No changes here) */}
-            <section className="md:max-w-7xl mx-auto px-4 py-8 space-y-10"> {/* Negative margin to pull results up */}
+            <section className="md:max-w-7xl mx-auto px-4 py-8 space-y-8"> {/* Negative margin to pull results up */}
                 <Suspense fallback={<CategoryBarSkeleton/>}>
                     <CategoryFilterBar categories={categories}/>
                 </Suspense>
+                <div className="flex justify-end">
+                    <Suspense fallback={<div className="h-9 w-32 animate-pulse rounded-full bg-muted"/>}>
+                        <EventAdvancedFilters/>
+                    </Suspense>
+                </div>
                 <Suspense fallback={<div className="text-center py-10">Loading results...</div>}>
                     <EventResults/>
                 </Suspense>

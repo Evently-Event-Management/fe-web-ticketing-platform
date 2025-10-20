@@ -151,7 +151,7 @@ export function LayoutEditor({
     };
 
     const handleUpdateBlock = (updatedBlock: LayoutBlock) => {
-        // Auto-grow seated grids when rows/columns increase so the seat grid always fits inside
+        // Auto-resize seated grids when rows/columns change so the seat grid always fits perfectly
         let adjusted = updatedBlock;
         if (updatedBlock.type === 'seated_grid') {
             const rows = typeof updatedBlock.rows === 'number' ? updatedBlock.rows : 0;
@@ -160,9 +160,21 @@ export function LayoutEditor({
             const seatHeight = rows > 0 ? rows * DEFAULTS.seatSize + Math.max(0, rows - 1) * DEFAULTS.seatGap : 0;
             const minWidth = seatWidth + DEFAULTS.blockPadding;
             const minHeight = seatHeight + DEFAULTS.blockPadding + DEFAULTS.headerHeight;
-            const width = Math.max(updatedBlock.width ?? 0, minWidth);
-            const height = Math.max(updatedBlock.height ?? 0, minHeight);
-            adjusted = {...updatedBlock, width, height};
+            
+            // Get the current block to check if rows or columns have changed
+            const currentBlock = blocks.find(b => b.id === updatedBlock.id);
+            const currentRows = typeof currentBlock?.rows === 'number' ? currentBlock.rows : 0;
+            const currentCols = typeof currentBlock?.columns === 'number' ? currentBlock.columns : 0;
+            
+            // Only auto-resize if rows or columns have changed
+            if (rows !== currentRows || cols !== currentCols) {
+                // Calculate new dimensions based on the actual seat grid
+                adjusted = {
+                    ...updatedBlock,
+                    width: minWidth,
+                    height: minHeight
+                };
+            }
         }
 
         setBlocks(prev => prev.map(b => b.id === adjusted.id ? adjusted : b));

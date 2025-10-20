@@ -51,13 +51,13 @@ export function InteractiveDraggableBlock({block, tiers, onSeatClick, onApplyToA
         <div ref={setNodeRef} style={style} className="absolute p-3 bg-card border rounded-lg">
             <div className="flex flex-col text-center relative">
                 <div className="flex items-center justify-between w-full mb-2">
-                    <span className="text-sm font-medium">{block.name}</span>
+                    <span className="text-sm font-medium truncate overflow-hidden" title={block.name}>{block.name}</span>
                     {onApplyToAllSeats && (
                         <Button
                             size="sm"
                             variant="outline"
                             type={'button'}
-                            className="text-xs py-0 h-6"
+                            className="text-xs py-0 h-6 flex-shrink-0 ml-1"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onApplyToAllSeats(block.id);
@@ -141,9 +141,9 @@ export function InteractiveResizableBlock({block, tiers, onClick}: ResizableBloc
                 style={{backgroundColor: getBlockTierColor()}}
             >
                 <div className="flex items-center gap-2 flex-grow">
-                    <div className="flex flex-col text-center flex-grow">
-                        <span className="text-sm font-medium">{block.name}</span>
-                        <span className="text-xs text-muted-foreground">{block.capacity} capacity</span>
+                    <div className="flex flex-col text-center flex-grow overflow-hidden">
+                        <span className="text-sm font-medium truncate" title={block.name}>{block.name}</span>
+                        <span className="text-xs text-muted-foreground truncate">{block.capacity} capacity</span>
                     </div>
                 </div>
             </div>
