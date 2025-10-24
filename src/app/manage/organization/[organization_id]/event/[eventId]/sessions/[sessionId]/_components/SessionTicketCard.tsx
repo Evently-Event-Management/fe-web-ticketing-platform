@@ -36,7 +36,7 @@ export function SessionTicketCard({ ticket }: SessionTicketCardProps) {
             <TicketIcon className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-foreground">{ticket.tier_name}</span>
             <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">${ticket.price_at_purchase.toFixed(2)}</span>
+            <span className="text-muted-foreground">LKR {ticket.price_at_purchase.toFixed(2)}</span>
           </CardDescription>
         </div>
         <Badge
