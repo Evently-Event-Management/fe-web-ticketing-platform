@@ -95,9 +95,9 @@ export default function PaymentSuccess() {
             <Button 
               variant="outline" 
               className="w-full text-sm"
-              onClick={() => router.push(`/tickets?orderId=${orderId}`)}
+              onClick={() => router.push('/orders')}
             >
-              View My Tickets
+              View All Orders
               <ArrowRight className="ml-2 h-3.5 w-3.5" />
             </Button>
           </div>

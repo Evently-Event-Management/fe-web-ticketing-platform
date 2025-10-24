@@ -218,7 +218,7 @@ export default function OrdersPage() {
                                     </div>
                                 )}
 
-                                {order.tickets.length > 0 && (
+                                {order.tickets.length > 0 && order.Status.toLowerCase() !== 'cancelled' && (
                                     <div className="mb-4">
                                         <div className="text-sm font-medium mb-2">Tickets:</div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -236,6 +236,14 @@ export default function OrdersPage() {
                                                     </div>
                                                 </div>
                                             ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {order.Status.toLowerCase() === 'cancelled' && (
+                                    <div className="mb-4 p-3 bg-red-50 rounded-md border border-red-200">
+                                        <div className="text-sm text-red-800">
+                                            <strong>Order Cancelled:</strong> This order has been cancelled. Tickets are no longer valid.
                                         </div>
                                     </div>
                                 )}
@@ -303,10 +311,11 @@ export default function OrdersPage() {
                                                 </div>
 
                                                 {/* Tickets Information */}
-                                                <div>
-                                                    <h3 className="font-semibold mb-3">Tickets ({order.tickets.length})</h3>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {order.tickets.map((ticket) => (
+                                                {order.Status.toLowerCase() !== 'cancelled' ? (
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Tickets ({order.tickets.length})</h3>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {order.tickets.map((ticket) => (
                                                             <Card key={ticket.ticket_id} className="border-l-4 border-l-primary">
                                                                 <CardHeader className="pb-2">
                                                                     <div className="flex items-center justify-between">
@@ -357,23 +366,33 @@ export default function OrdersPage() {
                                                                         )}
                                                                     </div>
                                                                     
-                                                                    {/* QR Code Button */}
-                                                                    <div className="mt-3 pt-3 border-t">
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="sm"
-                                                                            onClick={() => handleViewQR(ticket)}
-                                                                            className="w-full"
-                                                                        >
-                                                                            <QrCode className="h-4 w-4 mr-2" />
-                                                                            View QR Code
-                                                                        </Button>
-                                                                    </div>
+                                                                    {/* QR Code Button - Only show for completed orders */}
+                                                                    {order.Status.toLowerCase() === 'completed' && (
+                                                                        <div className="mt-3 pt-3 border-t">
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                size="sm"
+                                                                                onClick={() => handleViewQR(ticket)}
+                                                                                className="w-full"
+                                                                            >
+                                                                                <QrCode className="h-4 w-4 mr-2" />
+                                                                                View QR Code
+                                                                            </Button>
+                                                                        </div>
+                                                                    )}
                                                                 </CardContent>
                                                             </Card>
                                                         ))}
                                                     </div>
                                                 </div>
+                                                ) : (
+                                                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                                                        <h3 className="font-semibold mb-2 text-red-800">Order Cancelled</h3>
+                                                        <p className="text-sm text-red-700">
+                                                            This order has been cancelled. Tickets are no longer valid and cannot be used for entry.
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </DialogContent>
                                     </Dialog>
