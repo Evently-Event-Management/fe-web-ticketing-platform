@@ -242,6 +242,16 @@ export const getSessionsRevenueAnalytics = async (eventId: string): Promise<Sess
 };
 
 /**
+ * Retrieves all tickets issued for a given session
+ *
+ * @param sessionId The session identifier
+ * @returns Array of tickets including their check-in status
+ */
+export const getSessionTickets = async (sessionId: string): Promise<TicketResponse[]> => {
+    return await apiFetch<TicketResponse[]>(`${ORDER_API_PATH}/sessions/${sessionId}/tickets`);
+};
+
+/**
  * Retrieves detailed order information for an event with optional filtering and sorting
  * 
  * @param eventId The ID of the event

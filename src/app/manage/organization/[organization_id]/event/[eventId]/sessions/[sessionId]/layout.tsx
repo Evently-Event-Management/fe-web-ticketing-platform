@@ -4,7 +4,7 @@ import React from 'react'
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEventContext } from "@/providers/EventProvider"
 import { useParams, usePathname, useRouter } from "next/navigation"
-import { BarChart2, ChevronLeft, Settings } from "lucide-react"
+import { BarChart2, ChevronLeft, Settings, Ticket } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from '@/components/ui/skeleton'
@@ -26,6 +26,9 @@ export default function SessionLayout({ children }: { children: React.ReactNode 
 
     // Get active tab based on pathname
     const getActiveTab = () => {
+        if (pathname.includes('/tickets')) {
+            return 'tickets'
+        }
         if (pathname.includes('/analytics')) {
             return 'analytics'
         }
@@ -43,6 +46,8 @@ export default function SessionLayout({ children }: { children: React.ReactNode 
 
         if (value === 'analytics') {
             router.push(`${baseUrl}/analytics`)
+        } else if (value === 'tickets') {
+            router.push(`${baseUrl}/tickets`)
         } else {
             router.push(`${baseUrl}`)
         }
@@ -101,7 +106,7 @@ export default function SessionLayout({ children }: { children: React.ReactNode 
                     onValueChange={handleTabChange}
                     className="space-y-4"
                 >
-                    <TabsList className="grid w-full grid-cols-2 max-w-md">
+                    <TabsList className="grid w-full grid-cols-3 max-w-xl">
                         <TabsTrigger value="details" className="flex items-center gap-2">
                             <Settings className="h-4 w-4" />
                             <span>Session Details</span>
@@ -109,6 +114,10 @@ export default function SessionLayout({ children }: { children: React.ReactNode 
                         <TabsTrigger value="analytics" className="flex items-center gap-2">
                             <BarChart2 className="h-4 w-4" />
                             <span>Analytics</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="tickets" className="flex items-center gap-2">
+                            <Ticket className="h-4 w-4" />
+                            <span>Tickets</span>
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
