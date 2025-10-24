@@ -92,7 +92,7 @@ function TicketsList({ tickets }: TicketsListProps) {
               <div className="text-xs text-muted-foreground">Seat: {ticket.seat_label}</div>
             </div>
             <div className="text-right flex flex-col items-end">
-              <div>{formatCurrency(ticket.price_at_purchase)}</div>
+              <div>{formatCurrency(ticket.price_at_purchase, 'LKT', 'en-LK')}</div>
               <div 
                 className="w-3 h-3 rounded-full mt-1" 
                 style={{ backgroundColor: ticket.colour || 'var(--color-primary)' }} 
