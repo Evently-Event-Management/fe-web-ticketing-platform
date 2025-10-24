@@ -63,7 +63,8 @@ export function CategoryFilterBar({categories}: CategoryFilterBarProps) {
             params.delete('categoryId');
         }
         params.delete('page'); // Reset pagination on filter change
-        router.push(`${pathname}?${params.toString()}`);
+        const query = params.toString();
+        router.push(query ? `${pathname}?${query}` : pathname, {scroll: false});
     };
 
     const handleScroll = (direction: 'left' | 'right') => {

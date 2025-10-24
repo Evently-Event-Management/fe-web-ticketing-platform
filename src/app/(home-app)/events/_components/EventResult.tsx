@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/pagination";
 import {Skeleton} from '@/components/ui/skeleton';
 import {Frown} from 'lucide-react';
+import { size } from 'zod';
 
 const EventSkeleton = () => (
     <div className="space-y-2">
@@ -41,7 +42,22 @@ export function EventResults() {
                     latitude: searchParams.has('latitude') ? Number(searchParams.get('latitude')) : undefined,
                     longitude: searchParams.has('longitude') ? Number(searchParams.get('longitude')) : undefined,
                     radiusKm: searchParams.has('radiusKm') ? Number(searchParams.get('radiusKm')) : undefined,
+                    dateFrom: searchParams.get('dateFrom') || undefined,
+                    dateTo: searchParams.get('dateTo') || undefined,
+                    priceMin: (() => {
+                        const value = searchParams.get('priceMin');
+                        if (value === null || value.trim() === '') return undefined;
+                        const parsed = Number(value);
+                        return Number.isFinite(parsed) ? parsed : undefined;
+                    })(),
+                    priceMax: (() => {
+                        const value = searchParams.get('priceMax');
+                        if (value === null || value.trim() === '') return undefined;
+                        const parsed = Number(value);
+                        return Number.isFinite(parsed) ? parsed : undefined;
+                    })(),
                     page: searchParams.has('page') ? Number(searchParams.get('page')) : 0,
+                    size: searchParams.has('size') ? Number(searchParams.get('size')) : 12,
                 };
                 const result = await searchEvents(params);
                 setData(result);

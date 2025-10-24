@@ -165,9 +165,9 @@ export const EventRevenueHero: React.FC = () => {
                         {event?.id ? (
                             <Button
                                 asChild
-                                variant="outline"
+                                variant="secondary"
                                 size="lg"
-                                className="inline-flex items-center gap-2 border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+                                className="inline-flex items-center gap-2 border border-white/30 bg-white/15 text-white transition hover:bg-white/25"
                             >
                                 <Link href={`/events/${event.id}`}>
                                     <Eye className="h-4 w-4"/>
@@ -176,9 +176,9 @@ export const EventRevenueHero: React.FC = () => {
                             </Button>
                         ) : (
                             <Button
-                                variant="outline"
+                                variant="secondary"
                                 size="lg"
-                                className="inline-flex items-center gap-2 border border-white/30 bg-white/10 text-white"
+                                className="inline-flex items-center gap-2 border border-white/30 bg-white/15 text-white transition hover:bg-white/25"
                                 disabled
                             >
                                 <Eye className="h-4 w-4"/>

@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import {useAuth} from '@/providers/AuthProvider'
-import {ShieldCheck} from 'lucide-react'
-import {Button} from '@/components/ui/button'
+import { useAuth } from '@/providers/AuthProvider'
+import { ShieldCheck } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,24 +12,26 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import {Avatar, AvatarFallback} from '@/components/ui/avatar'
-import {ModeToggle} from "@/components/ModeToggle";
-import * as React from "react";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { ModeToggle } from '@/components/ModeToggle'
+import * as React from 'react'
+import { TopbarEventSearch } from './TopbarEventSearch'
+import { MobileSearch } from './MobileSearch'
 
 export default function Topbar() {
-    const {isAuthenticated, keycloak, isAdmin} = useAuth()
+    const { isAuthenticated, keycloak, isAdmin } = useAuth()
     const username = keycloak?.tokenParsed?.name || 'User'
     const userIsAdmin = isAdmin()
 
     return (
         <header
             className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2">
-            <div className="flex h-12 items-center justify-between w-full">
-                <div className="mr-4 flex">
-                    <Link className="mr-6 flex items-center space-x-2" href="/">
+            <div className="flex h-12 w-full items-center justify-between gap-3">
+                <div className="flex flex-1 items-center gap-2 min-w-0">
+                    <Link className="flex items-center space-x-2" href="/">
                         <div className="flex items-center gap-2 p-3">
                             <div className="relative h-16 w-16">
-                                <Image 
+                                <Image
                                     src="/images/logo-high.png"
                                     alt="Ticketly Logo"
                                     fill
@@ -40,22 +42,27 @@ export default function Topbar() {
                             <span className="text-2xl font-bold text-primary">Ticketly</span>
                         </div>
                     </Link>
+                    <div className="md:hidden">
+                        <MobileSearch />
+                    </div>
+                    <div className="hidden md:flex flex-1 max-w-md">
+                        <TopbarEventSearch className="max-w-full" />
+                    </div>
                 </div>
-
-                <div className="flex flex-1 items-center justify-end space-x-2">
-                    <ModeToggle/>
+                <div className="flex items-center gap-2">
+                    <ModeToggle />
                     {isAuthenticated ? (
                         <>
                             <Link href={`/orders`} className="hidden lg:inline-flex">
                                 <Button variant="ghost"
-                                        className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                    className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
                                     My Orders
                                 </Button>
                             </Link>
 
                             <Link href={`/manage/organization`} className="hidden lg:inline-flex">
                                 <Button variant="ghost"
-                                        className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                    className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
                                     Create Events
                                 </Button>
                             </Link>
@@ -63,8 +70,8 @@ export default function Topbar() {
                             {userIsAdmin && (
                                 <Link href={`/manage/admin`} className="hidden lg:inline-flex">
                                     <Button variant="ghost"
-                                            className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
-                                        <ShieldCheck className="size-4 mr-1"/>
+                                        className="flex items-center gap-2 text-primary/80 hover:text-primary text-md">
+                                        <ShieldCheck className="size-4 mr-1" />
                                         Admin Console
                                     </Button>
                                 </Link>
@@ -95,7 +102,7 @@ export default function Topbar() {
                                     {/*        <Badge variant="outline">{myLimits.currentTier}</Badge>*/}
                                     {/*    </div>*/}
                                     {/*)}*/}
-                                    <DropdownMenuSeparator/>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
                                         <Link href="/orders" className="flex items-center gap-2">
                                             My Orders
@@ -105,11 +112,11 @@ export default function Topbar() {
                                         <>
                                             <DropdownMenuItem asChild>
                                                 <Link href="/manage/admin" className="flex items-center gap-2">
-                                                    <ShieldCheck className="size-4"/>
+                                                    <ShieldCheck className="size-4" />
                                                     Admin Console
                                                 </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator/>
+                                            <DropdownMenuSeparator />
                                         </>
                                     )}
                                     <DropdownMenuItem onClick={() => keycloak?.logout()}>
@@ -123,12 +130,11 @@ export default function Topbar() {
                         </>
                     ) : (
                         <>
-                            {/* FIX: Use optional chaining on keycloak methods */}
-                            <Button variant="outline" className="hidden lg:inline-flex"
-                                    onClick={() => keycloak?.login()}>
+                            <Button variant="outline"
+                                onClick={() => keycloak?.login()}>
                                 Login
                             </Button>
-                            <Button onClick={() => keycloak?.register()}>
+                            <Button className="hidden md:inline-flex" onClick={() => keycloak?.register()}>
                                 Sign Up
                             </Button>
                         </>
